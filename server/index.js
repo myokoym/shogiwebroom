@@ -24,10 +24,39 @@ async function start () {
   app.use(nuxt.render)
 
   // Listen the server
-  app.listen(port, host)
+  let server = app.listen(port, host)
   consola.ready({
     message: `Server listening on http://${host}:${port}`,
     badge: true
   })
+
+  socketStart(server)
+  console.log("Socket.IO starts")
 }
+
+function socketStart(server) {
+  const io = require("socket.io").listen(server)
+  io.on("connection", socket => {
+    console.log("id: ", + socket.id + " is connected")
+
+    if (usiQueue.length > 0) {
+      usiQueue.forEach(usi => {
+        socket.emit("new-usi", message)
+      })
+    }
+
+    socket.on("send-usi", usi => {
+      console.log(usi)
+
+      usiQueue.push(usi)
+
+      socket.broadcast.emit("new-usi", usi)
+
+      if (usiQueue.length > 10) {
+        usiQueue = usiQueue.slice(-10)
+      }
+    })
+  })
+}
+
 start()
