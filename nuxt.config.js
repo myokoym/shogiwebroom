@@ -44,6 +44,9 @@ module.exports = {
   ** Build configuration
   */
   build: {
+    vendor: [
+      "socket.io-client"
+    ],
     /*
     ** You can extend webpack config here
     */

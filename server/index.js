@@ -34,27 +34,26 @@ async function start () {
   console.log("Socket.IO starts")
 }
 
+let currentTexts = {}
+
 function socketStart(server) {
   const io = require("socket.io").listen(server)
-  io.on("connection", socket => {
-    console.log("id: ", + socket.id + " is connected")
-
-    if (usiQueue.length > 0) {
-      usiQueue.forEach(usi => {
-        socket.emit("new-usi", message)
-      })
-    }
-
-    socket.on("send-usi", usi => {
-      console.log(usi)
-
-      usiQueue.push(usi)
-
-      socket.broadcast.emit("new-usi", usi)
-
-      if (usiQueue.length > 10) {
-        usiQueue = usiQueue.slice(-10)
+  io.on("connection", (socket) => {
+    let roomId = ""
+    socket.on("enterRoom", (id) => {
+      roomId = id
+      socket.join(roomId)
+      io.to(socket.id).emit("update", currentTexts[roomId])
+    })
+    socket.on("send", (params) => {
+      let id = params.id
+      let text = params.text
+      if (!roomId) {
+        roomId = id
+        socket.join(roomId)
       }
+      currentTexts[roomId] = text
+      io.to(roomId).emit("update", text)
     })
   })
 }
