@@ -1,8 +1,12 @@
 <template>
   <div class="container">
     <div>
-      <input type="text" v-model="text">
-      <button @click="send">送信</button>
+      <Shogiboard
+        v-model="text"
+        v-on:send="send"
+      ></Shogiboard>
+    </div>
+    <div>
       <nuxt-link to="/">戻る</nuxt-link>
     </div>
   </div>
@@ -11,8 +15,12 @@
 <script>
 import io from "socket.io-client"
 import Vue from "vue"
+import Shogiboard from '~/components/Shogiboard.vue'
 
 export default Vue.extend({
+  components: {
+    Shogiboard
+  },
   data() {
     return {
       text: "",
@@ -28,6 +36,7 @@ export default Vue.extend({
   },
   methods: {
     send() {
+      console.log("send(): text: " + this.text)
       this.socket.emit("send", {
         id: this.$route.params.id,
         text: this.text
