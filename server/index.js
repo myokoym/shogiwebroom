@@ -43,7 +43,9 @@ function socketStart(server) {
     socket.on("enterRoom", (id) => {
       roomId = id
       socket.join(roomId)
-      io.to(socket.id).emit("update", currentTexts[roomId])
+      if (currentTexts[roomId]) {
+        io.to(socket.id).emit("update", currentTexts[roomId])
+      }
     })
     socket.on("send", (params) => {
       let id = params.id

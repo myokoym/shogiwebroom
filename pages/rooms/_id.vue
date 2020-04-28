@@ -23,13 +23,14 @@ export default Vue.extend({
   },
   data() {
     return {
-      text: "",
+      text: "lnsgkgsnl/1r5b1/ppppppppp/9/9/9/PPPPPPPPP/1B5R1/LNSGKGSNL",
       socket: undefined
     }
   },
   mounted: function() {
     this.socket = io()
     this.socket.on("update", (text) => {
+      console.log("update: " + text)
       this.text = text
     })
     this.socket.emit("enterRoom", this.$route.params.id)
