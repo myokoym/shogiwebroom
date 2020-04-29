@@ -15,6 +15,7 @@
         <td
           v-for="(cell, x) in row"
           v-on:click="moveCell(x, y)"
+          v-on:click.right.prevent="togglePromoted(x, y)"
           v-bind:class="{beforeCell: isBeforeCell(x, y)}"
         >{{cell}}</td>
       </tr>
@@ -89,11 +90,15 @@ export default Vue.extend({
       this.rows = board.split("/").map((row) => {
         const cells = []
         const chars = row.split("")
-        for (const char of chars) {
+        for (let i = 0; i < chars.length; i++) {
+          const char = chars[i]
           if (char.match(/\d/)) {
-            for (let i = 0; i < Number(char); i++) {
+            for (let j = 0; j < Number(char); j++) {
               cells.push(".")
             }
+          } else if (char.match(/\+/)) {
+            cells.push(char + chars[i + 1])
+            i++
           } else {
             cells.push(char)
           }
@@ -157,6 +162,22 @@ export default Vue.extend({
       this.beforeY = undefined
       this.beforeHand = piece
     },
+    togglePromoted(x, y) {
+      const cell = this.rows[y][x]
+      console.log("togglePromoted: cell: " + cell + ", x: " + x + ", y: " + y)
+      if (cell.match(/[.GKgk]/)) {
+        return
+      }
+      if (cell.match(/\+/)) {
+        console.log("cancel")
+        this.rows[y][x] = cell.charAt(1)
+      } else {
+        console.log("promote")
+        this.rows[y][x] = "+" + cell
+      }
+      this.$emit('updateText', this.buildSfen())
+      this.$emit('send')
+    },
     moveCell(x, y) {
       if (!this.beforeX && this.rows[y][x] !== ".") {
         this.beforeX = x
@@ -175,22 +196,26 @@ export default Vue.extend({
             this.beforeY = y
             return
           } else if (beforeCell.match(/[a-z]/) && afterCell.match(/[A-Z]/)) {
-            const newHand = afterCell.toLowerCase()
+            let newHand = afterCell.toLowerCase()
+            if (newHand.match(/\+/)) {
+              newHand = newHand.charAt(1)
+            }
             this.hands[newHand] = this.hands[newHand] || 0
             this.hands[newHand] += 1
           } else if (beforeCell.match(/[A-Z]/) && afterCell.match(/[a-z]/)) {
-            const newHand = afterCell.toUpperCase()
+            let newHand = afterCell.toUpperCase()
+            if (newHand.match(/\+/)) {
+              newHand = newHand.charAt(1)
+            }
             this.hands[newHand] = this.hands[newHand] || 0
             this.hands[newHand] += 1
           }
           this.rows[y][x] = this.rows[this.beforeY][this.beforeX]
           this.rows[this.beforeY][this.beforeX] = "."
         } else if (this.beforeHand) {
-          console.log("beforeeeeeeeeeeeeeeeeeeeeeeeee")
           if (afterCell !== ".") {
             return
           } else {
-            console.log("hhhhhhhhhhhhhhhhhh")
             this.rows[y][x] = this.beforeHand
             this.hands[this.beforeHand] -= 1
             if (this.hands[this.beforeHand] === 0) {
