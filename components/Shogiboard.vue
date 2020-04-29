@@ -1,8 +1,24 @@
 <template>
   <div>
     <table>
+      <tr>
+        <td
+          v-for="piece in wPieces"
+          v-if="hands[piece]"
+        >{{piece}}{{hands[piece]}}</td>
+      </tr>
+    </table>
+    <table>
       <tr v-for="row in rows">
         <td v-for="cell in row">{{cell}}</td>
+      </tr>
+    </table>
+    <table>
+      <tr>
+        <td
+          v-for="piece in bPieces"
+          v-if="hands[piece]"
+        >{{piece}}{{hands[piece]}}</td>
       </tr>
     </table>
     <input
@@ -28,8 +44,9 @@ export default Vue.extend({
   data() {
     return {
       rows: [],
-      hand_b: [],
-      hand_w: [],
+      hands: {},
+      bPieces: ["P", "L", "N", "S", "G", "B", "R"],
+      wPieces: ["p", "l", "n", "s", "g", "b", "r"],
     }
   },
   watch: {
@@ -64,8 +81,15 @@ export default Vue.extend({
 
       if (hand) {
         let chars = hand.split("")
+        let n_pieces = 1
         for (let i = 0, len = chars.length; i < len; i++) {
-
+          let char = chars[i]
+          if (char.match(/\d/)) {
+            i++
+            this.hands[chars[i]] = Number(char)
+          } else {
+            this.hands[char] = 1
+          }
         }
       }
     },
