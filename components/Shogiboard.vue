@@ -29,6 +29,7 @@
     >
     <button v-on:click="onSend()">送信</button>
     <button v-on:click="init()">初期化</button>
+    <button v-on:click="buildSfen()">buildSfen</button>
   </div>
 </template>
 <script>
@@ -95,6 +96,42 @@ export default Vue.extend({
           }
         }
       }
+    },
+    buildSfen() {
+      let sfen = ""
+      let nSpaces = 0
+      this.rows.forEach((row, index) => {
+        if (index !== 0) {
+          sfen += "/"
+        }
+        for (const char of row) {
+          if (char === ".") {
+            nSpaces++
+          } else {
+            if (nSpaces) {
+              sfen += nSpaces
+              nSpaces = 0
+            }
+            sfen += char
+          }
+        }
+        if (nSpaces) {
+          sfen += nSpaces
+          nSpaces = 0
+        }
+      })
+      if (this.hands) {
+        sfen += " "
+        for (let [key, value] of Object.entries(this.hands)) {
+          if (value > 1) {
+            sfen += value + key
+          } else {
+            sfen += key
+          }
+        }
+      }
+      console.log(sfen)
+      return sfen
     },
     move(from, to) {
     }
