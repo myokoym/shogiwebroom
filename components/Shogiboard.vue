@@ -70,10 +70,9 @@ export default Vue.extend({
       this.rows = board.split("/").map((row) => {
         const cells = []
         const chars = row.split("")
-        for (let i = 0, len = chars.length; i < len; i++) {
-          const char = chars[i]
+        for (const char of chars) {
           if (char.match(/\d/)) {
-            for (let j = 0; j < Number(char); j++) {
+            for (let i = 0; i < Number(char); i++) {
               cells.push(".")
             }
           } else {
