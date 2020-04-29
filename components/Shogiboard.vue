@@ -60,14 +60,14 @@ export default Vue.extend({
     },
     parseSfen() {
       console.log("parseSfen")
-      let board, hand
-      [board, hand] = this.value.split(" ")
-      let rows = board.split("/")
-      this.rows = rows.map((row) => {
-        let cells = []
-        let chars = row.split("")
+      const values = this.value.split(" ")
+      const board = values[0]
+      const hand = values[1]
+      this.rows = board.split("/").map((row) => {
+        const cells = []
+        const chars = row.split("")
         for (let i = 0, len = chars.length; i < len; i++) {
-          let char = chars[i]
+          const char = chars[i]
           if (char.match(/\d/)) {
             for (let j = 0; j < Number(char); j++) {
               cells.push(".")
@@ -80,10 +80,9 @@ export default Vue.extend({
       })
 
       if (hand) {
-        let chars = hand.split("")
-        let n_pieces = 1
+        const chars = hand.split("")
         for (let i = 0, len = chars.length; i < len; i++) {
-          let char = chars[i]
+          const char = chars[i]
           if (char.match(/\d/)) {
             i++
             this.hands[chars[i]] = Number(char)
@@ -94,7 +93,6 @@ export default Vue.extend({
       }
     },
     move(from, to) {
-      let cells = parseSfen(this.value)
     }
   }
 })
