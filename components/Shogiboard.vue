@@ -160,7 +160,11 @@ export default Vue.extend({
       console.log("moveFromHand: " + piece)
       this.beforeX = undefined
       this.beforeY = undefined
-      this.beforeHand = piece
+      if (this.beforeHand === piece) {
+        this.beforeHand = undefined
+      } else {
+        this.beforeHand = piece
+      }
     },
     togglePromoted(x, y) {
       const cell = this.rows[y][x]
