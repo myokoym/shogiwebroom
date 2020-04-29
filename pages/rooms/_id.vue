@@ -4,6 +4,7 @@
       <Shogiboard
         v-model="text"
         v-on:send="send"
+        v-on:updateText="updateText"
       ></Shogiboard>
     </div>
     <div>
@@ -42,7 +43,11 @@ export default Vue.extend({
         id: this.$route.params.id,
         text: this.text
       })
-    }
+    },
+    updateText(text) {
+      console.log("updateText: " + text)
+      this.text = text
+    },
   }
 })
 </script>

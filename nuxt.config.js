@@ -1,6 +1,9 @@
 
 module.exports = {
   mode: 'universal',
+  server: {
+    host: '0.0.0.0',
+  },
   /*
   ** Headers of the page
   */
