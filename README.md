@@ -1,4 +1,4 @@
-# shogiroom
+# shogiwebroom
 
 > My impeccable Nuxt.js project
 
