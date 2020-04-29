@@ -28,6 +28,7 @@
       v-on:input="$emit('input', $event.target.value)"
     >
     <button v-on:click="onSend()">送信</button>
+    <button v-on:click="init()">初期化</button>
   </div>
 </template>
 <script>
@@ -58,6 +59,9 @@ export default Vue.extend({
     onSend() {
       this.$emit('send')
     },
+    init() {
+      this.value = "lnsgkgsnl/1r5b1/ppppppppp/9/9/9/PPPPPPPPP/1B5R1/LNSGKGSNL S2Pb3p"
+    },
     parseSfen() {
       console.log("parseSfen")
       const values = this.value.split(" ")
@@ -79,6 +83,7 @@ export default Vue.extend({
         return cells
       })
 
+      this.hands = {}
       if (hand) {
         const chars = hand.split("")
         for (let i = 0, len = chars.length; i < len; i++) {
