@@ -7,17 +7,32 @@
           v-if="hands[piece]"
           v-on:click="moveFromHand(piece)"
           v-bind:class="{beforeCell: isBeforeHand(piece)}"
-        >{{piece}}{{hands[piece]}}</td>
+        >
+          <img
+            v-bind:src="imagePath(piece)"
+            width="50"
+          >{{hands[piece] + "　"}}</td>
       </tr>
     </table>
-    <table>
+    <table
+      border="1"
+      style="border-collapse: collapse"
+      width="98%"
+    >
       <tr v-for="(row, y) in rows">
         <td
           v-for="(cell, x) in row"
           v-on:click="moveCell(x, y)"
           v-on:click.right.prevent="togglePromoted(x, y)"
           v-bind:class="{beforeCell: isBeforeCell(x, y)}"
-        >{{cell}}</td>
+        >
+          <img
+            v-bind:src="imagePath(cell)"
+            style="display:block;"
+            width="100%"
+            height="100%"
+          >
+        </td>
       </tr>
     </table>
     <table>
@@ -27,14 +42,18 @@
           v-if="hands[piece]"
           v-on:click="moveFromHand(piece)"
           v-bind:class="{beforeCell: isBeforeHand(piece)}"
-        >{{piece}}{{hands[piece]}}</td>
+        >
+          <img
+            v-bind:src="imagePath(piece)"
+            width="50"
+          >{{hands[piece] + "　"}}</td>
       </tr>
     </table>
     <input
       type="text"
       size="70"
       v-bind:value="value"
-      v-on:input="   $emit('input', $event.target.value)"
+      v-on:input="$emit('input', $event.target.value)"
     >
     <button v-on:click="onSend()">送信</button>
     <button v-on:click="init()">初期化</button>
@@ -62,6 +81,37 @@ export default Vue.extend({
       beforeX: undefined,
       beforeY: undefined,
       beforeHand: undefined,
+      pieceImagePaths: {
+        ".":  "blank",
+        "K":  "b/K",
+        "G":  "b/G",
+        "S":  "b/S",
+        "N":  "b/N",
+        "L":  "b/L",
+        "R":  "b/R",
+        "B":  "b/B",
+        "P":  "b/P",
+        "+S": "b/_S",
+        "+N": "b/_N",
+        "+L": "b/_L",
+        "+R": "b/_R",
+        "+B": "b/_B",
+        "+P": "b/_P",
+        "k":  "w/k",
+        "g":  "w/g",
+        "s":  "w/s",
+        "n":  "w/n",
+        "l":  "w/l",
+        "r":  "w/r",
+        "b":  "w/b",
+        "p":  "w/p",
+        "+s": "w/_s",
+        "+n": "w/_n",
+        "+l": "w/_l",
+        "+r": "w/_r",
+        "+b": "w/_b",
+        "+p": "w/_p",
+      },
     }
   },
   watch: {
@@ -75,6 +125,11 @@ export default Vue.extend({
     },
     init() {
       this.$emit('updateText', "lnsgkgsnl/1r5b1/ppppppppp/9/9/9/PPPPPPPPP/1B5R1/LNSGKGSNL S2Pb3p")
+    },
+    imagePath(cell) {
+      console.log(this.pieceImagePaths[cell])
+      console.log("@/assets/images/kirieji1/" + this.pieceImagePaths[cell] + ".png")
+      return require("@/assets/images/kirieji1/" + this.pieceImagePaths[cell] + ".png")
     },
     isBeforeCell(x, y) {
       return this.beforeX === x && this.beforeY === y
@@ -192,7 +247,7 @@ export default Vue.extend({
         this.beforeY = undefined
       } else {
         const afterCell = this.rows[y][x]
-        if (this.beforeX) {
+        if (this.beforeX !== undefined) {
           const beforeCell = this.rows[this.beforeY][this.beforeX]
           if (beforeCell.match(/[A-Z]/) && afterCell.match(/[A-Z]/) ||
               beforeCell.match(/[a-z]/) && afterCell.match(/[a-z]/)) {
