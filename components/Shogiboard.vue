@@ -32,12 +32,12 @@
       v-bind:is-before-hand="isBeforeHand"
     ></Hand>
     <div>
-    <span>SFEN: <input
+    <div>SFEN: <input
       type="text"
-      size="55"
+      size="66"
       v-bind:value="value"
       v-on:input="$emit('input', $event.target.value)"
-    ></span>
+    ></div>
     </div>
   </div>
 </template>
@@ -82,7 +82,7 @@ export default Vue.extend({
       this.$emit('send')
     },
     init() {
-      this.$emit('updateText', "lnsgkgsnl/1r5b1/ppppppppp/9/9/9/PPPPPPPPP/1B5R1/LNSGKGSNL")
+      this.$emit('updateText', "lnsgkgsnl/1r5b1/ppppppppp/9/9/9/PPPPPPPPP/1B5R1/LNSGKGSNL b -")
     },
     isBeforeCell(x, y) {
       return this.beforeX === x && this.beforeY === y
@@ -94,7 +94,7 @@ export default Vue.extend({
       console.log("parseSfen")
       const values = this.value.split(" ")
       const board = values[0]
-      const hand = values[1]
+      const hand = values[2]
       this.rows = board.split("/").map((row) => {
         const cells = []
         const chars = row.split("")
@@ -115,7 +115,8 @@ export default Vue.extend({
       })
 
       this.hands = {}
-      if (hand) {
+      if (hand !== undefined &&
+          hand !== "-") {
         const chars = hand.split("")
         for (let i = 0, len = chars.length; i < len; i++) {
           const char = chars[i]
@@ -151,8 +152,8 @@ export default Vue.extend({
           nSpaces = 0
         }
       })
-      if (this.hands) {
-        sfen += " "
+      sfen += " b "
+      if (Object.keys(this.hands).length > 0) {
         for (let [key, value] of Object.entries(this.hands)) {
           if (value > 1) {
             sfen += value + key
@@ -160,6 +161,8 @@ export default Vue.extend({
             sfen += key
           }
         }
+      } else {
+        sfen += "-"
       }
       console.log(sfen)
       return sfen
