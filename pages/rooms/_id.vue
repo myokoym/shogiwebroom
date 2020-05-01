@@ -7,9 +7,6 @@
         v-on:updateText="updateText"
       ></Shogiboard>
     </div>
-    <div>
-      <nuxt-link to="/">戻る</nuxt-link>
-    </div>
   </div>
 </template>
 

@@ -31,15 +31,14 @@
       v-bind:move-from-hand="moveFromHand"
       v-bind:is-before-hand="isBeforeHand"
     ></Hand>
-    <input
+    <div>
+    <span>SFEN: <input
       type="text"
-      size="70"
+      size="55"
       v-bind:value="value"
       v-on:input="$emit('input', $event.target.value)"
-    >
-    <button v-on:click="onSend()">送信</button>
-    <button v-on:click="init()">初期化</button>
-    <button v-on:click="buildSfen()">buildSfen</button>
+    ></span>
+    </div>
   </div>
 </template>
 <script>
