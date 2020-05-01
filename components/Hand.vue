@@ -1,14 +1,21 @@
 <template>
-  <div class="d-flex flex-row board">
+  <div
+    class="d-flex hand"
+    v-bind:class="{
+      'flex-row': (turn === 'w'),
+      'flex-row-reverse': (turn === 'b'),
+    }">
     <div
       v-for="piece in filledHands"
       v-bind:class="{beforeCell: isBeforeHand(piece)}"
       v-on:click="moveFromHand(piece)"
     >
       <Piece
+        type="hand"
         v-bind:piece="piece"
       ></Piece>
-      {{(hands[piece] || "") + "　"}}</div>
+      <div>{{hands[piece] || ""}}</div>
+    </div>
   </div>
 </template>
 <script>
@@ -20,8 +27,8 @@ export default Vue.extend({
     Piece,
   },
   props: {
+    turn: String,
     hands: Object,
-    pieces: Array,
     moveFromHand: Function,
     isBeforeHand: Function,
   },
@@ -30,6 +37,10 @@ export default Vue.extend({
   },
   data() {
     return {
+      pieces: {
+        b: ["P", "L", "N", "S", "G", "B", "R", "K"],
+        w: ["p", "l", "n", "s", "g", "b", "r", "k"],
+      },
       filledHands: [],
     }
   },
@@ -43,12 +54,14 @@ export default Vue.extend({
     updateFilledHands() {
       console.log("updateFilledHands")
       const filledHands = []
-      this.pieces.forEach((piece) => {
+      console.log(this.turn)
+      const pieces = this.pieces[this.turn]
+      pieces.forEach((piece) => {
         if (this.hands[piece]) {
           filledHands.push(piece)
         }
       })
-      for (let i = 0, len = (this.pieces.length - filledHands.length); i < len; i++) {
+      for (let i = 0, len = (pieces.length - filledHands.length); i < len; i++) {
         filledHands.push(".")
       }
       this.filledHands = filledHands
@@ -60,9 +73,10 @@ export default Vue.extend({
 .beforeCell {
   background-color: yellow;
 }
-.board {
-  margin: 1rem;
+.hand {
+  margin: 2%;
   background-color: #d6c6af;
   outline: solid 1px;
+  text-align: center;
 }
 </style>

@@ -1,7 +1,10 @@
 <template>
   <img
     v-bind:src="imagePath()"
-    style="width: 100%; height: auto;"
+    v-bind:class="{
+      boardPiece: type === 'board',
+      handPiece: type === 'hand',
+    }"
   >
 </template>
 <script>
@@ -10,6 +13,7 @@ import Vue from "vue"
 export default Vue.extend({
   props: {
     piece: String,
+    type: String,
   },
   mounted() {
   },
@@ -58,4 +62,20 @@ export default Vue.extend({
 })
 </script>
 <style>
+.boardPiece {
+  width: 100%;
+  height: auto;
+}
+.handPiece {
+  width: 80%;
+  height: auto;
+}
+@media screen and (min-width: 640px) {
+  .boardPiece {
+    width: 64px;
+  }
+  .handPiece {
+    width: 64px;
+  }
+}
 </style>

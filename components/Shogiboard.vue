@@ -1,13 +1,13 @@
 <template>
-  <div class="row">
+  <div>
     <Hand
+      turn="w"
       v-bind:hands="hands"
-      v-bind:pieces="wPieces"
       v-bind:move-from-hand="moveFromHand"
       v-bind:is-before-hand="isBeforeHand"
     ></Hand>
     <table
-      class="col-xs-8 board"
+      class="board"
       border="1"
       style="border-collapse: collapse;"
     >
@@ -19,14 +19,15 @@
           v-bind:class="{beforeCell: isBeforeCell(x, y)}"
         >
           <Piece
+            type="board"
             v-bind:piece="cell"
           ></Piece>
         </td>
       </tr>
     </table>
     <Hand
+      turn="b"
       v-bind:hands="hands"
-      v-bind:pieces="bPieces"
       v-bind:move-from-hand="moveFromHand"
       v-bind:is-before-hand="isBeforeHand"
     ></Hand>
@@ -65,8 +66,6 @@ export default Vue.extend({
       hands: {},
       filledBHands: [],
       filledWHands: [],
-      bPieces: ["P", "L", "N", "S", "G", "B", "R", "K"],
-      wPieces: ["p", "l", "n", "s", "g", "b", "r", "k"],
       beforeX: undefined,
       beforeY: undefined,
       beforeHand: undefined,
@@ -255,7 +254,8 @@ export default Vue.extend({
   background-color: yellow;
 }
 .board {
-  margin: 1rem;
+  margin: auto;
+  outline: solid 1px;
   background-color: #d6c6af;
 }
 </style>

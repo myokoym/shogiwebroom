@@ -55,4 +55,7 @@ export default Vue.extend({
 body {
   background-color: #b9d08b;
 }
+.container {
+  max-width: 640px;
+}
 </style>
