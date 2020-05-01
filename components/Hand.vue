@@ -14,7 +14,7 @@
         type="hand"
         v-bind:piece="piece"
       ></Piece>
-      <div>{{hands[piece] || ""}}</div>
+      <div>{{hands[piece] || "　"}}</div>
     </div>
   </div>
 </template>
