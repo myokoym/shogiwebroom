@@ -57,6 +57,7 @@ export default Vue.extend({
     updateText: Function,
   },
   mounted() {
+    this.init()
     this.parseSfen()
   },
   data() {
