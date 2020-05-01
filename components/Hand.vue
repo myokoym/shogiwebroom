@@ -5,20 +5,23 @@
       v-bind:class="{beforeCell: isBeforeHand(piece)}"
       v-on:click="moveFromHand(piece)"
     >
-      <img
-        v-bind:src="imagePath(piece)"
-        style="width: 100%; height: auto;"
-      >{{(hands[piece] || "") + "　"}}</div>
+      <Piece
+        v-bind:piece="piece"
+      ></Piece>
+      {{(hands[piece] || "") + "　"}}</div>
   </div>
 </template>
 <script>
 import Vue from "vue"
+import Piece from '~/components/Piece.vue'
 
 export default Vue.extend({
+  components: {
+    Piece,
+  },
   props: {
     hands: Object,
     pieces: Array,
-    imagePath: Function,
     moveFromHand: Function,
     isBeforeHand: Function,
   },
@@ -33,7 +36,7 @@ export default Vue.extend({
   watch: {
     "hands": function() {
       console.log("watch: hands")
-      this.updateFiledHands()
+      this.updateFilledHands()
     },
   },
   methods: {

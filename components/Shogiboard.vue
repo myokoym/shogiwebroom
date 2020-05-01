@@ -3,7 +3,6 @@
     <Hand
       v-bind:hands="hands"
       v-bind:pieces="wPieces"
-      v-bind:image-path="imagePath"
       v-bind:move-from-hand="moveFromHand"
       v-bind:is-before-hand="isBeforeHand"
     ></Hand>
@@ -19,17 +18,15 @@
           v-on:click.right.prevent="togglePromoted(x, y)"
           v-bind:class="{beforeCell: isBeforeCell(x, y)}"
         >
-          <img
-            v-bind:src="imagePath(cell)"
-            style="width: 100%; height: auto;"
-          >
+          <Piece
+            v-bind:piece="cell"
+          ></Piece>
         </td>
       </tr>
     </table>
     <Hand
       v-bind:hands="hands"
       v-bind:pieces="bPieces"
-      v-bind:image-path="imagePath"
       v-bind:move-from-hand="moveFromHand"
       v-bind:is-before-hand="isBeforeHand"
     ></Hand>
@@ -46,10 +43,12 @@
 </template>
 <script>
 import Vue from "vue"
+import Piece from '~/components/Piece.vue'
 import Hand from '~/components/Hand.vue'
 
 export default Vue.extend({
   components: {
+    Piece,
     Hand,
   },
   props: {
@@ -71,37 +70,6 @@ export default Vue.extend({
       beforeX: undefined,
       beforeY: undefined,
       beforeHand: undefined,
-      pieceImagePaths: {
-        ".":  "blank",
-        "K":  "b/K",
-        "G":  "b/G",
-        "S":  "b/S",
-        "N":  "b/N",
-        "L":  "b/L",
-        "R":  "b/R",
-        "B":  "b/B",
-        "P":  "b/P",
-        "+S": "b/_S",
-        "+N": "b/_N",
-        "+L": "b/_L",
-        "+R": "b/_R",
-        "+B": "b/_B",
-        "+P": "b/_P",
-        "k":  "w/k",
-        "g":  "w/g",
-        "s":  "w/s",
-        "n":  "w/n",
-        "l":  "w/l",
-        "r":  "w/r",
-        "b":  "w/b",
-        "p":  "w/p",
-        "+s": "w/_s",
-        "+n": "w/_n",
-        "+l": "w/_l",
-        "+r": "w/_r",
-        "+b": "w/_b",
-        "+p": "w/_p",
-      },
     }
   },
   watch: {
@@ -117,11 +85,6 @@ export default Vue.extend({
     },
     init() {
       this.$emit('updateText', "lnsgkgsnl/1r5b1/ppppppppp/9/9/9/PPPPPPPPP/1B5R1/LNSGKGSNL")
-    },
-    imagePath(cell) {
-      //console.log(this.pieceImagePaths[cell])
-      //console.log("@/assets/images/kirieji1/" + this.pieceImagePaths[cell] + ".png")
-      return require("@/assets/images/kirieji1/" + this.pieceImagePaths[cell] + ".png")
     },
     isBeforeCell(x, y) {
       return this.beforeX === x && this.beforeY === y
