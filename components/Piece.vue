@@ -56,7 +56,11 @@ export default Vue.extend({
   },
   methods: {
     imagePath() {
-      return require("@/assets/images/kirieji1/" + this.pieceImagePaths[this.piece] + ".png")
+      let path = this.pieceImagePaths[this.piece]
+      if (path === undefined) {
+        path = "hatena"
+      }
+      return require("@/assets/images/kirieji1/" + path + ".png")
     },
   }
 })
