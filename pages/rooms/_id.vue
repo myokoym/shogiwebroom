@@ -51,3 +51,8 @@ export default Vue.extend({
   }
 })
 </script>
+<style>
+body {
+  background-color: #b9d08b;
+}
+</style>

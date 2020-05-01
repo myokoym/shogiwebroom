@@ -11,6 +11,7 @@
     "generate": "nuxt generate"
   },
   "dependencies": {
+    "bootstrap-vue": "^2.13.0",
     "cross-env": "^5.2.0",
     "crypto-random-string": "^3.2.0",
     "express": "^4.16.4",

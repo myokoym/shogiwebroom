@@ -1,23 +1,16 @@
 <template>
-  <div>
-    <table>
-      <tr>
-        <td
-          v-for="piece in wPieces"
-          v-if="hands[piece]"
-          v-on:click="moveFromHand(piece)"
-          v-bind:class="{beforeCell: isBeforeHand(piece)}"
-        >
-          <img
-            v-bind:src="imagePath(piece)"
-            width="50"
-          >{{hands[piece] + "　"}}</td>
-      </tr>
-    </table>
+  <div class="row">
+    <Hand
+      v-bind:hands="hands"
+      v-bind:pieces="wPieces"
+      v-bind:image-path="imagePath"
+      v-bind:move-from-hand="moveFromHand"
+      v-bind:is-before-hand="isBeforeHand"
+    ></Hand>
     <table
+      class="col-xs-8 board"
       border="1"
-      style="border-collapse: collapse"
-      width="98%"
+      style="border-collapse: collapse;"
     >
       <tr v-for="(row, y) in rows">
         <td
@@ -28,27 +21,18 @@
         >
           <img
             v-bind:src="imagePath(cell)"
-            style="display:block;"
-            width="100%"
-            height="100%"
+            style="width: 100%; height: auto;"
           >
         </td>
       </tr>
     </table>
-    <table>
-      <tr>
-        <td
-          v-for="piece in bPieces"
-          v-if="hands[piece]"
-          v-on:click="moveFromHand(piece)"
-          v-bind:class="{beforeCell: isBeforeHand(piece)}"
-        >
-          <img
-            v-bind:src="imagePath(piece)"
-            width="50"
-          >{{hands[piece] + "　"}}</td>
-      </tr>
-    </table>
+    <Hand
+      v-bind:hands="hands"
+      v-bind:pieces="bPieces"
+      v-bind:image-path="imagePath"
+      v-bind:move-from-hand="moveFromHand"
+      v-bind:is-before-hand="isBeforeHand"
+    ></Hand>
     <input
       type="text"
       size="70"
@@ -62,8 +46,12 @@
 </template>
 <script>
 import Vue from "vue"
+import Hand from '~/components/Hand.vue'
 
 export default Vue.extend({
+  components: {
+    Hand,
+  },
   props: {
     value: String,
     send: Function,
@@ -76,6 +64,8 @@ export default Vue.extend({
     return {
       rows: [],
       hands: {},
+      filledBHands: [],
+      filledWHands: [],
       bPieces: ["P", "L", "N", "S", "G", "B", "R", "K"],
       wPieces: ["p", "l", "n", "s", "g", "b", "r", "k"],
       beforeX: undefined,
@@ -117,7 +107,9 @@ export default Vue.extend({
   watch: {
     "value": function() {
       this.parseSfen()
-    }
+    },
+  },
+  computed: {
   },
   methods: {
     onSend() {
@@ -127,8 +119,8 @@ export default Vue.extend({
       this.$emit('updateText', "lnsgkgsnl/1r5b1/ppppppppp/9/9/9/PPPPPPPPP/1B5R1/LNSGKGSNL")
     },
     imagePath(cell) {
-      console.log(this.pieceImagePaths[cell])
-      console.log("@/assets/images/kirieji1/" + this.pieceImagePaths[cell] + ".png")
+      //console.log(this.pieceImagePaths[cell])
+      //console.log("@/assets/images/kirieji1/" + this.pieceImagePaths[cell] + ".png")
       return require("@/assets/images/kirieji1/" + this.pieceImagePaths[cell] + ".png")
     },
     isBeforeCell(x, y) {
@@ -213,6 +205,9 @@ export default Vue.extend({
     },
     moveFromHand(piece) {
       console.log("moveFromHand: " + piece)
+      if (piece === ".") {
+        return
+      }
       this.beforeX = undefined
       this.beforeY = undefined
       if (this.beforeHand === piece) {
@@ -295,5 +290,9 @@ export default Vue.extend({
 <style>
 .beforeCell {
   background-color: yellow;
+}
+.board {
+  margin: 1rem;
+  background-color: #d6c6af;
 }
 </style>
