@@ -196,7 +196,7 @@ export default Vue.extend({
       this.$emit('send')
     },
     moveCell(x, y) {
-      if (!this.beforeX && this.rows[y][x] !== ".") {
+      if (this.beforeX === undefined && this.rows[y][x] !== ".") {
         this.beforeX = x
         this.beforeY = y
         this.beforeHand = undefined
