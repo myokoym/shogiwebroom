@@ -4,7 +4,9 @@
       turn="w"
       v-bind:hands="hands"
       v-bind:move-from-hand="moveFromHand"
+      v-bind:move-to-hand="moveToHand"
       v-bind:is-before-hand="isBeforeHand"
+      v-bind:is-selected-piece="isSelectedPiece"
     ></Hand>
     <table
       class="board"
@@ -33,7 +35,9 @@
       turn="b"
       v-bind:hands="hands"
       v-bind:move-from-hand="moveFromHand"
+      v-bind:move-to-hand="moveToHand"
       v-bind:is-before-hand="isBeforeHand"
+      v-bind:is-selected-piece="isSelectedPiece"
     ></Hand>
     <div>
       <p>
@@ -116,6 +120,10 @@ export default Vue.extend({
     },
     isBeforeHand(piece) {
       return this.beforeHand === piece
+    },
+    isSelectedPiece() {
+      return this.beforeX !== undefined ||
+             this.beforeHand !== undefined
     },
     reverseBoard() {
       this.reversed = !this.reversed
@@ -250,6 +258,46 @@ export default Vue.extend({
       } else {
         this.beforeHand = piece
       }
+    },
+    moveToHand(turn) {
+      console.log("moveToHand: " + turn)
+      if (this.beforeX === undefined &&
+          this.beforeHand === undefined) {
+        return
+      }
+      if (this.beforeX !== undefined) {
+        const beforeCell = this.rows[this.beforeY][this.beforeX]
+        let newHand = beforeCell
+        if (newHand.match(/\+/)) {
+          newHand = newHand.charAt(1)
+        }
+        if (turn === "b") {
+          newHand = newHand.toUpperCase()
+        } else {
+          newHand = newHand.toLowerCase()
+        }
+        this.hands[newHand] = this.hands[newHand] || 0
+        this.hands[newHand] += 1
+        this.rows[this.beforeY][this.beforeX] = "."
+        this.beforeX = undefined
+        this.beforeY = undefined
+      } else if (this.beforeHand) {
+        let newHand = this.beforeHand
+        if (turn === "b") {
+          newHand = newHand.toUpperCase()
+        } else {
+          newHand = newHand.toLowerCase()
+        }
+        this.hands[newHand] = this.hands[newHand] || 0
+        this.hands[newHand] += 1
+        this.hands[this.beforeHand] -= 1
+        if (this.hands[this.beforeHand] === 0) {
+          delete this.hands[this.beforeHand]
+        }
+        this.beforeHand = undefined
+      }
+      this.$emit('updateText', this.buildSfen())
+      this.$emit('send')
     },
     togglePromotedAndTurn(x, y) {
       const cell = this.rows[y][x]

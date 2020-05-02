@@ -8,9 +8,11 @@
     <div
       v-for="piece in filledHands"
       v-bind:class="{beforeCell: isBeforeHand(piece)}"
-      v-on:click="moveFromHand(piece)"
+      v-on:click="moveHand(piece)"
       draggable
       v-on:dragstart="moveFromHand(piece)"
+      v-on:drop.prevent="moveToHand(turn)"
+      v-on:dragover.prevent
     >
       <Piece
         type="hand"
@@ -32,7 +34,9 @@ export default Vue.extend({
     turn: String,
     hands: Object,
     moveFromHand: Function,
+    moveToHand: Function,
     isBeforeHand: Function,
+    isSelectedPiece: Function,
   },
   mounted() {
     this.updateFilledHands()
@@ -53,6 +57,14 @@ export default Vue.extend({
     },
   },
   methods: {
+    moveHand(piece) {
+      console.log("moveHand")
+      if (this.isSelectedPiece()) {
+        this.moveToHand(this.turn)
+      } else {
+        this.moveFromHand(piece)
+      }
+    },
     updateFilledHands() {
       console.log("updateFilledHands")
       const filledHands = []
