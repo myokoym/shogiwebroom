@@ -15,7 +15,7 @@
         <td
           v-for="(cell, x) in row"
           v-on:click="moveCell(x, y)"
-          v-on:click.right.prevent="togglePromoted(x, y)"
+          v-on:click.right.prevent="togglePromotedAndTurn(x, y)"
           v-bind:class="{beforeCell: isBeforeCell(x, y)}"
           draggable
           v-on:dragstart="moveCell(x, y)"
@@ -246,15 +246,20 @@ export default Vue.extend({
         this.beforeHand = piece
       }
     },
-    togglePromoted(x, y) {
+    togglePromotedAndTurn(x, y) {
       const cell = this.rows[y][x]
       console.log("togglePromoted: cell: " + cell + ", x: " + x + ", y: " + y)
-      if (cell.match(/[.GKgk]/)) {
+      if (cell.match(/[.]/)) {
         return
       }
-      if (cell.match(/\+/)) {
-        console.log("cancel")
-        this.rows[y][x] = cell.charAt(1)
+      if (cell.match(/[GK]/)) {
+        this.rows[y][x] = cell.toLowerCase()
+      } else if (cell.match(/[gk]/)) {
+        this.rows[y][x] = cell.toUpperCase()
+      } else if (cell.match(/\+[A-Z]/)) {
+        this.rows[y][x] = cell.charAt(1).toLowerCase()
+      } else if (cell.match(/\+[a-z]/)) {
+        this.rows[y][x] = cell.charAt(1).toUpperCase()
       } else {
         console.log("promote")
         this.rows[y][x] = "+" + cell
