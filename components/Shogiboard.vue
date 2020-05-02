@@ -38,6 +38,9 @@
       v-bind:value="value"
       v-on:input="$emit('input', $event.target.value)"
     ></div>
+    <div>
+      <button type="button" v-on:click="reverseBoard()">反転: {{reversed ? "ON" : "OFF"}}</button>
+    </div>
     </div>
   </div>
 </template>
@@ -69,11 +72,13 @@ export default Vue.extend({
       beforeX: undefined,
       beforeY: undefined,
       beforeHand: undefined,
+      localSfen: "",
+      reversed: false,
     }
   },
   watch: {
     "value": function() {
-      this.parseSfen()
+      this.update()
     },
   },
   computed: {
@@ -85,15 +90,63 @@ export default Vue.extend({
     init() {
       this.$emit('updateText', "lnsgkgsnl/1r5b1/ppppppppp/9/9/9/PPPPPPPPP/1B5R1/LNSGKGSNL b -")
     },
+    update() {
+      this.localSfen = this.value
+      if (this.reversed) {
+        this.localSfen = this.reverseSfen(this.localSfen)
+      }
+      console.log("localSfen: " + this.localSfen)
+      this.parseSfen()
+    },
     isBeforeCell(x, y) {
       return this.beforeX === x && this.beforeY === y
     },
     isBeforeHand(piece) {
       return this.beforeHand === piece
     },
+    reverseBoard() {
+      this.reversed = !this.reversed
+      this.update()
+    },
+    reverseSfen(sfen) {
+      const values = sfen.split(" ")
+      const board = values[0]
+      const turn = values[1]
+      const hand = values[2]
+      const reversedCells = []
+      for (const match of Array.from(board.matchAll(/\+?./g)).reverse()) {
+        const cell = match[0]
+        let reversedCell = undefined
+        if (cell.match(/[a-z]/)) {
+          reversedCell = cell.toUpperCase()
+        } else if (cell.match(/[A-Z]/)) {
+          reversedCell = cell.toLowerCase()
+        } else {
+          reversedCell = cell
+        }
+        reversedCells.push(reversedCell)
+      }
+      const reversedHands = []
+      for (const cell of hand.split("")) {
+        let reversedCell = undefined
+        if (cell.match(/[a-z]/)) {
+          reversedCell = cell.toUpperCase()
+        } else if (cell.match(/[A-Z]/)) {
+          reversedCell = cell.toLowerCase()
+        } else {
+          reversedCell = cell
+        }
+        reversedHands.push(reversedCell)
+      }
+      return reversedCells.join("") +
+             " " +
+             turn +
+             " " +
+             reversedHands.join("")
+    },
     parseSfen() {
       console.log("parseSfen")
-      const values = this.value.split(" ")
+      const values = this.localSfen.split(" ")
       const board = values[0]
       const hand = values[2]
       this.rows = board.split("/").map((row) => {
@@ -165,7 +218,11 @@ export default Vue.extend({
       } else {
         sfen += "-"
       }
-      console.log(sfen)
+      console.log("built sfen: " + sfen)
+      if (this.reversed) {
+        sfen = this.reverseSfen(sfen)
+      }
+      console.log("reversed sfen: " + sfen)
       return sfen
     },
     moveFromHand(piece) {
