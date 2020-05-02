@@ -9,6 +9,8 @@
       v-for="piece in filledHands"
       v-bind:class="{beforeCell: isBeforeHand(piece)}"
       v-on:click="moveFromHand(piece)"
+      draggable
+      v-on:dragstart="moveFromHand(piece)"
     >
       <Piece
         type="hand"

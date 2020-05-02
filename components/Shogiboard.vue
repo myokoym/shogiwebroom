@@ -17,6 +17,10 @@
           v-on:click="moveCell(x, y)"
           v-on:click.right.prevent="togglePromoted(x, y)"
           v-bind:class="{beforeCell: isBeforeCell(x, y)}"
+          draggable
+          v-on:dragstart="moveCell(x, y)"
+          v-on:drop.prevent="moveCell(x, y)"
+          v-on:dragover.prevent
         >
           <Piece
             type="board"
