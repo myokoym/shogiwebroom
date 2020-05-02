@@ -32,15 +32,19 @@
       v-bind:is-before-hand="isBeforeHand"
     ></Hand>
     <div>
-    <div>SFEN: <input
-      type="text"
-      size="66"
-      v-bind:value="value"
-      v-on:input="$emit('input', $event.target.value)"
-    ></div>
-    <div>
-      <button type="button" v-on:click="reverseBoard()">反転: {{reversed ? "ON" : "OFF"}}</button>
-    </div>
+      <p>SFEN: <input
+        type="text"
+        size="66"
+        v-bind:value="value"
+        v-on:input="$emit('input', $event.target.value)"
+      ></p>
+      <p>
+        <button
+          type="button"
+          v-on:click="reverseBoard()"
+          v-bind:class="{toggleButtonOn: reversed}"
+        >反転: {{reversed ? "ON" : "OFF"}}</button>
+      </p>
     </div>
   </div>
 </template>
@@ -317,5 +321,9 @@ export default Vue.extend({
   margin: auto;
   outline: solid 1px;
   background-color: #d6c6af;
+}
+.toggleButtonOn {
+  color: white;
+  background-color: #696969;
 }
 </style>
