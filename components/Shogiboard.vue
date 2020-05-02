@@ -36,19 +36,24 @@
       v-bind:is-before-hand="isBeforeHand"
     ></Hand>
     <div>
-      <p>SFEN: <input
-        type="text"
-        size="66"
-        v-bind:value="value"
-        v-on:input="$emit('input', $event.target.value)"
-      ></p>
       <p>
         <button
           type="button"
           v-on:click="reverseBoard()"
           v-bind:class="{toggleButtonOn: reversed}"
         >反転: {{reversed ? "ON" : "OFF"}}</button>
+        <button
+          type="button"
+          v-on:click="togglePromotedAndTurnOnButton()"
+          v-bind:disabled="beforeX === undefined"
+        >成る</button>
       </p>
+      <p>SFEN: <input
+        type="text"
+        size="66"
+        v-bind:value="value"
+        v-on:input="$emit('input', $event.target.value)"
+      ></p>
     </div>
   </div>
 </template>
@@ -266,6 +271,12 @@ export default Vue.extend({
       }
       this.$emit('updateText', this.buildSfen())
       this.$emit('send')
+    },
+    togglePromotedAndTurnOnButton() {
+      if (this.beforeX === undefined) {
+        return
+      }
+      this.togglePromotedAndTurn(this.beforeX, this.beforeY)
     },
     moveCell(x, y) {
       if (this.beforeX === undefined && this.rows[y][x] !== ".") {
