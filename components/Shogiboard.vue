@@ -2,7 +2,6 @@
   <div>
     <Hand
       turn="w"
-      v-bind:hands="hands"
       v-bind:move-from-hand="moveFromHand"
       v-bind:move-to-hand="moveToHand"
       v-bind:is-before-hand="isBeforeHand"
@@ -33,7 +32,6 @@
     </table>
     <Hand
       turn="b"
-      v-bind:hands="hands"
       v-bind:move-from-hand="moveFromHand"
       v-bind:move-to-hand="moveToHand"
       v-bind:is-before-hand="isBeforeHand"
@@ -55,14 +53,15 @@
       <p>SFEN: <input
         type="text"
         size="66"
-        v-bind:value="value"
-        v-on:input="$emit('input', $event.target.value)"
+        v-bind:value="text"
+        v-on:input="$store.commit('sfen/setText', {text: $event.target.value})"
       ></p>
     </div>
   </div>
 </template>
 <script>
 import Vue from "vue"
+import { mapState } from "vuex"
 import Piece from '~/components/Piece.vue'
 import Hand from '~/components/Hand.vue'
 
@@ -71,26 +70,26 @@ export default Vue.extend({
     Piece,
     Hand,
   },
-  props: {
-    value: String,
-    send: Function,
-    updateText: Function,
+  computed: {
+    ...mapState("sfen", {
+      text: "text",
+      reversed: "reversed",
+      rows: "rows",
+      hands: "hands",
+    })
   },
   mounted() {
-    this.init()
-    this.parseSfen()
+    this.$store.commit("sfen/init")
+    console.log("this.text: " + this.text)
+    console.log("this.text: " + this.$store.state.sfen.text)
   },
   data() {
     return {
-      rows: [],
-      hands: {},
       filledBHands: [],
       filledWHands: [],
       beforeX: undefined,
       beforeY: undefined,
       beforeHand: undefined,
-      localSfen: "",
-      reversed: false,
     }
   },
   watch: {
@@ -98,23 +97,7 @@ export default Vue.extend({
       this.update()
     },
   },
-  computed: {
-  },
   methods: {
-    onSend() {
-      this.$emit('send')
-    },
-    init() {
-      this.$emit('updateText', "lnsgkgsnl/1r5b1/ppppppppp/9/9/9/PPPPPPPPP/1B5R1/LNSGKGSNL b -")
-    },
-    update() {
-      this.localSfen = this.value
-      if (this.reversed) {
-        this.localSfen = this.reverseSfen(this.localSfen)
-      }
-      console.log("localSfen: " + this.localSfen)
-      this.parseSfen()
-    },
     isBeforeCell(x, y) {
       return this.beforeX === x && this.beforeY === y
     },
@@ -126,88 +109,14 @@ export default Vue.extend({
              this.beforeHand !== undefined
     },
     reverseBoard() {
-      this.reversed = !this.reversed
-      this.update()
-    },
-    reverseSfen(sfen) {
-      const values = sfen.split(" ")
-      const board = values[0]
-      const turn = values[1]
-      const hand = values[2]
-      const reversedCells = []
-      for (const match of Array.from(board.matchAll(/\+?./g)).reverse()) {
-        const cell = match[0]
-        let reversedCell = undefined
-        if (cell.match(/[a-z]/)) {
-          reversedCell = cell.toUpperCase()
-        } else if (cell.match(/[A-Z]/)) {
-          reversedCell = cell.toLowerCase()
-        } else {
-          reversedCell = cell
-        }
-        reversedCells.push(reversedCell)
-      }
-      const reversedHands = []
-      for (const cell of hand.split("")) {
-        let reversedCell = undefined
-        if (cell.match(/[a-z]/)) {
-          reversedCell = cell.toUpperCase()
-        } else if (cell.match(/[A-Z]/)) {
-          reversedCell = cell.toLowerCase()
-        } else {
-          reversedCell = cell
-        }
-        reversedHands.push(reversedCell)
-      }
-      return reversedCells.join("") +
-             " " +
-             turn +
-             " " +
-             reversedHands.join("")
-    },
-    parseSfen() {
-      console.log("parseSfen")
-      const values = this.localSfen.split(" ")
-      const board = values[0]
-      const hand = values[2]
-      this.rows = board.split("/").map((row) => {
-        const cells = []
-        const chars = row.split("")
-        for (let i = 0; i < chars.length; i++) {
-          const char = chars[i]
-          if (char.match(/\d/)) {
-            for (let j = 0; j < Number(char); j++) {
-              cells.push(".")
-            }
-          } else if (char.match(/\+/)) {
-            cells.push(char + chars[i + 1])
-            i++
-          } else {
-            cells.push(char)
-          }
-        }
-        return cells
-      })
-
-      this.hands = {}
-      if (hand !== undefined &&
-          hand !== "-") {
-        const chars = hand.split("")
-        for (let i = 0, len = chars.length; i < len; i++) {
-          const char = chars[i]
-          if (char.match(/\d/)) {
-            i++
-            this.hands[chars[i]] = Number(char)
-          } else {
-            this.hands[char] = 1
-          }
-        }
-      }
+      this.$store.commit("sfen/reverse")
     },
     buildSfen() {
       let sfen = ""
       let nSpaces = 0
-      this.rows.forEach((row, index) => {
+      const rows = this.$store.state.sfen.rows
+      const hands = this.$store.state.sfen.hands
+      rows.forEach((row, index) => {
         if (index !== 0) {
           sfen += "/"
         }
@@ -228,8 +137,8 @@ export default Vue.extend({
         }
       })
       sfen += " b "
-      if (Object.keys(this.hands).length > 0) {
-        for (let [key, value] of Object.entries(this.hands)) {
+      if (Object.keys(hands).length > 0) {
+        for (let [key, value] of Object.entries(hands)) {
           if (value > 1) {
             sfen += value + key
           } else {
@@ -240,10 +149,6 @@ export default Vue.extend({
         sfen += "-"
       }
       console.log("built sfen: " + sfen)
-      if (this.reversed) {
-        sfen = this.reverseSfen(sfen)
-      }
-      console.log("reversed sfen: " + sfen)
       return sfen
     },
     moveFromHand(piece) {
@@ -276,8 +181,7 @@ export default Vue.extend({
         } else {
           newHand = newHand.toLowerCase()
         }
-        this.hands[newHand] = this.hands[newHand] || 0
-        this.hands[newHand] += 1
+        this.$store.commit("sfen/increaseHand", {hand: newHand})
         this.rows[this.beforeY][this.beforeX] = "."
         this.beforeX = undefined
         this.beforeY = undefined
@@ -290,14 +194,10 @@ export default Vue.extend({
         }
         this.hands[newHand] = this.hands[newHand] || 0
         this.hands[newHand] += 1
-        this.hands[this.beforeHand] -= 1
-        if (this.hands[this.beforeHand] === 0) {
-          delete this.hands[this.beforeHand]
-        }
+        this.$store.commit("sfen/decreaseHand", {hand: this.beforeHand})
         this.beforeHand = undefined
       }
-      this.$emit('updateText', this.buildSfen())
-      this.$emit('send')
+      this.$store.commit("sfen/setText", {text: this.buildSfen()})
     },
     togglePromotedAndTurn(x, y) {
       const cell = this.rows[y][x]
@@ -317,8 +217,7 @@ export default Vue.extend({
         console.log("promote")
         this.rows[y][x] = "+" + cell
       }
-      this.$emit('updateText', this.buildSfen())
-      this.$emit('send')
+      this.$store.commit("sfen/setText", {text: this.buildSfen()})
     },
     togglePromotedAndTurnOnButton() {
       if (this.beforeX === undefined) {
@@ -355,8 +254,7 @@ export default Vue.extend({
             if (newHand.match(/\+/)) {
               newHand = newHand.charAt(1)
             }
-            this.hands[newHand] = this.hands[newHand] || 0
-            this.hands[newHand] += 1
+            this.$store.commit("sfen/increaseHand", {hand: newhand})
           }
           this.rows[y][x] = this.rows[this.beforeY][this.beforeX]
           this.rows[this.beforeY][this.beforeX] = "."
@@ -365,17 +263,14 @@ export default Vue.extend({
             return
           } else {
             this.rows[y][x] = this.beforeHand
-            this.hands[this.beforeHand] -= 1
-            if (this.hands[this.beforeHand] === 0) {
-              delete this.hands[this.beforeHand]
-            }
+            console.log(this.hands[this.beforeHand])
+            this.$store.commit("sfen/decreaseHand", {hand: this.beforeHand})
           }
         }
         this.beforeX = undefined
         this.beforeY = undefined
         this.beforeHand = undefined
-        this.$emit('updateText', this.buildSfen())
-        this.$emit('send')
+        this.$store.commit("sfen/setText", {text: this.buildSfen()})
       }
     }
   }

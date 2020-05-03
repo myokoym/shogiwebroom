@@ -24,6 +24,7 @@
 </template>
 <script>
 import Vue from "vue"
+import { mapState } from "vuex"
 import Piece from '~/components/Piece.vue'
 
 export default Vue.extend({
@@ -32,11 +33,15 @@ export default Vue.extend({
   },
   props: {
     turn: String,
-    hands: Object,
     moveFromHand: Function,
     moveToHand: Function,
     isBeforeHand: Function,
     isSelectedPiece: Function,
+  },
+  computed: {
+    ...mapState("sfen", {
+      hands: "hands",
+    })
   },
   mounted() {
     this.updateFilledHands()

@@ -41,6 +41,7 @@ function socketStart(server) {
   io.on("connection", (socket) => {
     let roomId = ""
     socket.on("enterRoom", (id) => {
+      console.log("enterRoom id: " + id)
       roomId = id
       socket.join(roomId)
       if (currentTexts[roomId]) {
@@ -48,6 +49,8 @@ function socketStart(server) {
       }
     })
     socket.on("send", (params) => {
+      console.log("send")
+      console.log(params)
       let id = params.id
       let text = params.text
       if (!roomId) {
