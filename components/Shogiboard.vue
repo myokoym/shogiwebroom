@@ -175,6 +175,13 @@ export default Vue.extend({
       } else {
         const afterCell = this.rows[y][x]
         if (this.beforeX !== undefined) {
+          const beforeCell = this.rows[this.beforeY][this.beforeX]
+          if (beforeCell.match(/[A-Z]/) && afterCell.match(/[A-Z]/) ||
+              beforeCell.match(/[a-z]/) && afterCell.match(/[a-z]/)) {
+            this.beforeX = x
+            this.beforeY = y
+            return
+          }
           this.$store.commit("sfen/moveBoardToBoard", {
             beforeX: this.beforeX,
             beforeY: this.beforeY,
