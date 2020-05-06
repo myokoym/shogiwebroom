@@ -49,10 +49,16 @@ function socketStart(server) {
       }
     })
     socket.on("send", (params) => {
-      console.log("send")
+      console.log("on send")
       console.log(params)
       let id = params.id
+      console.log("id: " + id)
       let text = params.text
+      console.log("text: " + text)
+      if (!text) {
+        return
+      }
+      console.log("roomId: " + roomId)
       if (!roomId) {
         roomId = id
         socket.join(roomId)
