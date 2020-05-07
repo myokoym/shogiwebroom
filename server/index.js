@@ -55,7 +55,8 @@ function socketStart(server) {
       redis.get(roomId, function(err, result) {
         if (err) {
           console.log(err)
-        } else {
+        }
+        if (result) {
           io.to(socket.id).emit("update", result)
         }
       })
@@ -74,6 +75,9 @@ function socketStart(server) {
       if (!roomId) {
         roomId = id
         socket.join(roomId)
+      }
+      if (!text) {
+        return
       }
       redis.set(roomId, text)
       io.to(roomId).emit("update", text)

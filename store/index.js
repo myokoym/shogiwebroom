@@ -29,6 +29,9 @@ const webSocketPlugin = (store) => {
       console.log("subscribe roomId: " + id)
       socket.on("update", (text) => {
         console.log("on update: " + text)
+        if (!text) {
+          return
+        }
         store.commit("sfen/receiveText", {text: text})
       })
       socket.emit("enterRoom", id)

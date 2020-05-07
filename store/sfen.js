@@ -134,6 +134,9 @@ export const mutations = {
   parseSfen(state, payload) {
     console.log("parseSfen: " + state.text)
     let sfen = state.text
+    if (!sfen) {
+      return
+    }
     if (state.reversed) {
       const values = state.text.split(" ")
       const board = values[0]
