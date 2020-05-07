@@ -34,7 +34,15 @@ async function start () {
   console.log("Socket.IO starts")
 }
 
-let currentTexts = {}
+const Redis = require('ioredis');
+//console.log(Redis)
+let redis = undefined
+if (process.env.REDIS_URL) {
+  redis = new Redis(process.env.REDIS_URL);
+} else {
+  redis = new Redis();
+}
+//console.log(redis)
 
 function socketStart(server) {
   const io = require("socket.io").listen(server)
@@ -44,9 +52,13 @@ function socketStart(server) {
       console.log("enterRoom id: " + id)
       roomId = id
       socket.join(roomId)
-      if (currentTexts[roomId]) {
-        io.to(socket.id).emit("update", currentTexts[roomId])
-      }
+      redis.get(roomId, function(err, result) {
+        if (err) {
+          console.log(err)
+        } else {
+          io.to(socket.id).emit("update", result)
+        }
+      })
     })
     socket.on("send", (params) => {
       console.log("on send")
@@ -63,7 +75,7 @@ function socketStart(server) {
         roomId = id
         socket.join(roomId)
       }
-      currentTexts[roomId] = text
+      redis.set(roomId, text)
       io.to(roomId).emit("update", text)
     })
   })
