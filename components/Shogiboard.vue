@@ -2,7 +2,6 @@
   <div>
     <Hand
       turn="w"
-      v-bind:hands="hands"
       v-bind:move-from-hand="moveFromHand"
       v-bind:move-to-hand="moveToHand"
       v-bind:is-before-hand="isBeforeHand"
@@ -33,7 +32,6 @@
     </table>
     <Hand
       turn="b"
-      v-bind:hands="hands"
       v-bind:move-from-hand="moveFromHand"
       v-bind:move-to-hand="moveToHand"
       v-bind:is-before-hand="isBeforeHand"
@@ -55,14 +53,15 @@
       <p>SFEN: <input
         type="text"
         size="66"
-        v-bind:value="value"
-        v-on:input="$emit('input', $event.target.value)"
+        v-bind:value="text"
+        v-on:input="$store.commit('sfen/setText', {text: $event.target.value})"
       ></p>
     </div>
   </div>
 </template>
 <script>
 import Vue from "vue"
+import { mapState } from "vuex"
 import Piece from '~/components/Piece.vue'
 import Hand from '~/components/Hand.vue'
 
@@ -71,26 +70,29 @@ export default Vue.extend({
     Piece,
     Hand,
   },
-  props: {
-    value: String,
-    send: Function,
-    updateText: Function,
+  computed: {
+    reversedSfen: function() {
+      return this.$store.getters["sfen/reversedSfen"]
+    },
+    ...mapState("sfen", {
+      text: "text",
+      reversed: "reversed",
+      rows: "rows",
+      hands: "hands",
+    })
   },
   mounted() {
-    this.init()
-    this.parseSfen()
+    this.$store.commit("sfen/init")
+    console.log("this.text: " + this.text)
+    console.log("this.text: " + this.$store.state.sfen.text)
   },
   data() {
     return {
-      rows: [],
-      hands: {},
       filledBHands: [],
       filledWHands: [],
       beforeX: undefined,
       beforeY: undefined,
       beforeHand: undefined,
-      localSfen: "",
-      reversed: false,
     }
   },
   watch: {
@@ -98,23 +100,7 @@ export default Vue.extend({
       this.update()
     },
   },
-  computed: {
-  },
   methods: {
-    onSend() {
-      this.$emit('send')
-    },
-    init() {
-      this.$emit('updateText', "lnsgkgsnl/1r5b1/ppppppppp/9/9/9/PPPPPPPPP/1B5R1/LNSGKGSNL b -")
-    },
-    update() {
-      this.localSfen = this.value
-      if (this.reversed) {
-        this.localSfen = this.reverseSfen(this.localSfen)
-      }
-      console.log("localSfen: " + this.localSfen)
-      this.parseSfen()
-    },
     isBeforeCell(x, y) {
       return this.beforeX === x && this.beforeY === y
     },
@@ -126,125 +112,7 @@ export default Vue.extend({
              this.beforeHand !== undefined
     },
     reverseBoard() {
-      this.reversed = !this.reversed
-      this.update()
-    },
-    reverseSfen(sfen) {
-      const values = sfen.split(" ")
-      const board = values[0]
-      const turn = values[1]
-      const hand = values[2]
-      const reversedCells = []
-      for (const match of Array.from(board.matchAll(/\+?./g)).reverse()) {
-        const cell = match[0]
-        let reversedCell = undefined
-        if (cell.match(/[a-z]/)) {
-          reversedCell = cell.toUpperCase()
-        } else if (cell.match(/[A-Z]/)) {
-          reversedCell = cell.toLowerCase()
-        } else {
-          reversedCell = cell
-        }
-        reversedCells.push(reversedCell)
-      }
-      const reversedHands = []
-      for (const cell of hand.split("")) {
-        let reversedCell = undefined
-        if (cell.match(/[a-z]/)) {
-          reversedCell = cell.toUpperCase()
-        } else if (cell.match(/[A-Z]/)) {
-          reversedCell = cell.toLowerCase()
-        } else {
-          reversedCell = cell
-        }
-        reversedHands.push(reversedCell)
-      }
-      return reversedCells.join("") +
-             " " +
-             turn +
-             " " +
-             reversedHands.join("")
-    },
-    parseSfen() {
-      console.log("parseSfen")
-      const values = this.localSfen.split(" ")
-      const board = values[0]
-      const hand = values[2]
-      this.rows = board.split("/").map((row) => {
-        const cells = []
-        const chars = row.split("")
-        for (let i = 0; i < chars.length; i++) {
-          const char = chars[i]
-          if (char.match(/\d/)) {
-            for (let j = 0; j < Number(char); j++) {
-              cells.push(".")
-            }
-          } else if (char.match(/\+/)) {
-            cells.push(char + chars[i + 1])
-            i++
-          } else {
-            cells.push(char)
-          }
-        }
-        return cells
-      })
-
-      this.hands = {}
-      if (hand !== undefined &&
-          hand !== "-") {
-        const chars = hand.split("")
-        for (let i = 0, len = chars.length; i < len; i++) {
-          const char = chars[i]
-          if (char.match(/\d/)) {
-            i++
-            this.hands[chars[i]] = Number(char)
-          } else {
-            this.hands[char] = 1
-          }
-        }
-      }
-    },
-    buildSfen() {
-      let sfen = ""
-      let nSpaces = 0
-      this.rows.forEach((row, index) => {
-        if (index !== 0) {
-          sfen += "/"
-        }
-        for (const char of row) {
-          if (char === ".") {
-            nSpaces++
-          } else {
-            if (nSpaces) {
-              sfen += nSpaces
-              nSpaces = 0
-            }
-            sfen += char
-          }
-        }
-        if (nSpaces) {
-          sfen += nSpaces
-          nSpaces = 0
-        }
-      })
-      sfen += " b "
-      if (Object.keys(this.hands).length > 0) {
-        for (let [key, value] of Object.entries(this.hands)) {
-          if (value > 1) {
-            sfen += value + key
-          } else {
-            sfen += key
-          }
-        }
-      } else {
-        sfen += "-"
-      }
-      console.log("built sfen: " + sfen)
-      if (this.reversed) {
-        sfen = this.reverseSfen(sfen)
-      }
-      console.log("reversed sfen: " + sfen)
-      return sfen
+      this.$store.commit("sfen/reverse")
     },
     moveFromHand(piece) {
       console.log("moveFromHand: " + piece)
@@ -266,65 +134,35 @@ export default Vue.extend({
         return
       }
       if (this.beforeX !== undefined) {
-        const beforeCell = this.rows[this.beforeY][this.beforeX]
-        let newHand = beforeCell
-        if (newHand.match(/\+/)) {
-          newHand = newHand.charAt(1)
-        }
-        if (turn === "b") {
-          newHand = newHand.toUpperCase()
-        } else {
-          newHand = newHand.toLowerCase()
-        }
-        this.hands[newHand] = this.hands[newHand] || 0
-        this.hands[newHand] += 1
-        this.rows[this.beforeY][this.beforeX] = "."
+        this.$store.commit("sfen/moveBoardToHand", {
+          beforeX: this.beforeX,
+          beforeY: this.beforeY,
+          turn: turn,
+        })
         this.beforeX = undefined
         this.beforeY = undefined
       } else if (this.beforeHand) {
-        let newHand = this.beforeHand
-        if (turn === "b") {
-          newHand = newHand.toUpperCase()
-        } else {
-          newHand = newHand.toLowerCase()
-        }
-        this.hands[newHand] = this.hands[newHand] || 0
-        this.hands[newHand] += 1
-        this.hands[this.beforeHand] -= 1
-        if (this.hands[this.beforeHand] === 0) {
-          delete this.hands[this.beforeHand]
-        }
+        this.$store.commit("sfen/moveHandToHand", {
+          beforeHand: this.beforeHand,
+          turn: turn,
+        })
         this.beforeHand = undefined
       }
-      this.$emit('updateText', this.buildSfen())
-      this.$emit('send')
     },
     togglePromotedAndTurn(x, y) {
-      const cell = this.rows[y][x]
-      console.log("togglePromoted: cell: " + cell + ", x: " + x + ", y: " + y)
-      if (cell.match(/[.]/)) {
-        return
-      }
-      if (cell.match(/[GK]/)) {
-        this.rows[y][x] = cell.toLowerCase()
-      } else if (cell.match(/[gk]/)) {
-        this.rows[y][x] = cell.toUpperCase()
-      } else if (cell.match(/\+[A-Z]/)) {
-        this.rows[y][x] = cell.charAt(1).toLowerCase()
-      } else if (cell.match(/\+[a-z]/)) {
-        this.rows[y][x] = cell.charAt(1).toUpperCase()
-      } else {
-        console.log("promote")
-        this.rows[y][x] = "+" + cell
-      }
-      this.$emit('updateText', this.buildSfen())
-      this.$emit('send')
+      this.$store.commit("sfen/togglePromotedAndTurn", {
+        x: x,
+        y: y,
+      })
     },
     togglePromotedAndTurnOnButton() {
       if (this.beforeX === undefined) {
         return
       }
-      this.togglePromotedAndTurn(this.beforeX, this.beforeY)
+      this.$store.commit("sfen/togglePromotedAndTurn", {
+        x: this.beforeX,
+        y: this.beforeY,
+      })
     },
     moveCell(x, y) {
       if (this.beforeX === undefined && this.rows[y][x] !== ".") {
@@ -337,45 +175,26 @@ export default Vue.extend({
       } else {
         const afterCell = this.rows[y][x]
         if (this.beforeX !== undefined) {
-          const beforeCell = this.rows[this.beforeY][this.beforeX]
-          if (beforeCell.match(/[A-Z]/) && afterCell.match(/[A-Z]/) ||
-              beforeCell.match(/[a-z]/) && afterCell.match(/[a-z]/)) {
-            this.beforeX = x
-            this.beforeY = y
-            return
-          } else if (beforeCell.match(/[a-z]/) && afterCell.match(/[A-Z]/)) {
-            let newHand = afterCell.toLowerCase()
-            if (newHand.match(/\+/)) {
-              newHand = newHand.charAt(1)
-            }
-            this.hands[newHand] = this.hands[newHand] || 0
-            this.hands[newHand] += 1
-          } else if (beforeCell.match(/[A-Z]/) && afterCell.match(/[a-z]/)) {
-            let newHand = afterCell.toUpperCase()
-            if (newHand.match(/\+/)) {
-              newHand = newHand.charAt(1)
-            }
-            this.hands[newHand] = this.hands[newHand] || 0
-            this.hands[newHand] += 1
-          }
-          this.rows[y][x] = this.rows[this.beforeY][this.beforeX]
-          this.rows[this.beforeY][this.beforeX] = "."
+          this.$store.commit("sfen/moveBoardToBoard", {
+            beforeX: this.beforeX,
+            beforeY: this.beforeY,
+            afterX: x,
+            afterY: y,
+          })
         } else if (this.beforeHand) {
           if (afterCell !== ".") {
             return
           } else {
-            this.rows[y][x] = this.beforeHand
-            this.hands[this.beforeHand] -= 1
-            if (this.hands[this.beforeHand] === 0) {
-              delete this.hands[this.beforeHand]
-            }
+            this.$store.commit("sfen/moveHandToBoard", {
+              beforeHand: this.beforeHand,
+              afterX: x,
+              afterY: y,
+            })
           }
         }
         this.beforeX = undefined
         this.beforeY = undefined
         this.beforeHand = undefined
-        this.$emit('updateText', this.buildSfen())
-        this.$emit('send')
       }
     }
   }

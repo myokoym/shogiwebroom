@@ -2,9 +2,6 @@
   <div class="container">
     <div>
       <Shogiboard
-        v-model="text"
-        v-on:send="send"
-        v-on:updateText="updateText"
       ></Shogiboard>
     </div>
   </div>
@@ -21,31 +18,12 @@ export default Vue.extend({
   },
   data() {
     return {
-      text: "",
-      socket: undefined
     }
   },
-  mounted: function() {
-    this.socket = io()
-    this.socket.on("update", (text) => {
-      console.log("update: " + text)
-      this.text = text
-    })
-    this.socket.emit("enterRoom", this.$route.params.id)
+  created() {
+    this.$store.commit("sfen/setRoomId", {roomId: this.$route.params.id})
+    console.log(this.$store.state.sfen.roomId)
   },
-  methods: {
-    send() {
-      console.log("send(): text: " + this.text)
-      this.socket.emit("send", {
-        id: this.$route.params.id,
-        text: this.text
-      })
-    },
-    updateText(text) {
-      console.log("updateText: " + text)
-      this.text = text
-    },
-  }
 })
 </script>
 <style>
