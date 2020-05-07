@@ -80,7 +80,7 @@ function socketStart(server) {
         return
       }
       redis.set(roomId, text)
-      io.to(roomId).emit("update", text)
+      socket.broadcast.to(roomId).emit("update", text)
     })
   })
 }

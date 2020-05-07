@@ -313,6 +313,7 @@ export const mutations = {
     state.text = sfen
   },
   addHistory(state) {
+    console.log("addHistory")
     if (state.text === state.history[0] ||
         state.text === state.history[state.historyCursor]) {
       return
