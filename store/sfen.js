@@ -12,6 +12,8 @@ export const state = () => ({
     w: undefined,
   },
   reversed: false,
+  history: [],
+  historyCursor: -1,
 })
 
 export const mutations = {
@@ -22,6 +24,8 @@ export const mutations = {
   init(state) {
     console.log("init")
     state.text = "lnsgkgsnl/1r5b1/ppppppppp/9/9/9/PPPPPPPPP/1B5R1/LNSGKGSNL b -"
+    state.history = [state.text]
+    state.historyCursor = 0
   },
   setText(state, payload) {
     console.log("setText: " + payload.text)
@@ -304,5 +308,30 @@ export const mutations = {
       console.log("reversed sfen: " + sfen)
     }
     state.text = sfen
+  },
+  addHistory(state) {
+    if (state.text === state.history[0] ||
+        state.text === state.history[state.historyCursor]) {
+      return
+    }
+    for (let i = 0, len = state.historyCursor; i < len; i++) {
+      state.history.shift()
+      state.historyCursor--
+    }
+    state.history.unshift(state.text)
+  },
+  prevHistory(state) {
+    if (state.historyCursor >= state.history.length - 1) {
+      return
+    }
+    state.historyCursor++
+    state.text = state.history[state.historyCursor]
+  },
+  nextHistory(state) {
+    if (state.historyCursor <= 0) {
+      return
+    }
+    state.historyCursor--
+    state.text = state.history[state.historyCursor]
   },
 }

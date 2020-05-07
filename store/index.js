@@ -13,6 +13,8 @@ const webSocketPlugin = (store) => {
     //console.log(store)
     //console.log(mutation.type)
     if (mutation.type === "sfen/setText" ||
+        mutation.type === "sfen/prevHistory" ||
+        mutation.type === "sfen/nextHistory" ||
         mutation.type === "sfen/buildSfen") {
       console.log("send")
       //console.log(state.sfen)
@@ -34,6 +36,8 @@ const webSocketPlugin = (store) => {
     if (mutation.type === "sfen/setText" ||
         mutation.type === "sfen/receiveText" ||
         mutation.type === "sfen/reverse" ||
+        mutation.type === "sfen/prevHistory" ||
+        mutation.type === "sfen/nextHistory" ||
         mutation.type === "sfen/init") {
       store.commit("sfen/parseSfen")
       store.commit("sfen/fillHands")
@@ -44,6 +48,13 @@ const webSocketPlugin = (store) => {
                mutation.type === "sfen/togglePromotedAndTurn") {
       store.commit("sfen/fillHands")
       store.commit("sfen/buildSfen")
+    }
+    if (mutation.type === "sfen/setText" ||
+        mutation.type === "sfen/receiveText" ||
+        mutation.type === "sfen/reverse" ||
+        mutation.type === "sfen/init") {
+      console.log("mutation.type: " + mutation.type)
+      store.commit("sfen/addHistory")
     }
   })
 }

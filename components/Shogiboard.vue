@@ -49,6 +49,16 @@
           v-on:click="togglePromotedAndTurnOnButton()"
           v-bind:disabled="beforeX === undefined"
         >成る</button>
+        <button
+          type="button"
+          v-on:click="$store.commit('sfen/prevHistory')"
+          v-bind:disabled="historyCursor >= history.length - 1"
+        >戻る</button>
+        <button
+          type="button"
+          v-on:click="$store.commit('sfen/nextHistory')"
+          v-bind:disabled="historyCursor <= 0"
+        >進む</button>
       </p>
       <p>SFEN: <input
         type="text"
@@ -79,6 +89,8 @@ export default Vue.extend({
       reversed: "reversed",
       rows: "rows",
       hands: "hands",
+      history: "history",
+      historyCursor: "historyCursor",
     })
   },
   mounted() {
