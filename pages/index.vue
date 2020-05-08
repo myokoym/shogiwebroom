@@ -1,5 +1,8 @@
 <template>
   <div class="container">
+    <h1>
+      <img src="@/assets/images/logo.png" alt="将棋ウェブルーム">
+    </h1>
     <div>
       <label for="roomId">ルームID（空欄の場合は自動生成）:</label>
       <input type="text" id="roomId" v-model="roomId">
@@ -28,3 +31,8 @@ export default Vue.extend({
   }
 })
 </script>
+<style>
+body {
+  background-color: #b9d08b;
+}
+</style>
