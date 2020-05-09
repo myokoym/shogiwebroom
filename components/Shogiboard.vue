@@ -54,12 +54,12 @@
           type="button"
           v-on:click="$store.commit('sfen/prevHistory')"
           v-bind:disabled="historyCursor >= history.length - 1"
-        >戻る</button>
+        >一手戻る</button>
         <button
           type="button"
           v-on:click="$store.commit('sfen/nextHistory')"
           v-bind:disabled="historyCursor <= 0"
-        >進む</button>
+        >一手進む</button>
       </p>
       <p>SFEN: <input
         type="text"
