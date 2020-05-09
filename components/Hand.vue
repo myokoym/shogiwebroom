@@ -18,7 +18,7 @@
         type="hand"
         v-bind:piece="piece"
       ></Piece>
-      <div>{{$store.state.sfen.hands[piece] || "　"}}</div>
+      <span>{{$store.state.sfen.hands[piece] || "　"}}</span>
     </div>
   </div>
 </template>
