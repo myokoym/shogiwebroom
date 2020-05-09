@@ -29,17 +29,29 @@
         </div>
       </div>
       <div class="row">
-        <button
-          type="button"
-          class="btn btn-success btn-sm"
-          v-clipboard:copy="this.roomUrl"
-          v-bind:disabled="!this.roomId"
-        >ルームのURLをコピー（共有用）</button>
+        <div class="input-group">
+          <div class="input-group-prepend">
+            <span class="input-group-text" id="roomUrl">URL</span>
+          </div>
+          <input
+            type="text"
+            class="form-control"
+            aria-describedby="roomUrl"
+            v-model="roomUrl"
+            readonly
+          >
+          <button
+            type="button"
+            class="btn btn-secondary btn-sm"
+            v-clipboard:copy="this.roomUrl"
+            v-bind:disabled="!this.roomId"
+          >コピー</button>
+        </div>
       </div>
       <div class="row">
         <button
           type="button"
-          class="btn btn-primary btn-lg"
+          class="btn btn-success btn-lg btn-block"
           @click="enterRoom"
           v-bind:disabled="!this.roomId"
         >入室</button>
@@ -69,6 +81,9 @@ export default Vue.extend({
       return "/rooms/" + this.roomId
     },
     roomUrl: function() {
+      if (!this.roomId) {
+        return
+      }
       return this.origin + this.roomPath
     },
   },
