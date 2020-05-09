@@ -1,6 +1,9 @@
 <template>
   <div
-    class="d-flex hand"
+    class="d-flex justify-content-around hand"
+    v-on:click="moveHand()"
+    v-on:drop.prevent="moveToHand(turn)"
+    v-on:dragover.prevent
     v-bind:class="{
       'flex-row': (turn === 'w'),
       'flex-row-reverse': (turn === 'b'),
@@ -8,11 +11,9 @@
     <div
       v-for="piece in $store.state.sfen.filledHands[turn]"
       v-bind:class="{beforeCell: isBeforeHand(piece)}"
-      v-on:click="moveHand(piece)"
+      v-on:click.stop="moveHand(piece)"
       draggable
       v-on:dragstart="moveFromHand(piece)"
-      v-on:drop.prevent="moveToHand(turn)"
-      v-on:dragover.prevent
     >
       <Piece
         type="hand"
@@ -50,10 +51,10 @@ export default Vue.extend({
   },
   methods: {
     moveHand(piece) {
-      console.log("moveHand")
+      console.log("moveHand: " + piece)
       if (this.isSelectedPiece()) {
         this.moveToHand(this.turn)
-      } else {
+      } else if (piece) {
         this.moveFromHand(piece)
       }
     },
