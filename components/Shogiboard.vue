@@ -1,42 +1,43 @@
 <template>
   <div>
-    <Hand
-      turn="w"
-      v-bind:move-from-hand="moveFromHand"
-      v-bind:move-to-hand="moveToHand"
-      v-bind:is-before-hand="isBeforeHand"
-      v-bind:is-selected-piece="isSelectedPiece"
-    ></Hand>
-    <table
-      class="board"
-      border="1"
-      style="border-collapse: collapse;"
-    >
-      <tr v-for="(row, y) in rows">
-        <td
-          v-for="(cell, x) in row"
-          v-on:click="moveCell(x, y)"
-          v-on:click.right.prevent="togglePromotedAndTurn(x, y)"
-          v-bind:class="{beforeCell: isBeforeCell(x, y)}"
-          draggable
-          v-on:dragstart="moveCell(x, y)"
-          v-on:drop.prevent="moveCell(x, y)"
-          v-on:dragover.prevent
-        >
-          <Piece
-            type="board"
-            v-bind:piece="cell"
-          ></Piece>
-        </td>
-      </tr>
-    </table>
-    <Hand
-      turn="b"
-      v-bind:move-from-hand="moveFromHand"
-      v-bind:move-to-hand="moveToHand"
-      v-bind:is-before-hand="isBeforeHand"
-      v-bind:is-selected-piece="isSelectedPiece"
-    ></Hand>
+    <div class="d-md-flex justify-content-around">
+      <Hand
+        turn="w"
+        v-bind:move-from-hand="moveFromHand"
+        v-bind:move-to-hand="moveToHand"
+        v-bind:is-before-hand="isBeforeHand"
+        v-bind:is-selected-piece="isSelectedPiece"
+      ></Hand>
+      <table
+        class="board"
+        border="1"
+      >
+        <tr v-for="(row, y) in rows">
+          <td
+            v-for="(cell, x) in row"
+            v-on:click="moveCell(x, y)"
+            v-on:click.right.prevent="togglePromotedAndTurn(x, y)"
+            v-bind:class="{beforeCell: isBeforeCell(x, y)}"
+            draggable
+            v-on:dragstart="moveCell(x, y)"
+            v-on:drop.prevent="moveCell(x, y)"
+            v-on:dragover.prevent
+          >
+            <Piece
+              type="board"
+              v-bind:piece="cell"
+            ></Piece>
+          </td>
+        </tr>
+      </table>
+      <Hand
+        turn="b"
+        v-bind:move-from-hand="moveFromHand"
+        v-bind:move-to-hand="moveToHand"
+        v-bind:is-before-hand="isBeforeHand"
+        v-bind:is-selected-piece="isSelectedPiece"
+      ></Hand>
+    </div>
     <div>
       <p>
         <button
@@ -224,9 +225,10 @@ export default Vue.extend({
   background-color: yellow;
 }
 .board {
-  margin: auto;
+  margin: 2% 0 2% 0;
   outline: solid 1px;
   background-color: #d6c6af;
+  border-collapse: collapse;
 }
 .toggleButtonOn {
   color: white;

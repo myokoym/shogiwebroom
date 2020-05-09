@@ -1,9 +1,7 @@
 <template>
   <div class="container">
-    <div>
-      <Shogiboard
-      ></Shogiboard>
-    </div>
+    <Shogiboard
+    ></Shogiboard>
   </div>
 </template>
 

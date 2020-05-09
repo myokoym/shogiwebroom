@@ -5,10 +5,11 @@
     v-on:drop.prevent="moveToHand(turn)"
     v-on:dragover.prevent
     v-bind:class="{
-      'flex-row': (turn === 'w'),
-      'flex-row-reverse': (turn === 'b'),
+      'flex-hand': (turn === 'w'),
+      'flex-hand-reverse': (turn === 'b'),
     }">
     <div
+      class="hand-piece"
       v-for="piece in $store.state.sfen.filledHands[turn]"
       v-bind:class="{beforeCell: isBeforeHand(piece)}"
       v-on:click.stop="moveHand(piece)"
@@ -19,7 +20,7 @@
         type="hand"
         v-bind:piece="piece"
       ></Piece>
-      <span>{{$store.state.sfen.hands[piece] || "　"}}</span>
+      <span class="hand-n-pieces">{{$store.state.sfen.hands[piece] || "　"}}</span>
     </div>
   </div>
 </template>
@@ -70,5 +71,31 @@ export default Vue.extend({
   background-color: #d6c6af;
   outline: solid 1px;
   text-align: center;
+}
+
+@media (min-width: 768px) {
+  .flex-hand {
+    flex-direction: column;
+  }
+  .flex-hand-reverse {
+    flex-direction: column-reverse;
+  }
+  .hand-piece {
+    display: flex;
+    flex-direction: row;
+  }
+  .hand-n-pieces {
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+  }
+}
+@media (max-width: 767px) {
+  .flex-hand {
+    flex-direction: row;
+  }
+  .flex-hand-reverse {
+    flex-direction: row-reverse;
+  }
 }
 </style>
