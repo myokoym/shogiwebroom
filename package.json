@@ -1,7 +1,7 @@
 {
   "name": "shogiwebroom",
   "version": "1.0.0",
-  "description": "My impeccable Nuxt.js project",
+  "description": "synchronized Shogi board on Web",
   "author": "Masafumi Yokoyama",
   "private": true,
   "scripts": {
