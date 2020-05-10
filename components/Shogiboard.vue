@@ -44,7 +44,7 @@
         class="btn btn-light btn-sm btn-block"
         v-on:click="togglePromotedAndTurnOnButton()"
         v-bind:disabled="beforeX === undefined"
-      >成る/駒反転（右クリックまたはロングタップでも可）</button>
+      >成る/駒反転（右クリックでも可）</button>
     </div>
     <div class="m-1 d-flex justify-content-between align-items-center">
       <button
