@@ -9,6 +9,8 @@ A synchronized Shogi board on Web.
 * スマートフォン、タブレット対応（レスポンシブ）。
 * SFEN形式（USI）入出力対応。
 
+![shogiwebroom-20200511085018](https://user-images.githubusercontent.com/386687/81513632-af94d200-9364-11ea-99f4-4c21bcbd450e.png)
+
 ## Build Setup
 
 ```bash
