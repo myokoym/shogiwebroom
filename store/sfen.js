@@ -11,6 +11,7 @@ export const state = () => ({
     b: undefined,
     w: undefined,
   },
+  currentTurn: "b",
   reversed: false,
   history: [],
   historyCursor: -1,
@@ -60,6 +61,11 @@ export const mutations = {
       state.hands[newHand] = state.hands[newHand] || 0
       state.hands[newHand] += 1
     }
+    if (beforeCell.match(/[A-Z]/)) {
+      state.currentTurn = "w"
+    } else {
+      state.currentTurn = "b"
+    }
     state.rows[payload.afterY][payload.afterX] = beforeCell
     state.rows[payload.beforeY][payload.beforeX] = "."
   },
@@ -70,6 +76,11 @@ export const mutations = {
     if (afterCell !== ".") {
       return
     } else {
+      if (beforeHand.match(/[A-Z]/)) {
+        state.currentTurn = "w"
+      } else {
+        state.currentTurn = "b"
+      }
       state.rows[payload.afterY][payload.afterX] = beforeHand
       state.hands[beforeHand] -= 1
       if (state.hands[beforeHand] === 0) {
@@ -259,7 +270,7 @@ export const mutations = {
         nSpaces = 0
       }
     })
-    sfen += " b "
+    sfen += " " + state.currentTurn + " "
     if (Object.keys(hands).length > 0) {
       for (let [key, value] of Object.entries(hands)) {
         if (value > 1) {
