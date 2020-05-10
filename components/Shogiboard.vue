@@ -38,35 +38,57 @@
         v-bind:is-selected-piece="isSelectedPiece"
       ></Hand>
     </div>
-    <div>
-      <p>
-        <button
-          type="button"
-          v-on:click="reverseBoard()"
-          v-bind:class="{toggleButtonOn: reversed}"
-        >反転: {{reversed ? "ON" : "OFF"}}</button>
-        <button
-          type="button"
-          v-on:click="togglePromotedAndTurnOnButton()"
-          v-bind:disabled="beforeX === undefined"
-        >成る</button>
-        <button
-          type="button"
-          v-on:click="$store.commit('sfen/prevHistory')"
-          v-bind:disabled="historyCursor >= history.length - 1"
-        >一手戻る</button>
-        <button
-          type="button"
-          v-on:click="$store.commit('sfen/nextHistory')"
-          v-bind:disabled="historyCursor <= 0"
-        >一手進む</button>
-      </p>
-      <p>SFEN: <input
+    <div class="m-1">
+      <button
+        type="button"
+        class="btn btn-light btn-sm btn-block"
+        v-on:click="togglePromotedAndTurnOnButton()"
+        v-bind:disabled="beforeX === undefined"
+      >成る/駒反転（右クリックまたはロングタップでも可）</button>
+    </div>
+    <div class="m-1 d-flex justify-content-between align-items-center">
+      <button
+        type="button"
+        class="btn btn-sm"
+        v-on:click="reverseBoard()"
+        v-bind:class="{
+          'btn-dark': reversed,
+          'btn-light': !reversed
+        }"
+      >盤反転: {{reversed ? "ON" : "OFF"}}</button>
+      <div class="btn-group">
+        <div class="btn-group">
+          <button
+            type="button"
+            class="btn btn-light btn-sm"
+            v-on:click="$store.commit('sfen/prevHistory')"
+            v-bind:disabled="historyCursor >= history.length - 1"
+          >一手戻る</button>
+          <button
+            type="button"
+            class="btn btn-light btn-sm"
+            v-on:click="$store.commit('sfen/nextHistory')"
+            v-bind:disabled="historyCursor <= 0"
+          >一手進む</button>
+        </div>
+      </div>
+    </div>
+    <div class="mt-3 input-group input-group-sm">
+      <div class="input-group-prepend">
+        <span class="input-group-text" id="sfen-label">SFEN</span>
+      </div>
+      <input
         type="text"
-        size="66"
+        class="form-control"
+        aria-describedby="sfen-label"
         v-bind:value="text"
         v-on:input="$store.commit('sfen/setText', {text: $event.target.value})"
-      ></p>
+      >
+      <button
+        type="button"
+        class="btn btn-light btn-sm"
+        v-clipboard:copy="text"
+      >コピー</button>
     </div>
   </div>
 </template>
@@ -75,6 +97,8 @@ import Vue from "vue"
 import { mapState } from "vuex"
 import Piece from '~/components/Piece.vue'
 import Hand from '~/components/Hand.vue'
+import VueClipboard from "vue-clipboard2"
+Vue.use(VueClipboard)
 
 export default Vue.extend({
   components: {

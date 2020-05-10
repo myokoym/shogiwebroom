@@ -23,7 +23,7 @@
           >
           <button
             type="button"
-            class="btn btn-secondary btn-sm"
+            class="btn btn-light btn-sm"
             @click="generateId"
           >自動生成</button>
         </div>
@@ -42,7 +42,7 @@
           >
           <button
             type="button"
-            class="btn btn-secondary btn-sm"
+            class="btn btn-light btn-sm"
             v-clipboard:copy="this.roomUrl"
             v-bind:disabled="!this.roomId"
           >コピー</button>
