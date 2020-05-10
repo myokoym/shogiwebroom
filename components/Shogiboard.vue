@@ -155,6 +155,11 @@ export default Vue.extend({
         this.beforeX = undefined
         this.beforeY = undefined
       } else if (this.beforeHand) {
+        if ((this.beforeHand.match(/[A-Z]/) && turn === "b") ||
+            (this.beforeHand.match(/[a-z]/) && turn === "w")) {
+          this.beforeHand = undefined
+          return
+        }
         this.$store.commit("sfen/moveHandToHand", {
           beforeHand: this.beforeHand,
           turn: turn,
