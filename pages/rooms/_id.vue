@@ -20,7 +20,7 @@ export default Vue.extend({
   },
   created() {
     this.$store.commit("sfen/setRoomId", {roomId: this.$route.params.id})
-    console.log(this.$store.state.sfen.roomId)
+    // debug: console.log(this.$store.state.sfen.roomId)
   },
 })
 </script>

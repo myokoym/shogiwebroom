@@ -49,7 +49,7 @@ function socketStart(server) {
   io.on("connection", (socket) => {
     let roomId = ""
     socket.on("enterRoom", (id) => {
-      console.log("enterRoom id: " + id)
+      // debug: console.log("enterRoom id: " + id)
       roomId = id
       socket.join(roomId)
       redis.get(roomId, function(err, result) {

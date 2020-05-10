@@ -52,7 +52,7 @@ export default Vue.extend({
   },
   methods: {
     moveHand(piece) {
-      console.log("moveHand: " + piece)
+      // debug: console.log("moveHand: " + piece)
       if (this.isSelectedPiece()) {
         this.moveToHand(this.turn)
       } else if (piece) {

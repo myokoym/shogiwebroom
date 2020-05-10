@@ -19,28 +19,28 @@ export const state = () => ({
 
 export const mutations = {
   setRoomId(state, payload) {
-    console.log("setRoomId: " + payload.roomId)
+    // debug: console.log("setRoomId: " + payload.roomId)
     state.roomId = payload.roomId
   },
   init(state) {
-    console.log("init")
+    // debug: console.log("init")
     state.text = "lnsgkgsnl/1r5b1/ppppppppp/9/9/9/PPPPPPPPP/1B5R1/LNSGKGSNL b -"
     state.history = [state.text]
     state.historyCursor = 0
   },
   setText(state, payload) {
-    console.log("setText: " + payload.text)
+    // debug: console.log("setText: " + payload.text)
     state.text = payload.text
   },
   receiveText(state, payload) {
-    console.log("receiveText: " + payload.text)
+    // debug: console.log("receiveText: " + payload.text)
     state.text = payload.text
   },
   reverse(state) {
     state.reversed = !state.reversed
   },
   moveBoardToBoard(state, payload) {
-    console.log("moveBoardToBoard")
+    // debug: console.log("moveBoardToBoard")
     const beforeCell = state.rows[payload.beforeY][payload.beforeX]
     const afterCell = state.rows[payload.afterY][payload.afterX]
     if (beforeCell.match(/[A-Z]/) && afterCell.match(/[A-Z]/) ||
@@ -70,7 +70,7 @@ export const mutations = {
     state.rows[payload.beforeY][payload.beforeX] = "."
   },
   moveHandToBoard(state, payload) {
-    console.log("moveHandToBoard")
+    // debug: console.log("moveHandToBoard")
     const beforeHand = payload.beforeHand
     const afterCell = state.rows[payload.afterY][payload.afterX]
     if (afterCell !== ".") {
@@ -89,11 +89,11 @@ export const mutations = {
     }
   },
   moveBoardToHand(state, payload) {
-    console.log("moveBoardToHand")
-    console.log(payload)
+    // debug: console.log("moveBoardToHand")
+    // debug: console.log(payload)
     const beforeCell = state.rows[payload.beforeY][payload.beforeX]
     let newHand = beforeCell
-    console.log("newHand: " + newHand)
+    // debug: console.log("newHand: " + newHand)
     if (newHand.match(/\+/)) {
       newHand = newHand.charAt(1)
     }
@@ -107,7 +107,7 @@ export const mutations = {
     state.rows[payload.beforeY][payload.beforeX] = "."
   },
   moveHandToHand(state, payload) {
-    console.log("moveHandToHand")
+    // debug: console.log("moveHandToHand")
     let newHand = payload.beforeHand
     if (payload.turn === "b") {
       newHand = newHand.toUpperCase()
@@ -125,7 +125,7 @@ export const mutations = {
     const x = payload.x
     const y = payload.y
     const cell = state.rows[y][x]
-    console.log("togglePromoted: cell: " + cell + ", x: " + x + ", y: " + y)
+    // debug: console.log("togglePromoted: cell: " + cell + ", x: " + x + ", y: " + y)
     if (cell.match(/[.]/)) {
       return
     }
@@ -138,12 +138,12 @@ export const mutations = {
     } else if (cell.match(/\+[a-z]/)) {
       state.rows[y][x] = cell.charAt(1).toUpperCase()
     } else {
-      console.log("promote")
+      // debug: console.log("promote")
       state.rows[y][x] = "+" + cell
     }
   },
   parseSfen(state, payload) {
-    console.log("parseSfen: " + state.text)
+    // debug: console.log("parseSfen: " + state.text)
     let sfen = state.text
     if (!sfen) {
       return
@@ -184,8 +184,8 @@ export const mutations = {
               " " +
               reversedHands.join("")
     }
-    console.log(state.text)
-    console.log(sfen)
+    // debug: console.log(state.text)
+    // debug: console.log(sfen)
     const values = sfen.split(" ")
     const board = values[0]
     const hand = values[2]
@@ -225,8 +225,8 @@ export const mutations = {
 
     state.rows = rows
     state.hands = hands
-    console.log(rows)
-    console.log(hands)
+    // debug: console.log(rows)
+    // debug: console.log(hands)
   },
   fillHands(state) {
     ["b", "w"].forEach(function(turn) {
@@ -244,12 +244,12 @@ export const mutations = {
     })
   },
   buildSfen(state, payload) {
-    console.log("buildSfen")
+    // debug: console.log("buildSfen")
     let sfen = ""
     let nSpaces = 0
     const rows = state.rows
     const hands = state.hands
-    console.log(hands)
+    // debug: console.log(hands)
     rows.forEach((row, index) => {
       if (index !== 0) {
         sfen += "/"
@@ -282,7 +282,7 @@ export const mutations = {
     } else {
       sfen += "-"
     }
-    console.log("built sfen: " + sfen)
+    // debug: console.log("built sfen: " + sfen)
     if (state.reversed) {
       const values = sfen.split(" ")
       const board = values[0]
@@ -303,7 +303,7 @@ export const mutations = {
       }
       const reversedHands = []
       for (const cell of hand.split("")) {
-        console.log(cell)
+        // debug: console.log(cell)
         let reversedCell = undefined
         if (cell.match(/[a-z]/)) {
           reversedCell = cell.toUpperCase()
@@ -319,12 +319,12 @@ export const mutations = {
               turn +
               " " +
               reversedHands.join("")
-      console.log("reversed sfen: " + sfen)
+      // debug: console.log("reversed sfen: " + sfen)
     }
     state.text = sfen
   },
   addHistory(state) {
-    console.log("addHistory")
+    // debug: console.log("addHistory")
     if (state.text === state.history[0] ||
         state.text === state.history[state.historyCursor]) {
       return

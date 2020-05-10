@@ -120,8 +120,8 @@ export default Vue.extend({
   },
   mounted() {
     this.$store.commit("sfen/init")
-    console.log("this.text: " + this.text)
-    console.log("this.text: " + this.$store.state.sfen.text)
+    // debug: console.log("this.text: " + this.text)
+    // debug: console.log("this.text: " + this.$store.state.sfen.text)
   },
   data() {
     return {
@@ -152,7 +152,7 @@ export default Vue.extend({
       this.$store.commit("sfen/reverse")
     },
     moveFromHand(piece) {
-      console.log("moveFromHand: " + piece)
+      // debug: console.log("moveFromHand: " + piece)
       if (piece === ".") {
         return
       }
@@ -165,7 +165,7 @@ export default Vue.extend({
       }
     },
     moveToHand(turn) {
-      console.log("moveToHand: " + turn)
+      // debug: console.log("moveToHand: " + turn)
       if (this.beforeX === undefined &&
           this.beforeHand === undefined) {
         return
