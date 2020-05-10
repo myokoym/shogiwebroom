@@ -56,6 +56,8 @@
           v-bind:disabled="!this.roomId"
         >入室</button>
       </div>
+      <hr>
+      <Usage></Usage>
     </div>
   </div>
 </template>
@@ -65,8 +67,12 @@ import Vue from "vue"
 import cryptoRandomString from "crypto-random-string"
 import VueClipboard from "vue-clipboard2"
 Vue.use(VueClipboard)
+import Usage from '~/components/Usage.vue'
 
 export default Vue.extend({
+  components: {
+    Usage,
+  },
   data() {
     return {
       origin: "",
@@ -104,12 +110,15 @@ export default Vue.extend({
 body {
   background-color: #b9d08b;
 }
+.container {
+  max-width: 768px;
+}
 img.title-logo {
   max-width: 100%;
   height: auto;
 }
 .row {
-  margin: 4%;
+  margin: 2%;
   display: flex;
   flex-direction: row;
   justify-content: center;
