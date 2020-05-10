@@ -19,7 +19,7 @@
             v-on:click.right.prevent="togglePromotedAndTurn(x, y)"
             v-bind:class="{beforeCell: isBeforeCell(x, y)}"
             draggable
-            v-on:dragstart="moveCell(x, y)"
+            v-on:dragstart="dragCellStart(x, y)"
             v-on:drop.prevent="moveCell(x, y)"
             v-on:dragover.prevent
           >
@@ -176,6 +176,12 @@ export default Vue.extend({
         x: this.beforeX,
         y: this.beforeY,
       })
+    },
+    dragCellStart(x, y) {
+      this.beforeX = undefined
+      this.beforeY = undefined
+      this.beforeHand = undefined
+      this.moveCell(x, y)
     },
     moveCell(x, y) {
       if (this.beforeX === undefined && this.rows[y][x] !== ".") {
