@@ -157,8 +157,8 @@ export const mutations = {
       const turn = values[1]
       const hand = values[2]
       const reversedCells = []
-      for (const match of Array.from(board.matchAll(/\+?./g)).reverse()) {
-        const cell = match[0]
+      const cells = board.match(/\+?./g).reverse()
+      for (const cell of cells) {
         let reversedCell = undefined
         if (cell.match(/[a-z]/)) {
           reversedCell = cell.toUpperCase()
@@ -292,8 +292,8 @@ export const mutations = {
       const turn = values[1]
       const hand = values[2]
       const reversedCells = []
-      for (const match of Array.from(board.matchAll(/\+?./g)).reverse()) {
-        const cell = match[0]
+      const cells = board.match(/\+?./g).reverse()
+      for (const cell of cells) {
         let reversedCell = undefined
         if (cell.match(/[a-z]/)) {
           reversedCell = cell.toUpperCase()
