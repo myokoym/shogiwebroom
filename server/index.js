@@ -85,7 +85,7 @@ function socketStart(server) {
 
     socket.on("sendComment", (params) => {
       const date = new Date()
-      const time = date.getHours() + ":" + date.getMinutes()
+      const time = date.toLocaleTimeString()
       io.to(roomId).emit("receiveComment", {
         time: time,
         name: params.name,
