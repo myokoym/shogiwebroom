@@ -15,6 +15,7 @@ const webSocketPlugin = (store) => {
     if (mutation.type === "sfen/setText" ||
         mutation.type === "sfen/prevHistory" ||
         mutation.type === "sfen/nextHistory" ||
+        mutation.type === "sfen/reverse" ||
         mutation.type === "sfen/buildSfen") {
       // debug: console.log("send")
       //console.log(state.sfen)
