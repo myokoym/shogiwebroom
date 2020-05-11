@@ -4,7 +4,6 @@ const { Nuxt, Builder } = require('nuxt')
 const app = express()
 
 const moment = require('moment')
-moment.locale('ja')
 
 // Import and Set Nuxt.js options
 const config = require('../nuxt.config.js')
@@ -87,6 +86,7 @@ function socketStart(server) {
     })
 
     socket.on("sendComment", (params) => {
+      moment.locale('ja')
       const time = moment(new Date()).format('H:mm:ss')
       io.to(roomId).emit("receiveComment", {
         time: time,
