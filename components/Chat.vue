@@ -29,7 +29,7 @@
         >送信</button>
       </div>
     </div>
-    <div class="mt-2 chat-comments">
+    <div v-if="comments.length > 0" class="mt-2 chat-comments">
       <ul class="list-group">
         <li class="list-group-item" v-for="c in comments">
           <span class="font-weight-bold">{{c.name}}</span>
