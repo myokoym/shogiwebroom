@@ -35,7 +35,7 @@ const webSocketPlugin = (store) => {
         store.commit("sfen/receiveText", {text: text})
       })
       socket.on("receiveComment", (params) => {
-        console.log("on receiveComment")
+        // debug: console.log("on receiveComment")
         store.commit("chat/receiveComment", {
           time: params.time,
           name: params.name,

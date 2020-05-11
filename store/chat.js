@@ -13,7 +13,7 @@ export const mutations = {
     })
   },
   sendComment(state, payload) {
-    console.log("sendComment")
+    // debug: console.log("sendComment")
     state.name = payload.name
     state.comment = payload.comment
   },
