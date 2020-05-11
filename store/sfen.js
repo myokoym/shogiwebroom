@@ -24,6 +24,9 @@ export const mutations = {
   },
   init(state) {
     // debug: console.log("init")
+    if (state.text) {
+      return
+    }
     state.text = "lnsgkgsnl/1r5b1/ppppppppp/9/9/9/PPPPPPPPP/1B5R1/LNSGKGSNL b -"
     state.history = [state.text]
     state.historyCursor = 0
