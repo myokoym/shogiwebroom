@@ -3,17 +3,8 @@
     <h5>
       簡易チャット
     </h5>
-    <div class="row">
-      <div class="chat-name col-sm-3 col-4 input-group input-group-sm">
-        <div class="input-group-prepend">
-          <span class="input-group-text">名前</span>
-        </div>
-        <input type="text" v-model="name" class="form-control" id="name">
-      </div>
-      <div class="chat-comment col-sm-9 col-8 input-group input-group-sm">
-        <div class="input-group-prepend">
-          <span class="input-group-text">コメント</span>
-        </div>
+    <div>
+      <div class="input-group input-group-sm">
         <input
           type="text"
           v-model="comment"
@@ -38,6 +29,12 @@
       </ul>
     </div>
     <small>（※保存されません。ページ再読み込みで消去されます。）</small>
+    <div class="chat-name mt-2 input-group input-group-sm">
+      <div class="input-group-prepend">
+        <span class="input-group-text">表示名（任意）</span>
+      </div>
+      <input type="text" v-model="name" class="form-control" id="name">
+    </div>
   </div>
 </template>
 <script>
@@ -71,10 +68,7 @@ export default Vue.extend({
 </script>
 <style>
 .chat-name {
-  min-width: 135px;
-}
-.chat-comment {
-  min-width: 320px;
+  width: 240px;
 }
 .chat-comments {
   max-height: 640px;
