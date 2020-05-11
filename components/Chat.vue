@@ -2,7 +2,6 @@
   <div class="m-4 chat">
     <h5>
       簡易チャット
-      <small>（ページ再読み込みで消去）</small>
     </h5>
     <div class="row">
       <div class="chat-name col-sm-3 col-4 input-group input-group-sm">
@@ -29,6 +28,7 @@
         >送信</button>
       </div>
     </div>
+    <small>（※保存されません。ページ再読み込みで消去されます。）</small>
     <div v-if="comments.length > 0" class="mt-2 chat-comments">
       <ul class="list-group">
         <li class="list-group-item" v-for="c in comments">
