@@ -28,7 +28,6 @@
         >送信</button>
       </div>
     </div>
-    <small>（※保存されません。ページ再読み込みで消去されます。）</small>
     <div v-if="comments.length > 0" class="mt-2 chat-comments">
       <ul class="list-group">
         <li class="list-group-item" v-for="c in comments">
@@ -38,6 +37,7 @@
         </li>
       </ul>
     </div>
+    <small>（※保存されません。ページ再読み込みで消去されます。）</small>
   </div>
 </template>
 <script>
