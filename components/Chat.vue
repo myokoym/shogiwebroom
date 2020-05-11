@@ -1,8 +1,5 @@
 <template>
   <div class="m-4 chat">
-    <h5>
-      簡易チャット
-    </h5>
     <div class="input-group input-group-sm">
       <input
         type="text"
@@ -26,7 +23,7 @@
         </li>
       </ul>
     </div>
-    <small>（※保存されません。ページ再読み込みで消去されます。）</small>
+    <small>（※チャット内容は保存されません。ページ再読み込みで消去されます。）</small>
     <div class="chat-name mt-2 input-group input-group-sm">
       <div class="input-group-prepend">
         <span class="input-group-text">表示名（任意）</span>
