@@ -19,6 +19,11 @@ export default Vue.extend({
     }
   },
   created() {
+    // debug: console.log(this.$route.params.id)
+    if (!this.$route.params.id) {
+      this.$router.replace("/")
+      return
+    }
     this.$store.commit("sfen/setRoomId", {roomId: this.$route.params.id})
     // debug: console.log(this.$store.state.sfen.roomId)
   },
