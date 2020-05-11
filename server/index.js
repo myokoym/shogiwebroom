@@ -86,8 +86,7 @@ function socketStart(server) {
     })
 
     socket.on("sendComment", (params) => {
-      moment.locale('ja')
-      const time = moment(new Date()).format('H:mm:ss')
+      const time = moment(new Date()).utcOffset('+09:00').format('H:mm:ss')
       io.to(roomId).emit("receiveComment", {
         time: time,
         name: params.name,
