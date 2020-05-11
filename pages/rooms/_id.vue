@@ -1,7 +1,14 @@
 <template>
-  <div class="container">
-    <Shogiboard
-    ></Shogiboard>
+  <div class="row">
+    <div class="col-xl-8 container">
+      <Shogiboard
+        class=""
+      ></Shogiboard>
+    </div>
+    <div class="col-xl-4">
+      <Chat
+      ></Chat>
+    </div>
   </div>
 </template>
 
@@ -9,10 +16,12 @@
 import io from "socket.io-client"
 import Vue from "vue"
 import Shogiboard from '~/components/Shogiboard.vue'
+import Chat from '~/components/Chat.vue'
 
 export default Vue.extend({
   components: {
-    Shogiboard
+    Shogiboard,
+    Chat,
   },
   data() {
     return {

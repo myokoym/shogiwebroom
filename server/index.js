@@ -82,6 +82,16 @@ function socketStart(server) {
       redis.set(roomId, text)
       socket.broadcast.to(roomId).emit("update", text)
     })
+
+    socket.on("sendComment", (params) => {
+      const date = new Date()
+      const time = date.toLocaleTimeString()
+      io.to(roomId).emit("receiveComment", {
+        time: time,
+        name: params.name,
+        comment: params.comment,
+      })
+    })
   })
 }
 

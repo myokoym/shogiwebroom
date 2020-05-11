@@ -34,7 +34,21 @@ const webSocketPlugin = (store) => {
         }
         store.commit("sfen/receiveText", {text: text})
       })
+      socket.on("receiveComment", (params) => {
+        // debug: console.log("on receiveComment")
+        store.commit("chat/receiveComment", {
+          time: params.time,
+          name: params.name,
+          comment: params.comment,
+        })
+      })
       socket.emit("enterRoom", id)
+    } else if (mutation.type === "chat/sendComment") {
+      socket.emit("sendComment", {
+        id: state.sfen.roomId,
+        name: state.chat.name,
+        comment: state.chat.comment,
+      })
     }
     if (mutation.type === "sfen/setText" ||
         mutation.type === "sfen/receiveText" ||
