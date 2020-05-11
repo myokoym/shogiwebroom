@@ -3,21 +3,19 @@
     <h5>
       簡易チャット
     </h5>
-    <div>
-      <div class="input-group input-group-sm">
-        <input
-          type="text"
-          v-model="comment"
-          v-on:keyup.ctrl.enter="submit"
-          class="form-control"
-          placeholder="Ctrl+Enterで送信"
-          id="comment">
-        <button
-          type="submit"
-          class="btn btn-light btn-sm"
-          v-on:click="submit"
-        >送信</button>
-      </div>
+    <div class="input-group input-group-sm">
+      <input
+        type="text"
+        v-model="comment"
+        v-on:keyup.ctrl.enter="submit"
+        class="form-control"
+        placeholder="Ctrl+Enterで送信"
+        id="comment">
+      <button
+        type="submit"
+        class="btn btn-light btn-sm"
+        v-on:click="submit"
+      >送信</button>
     </div>
     <div v-if="comments.length > 0" class="mt-2 chat-comments">
       <ul class="list-group">
