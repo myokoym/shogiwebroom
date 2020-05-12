@@ -15,7 +15,7 @@ module.exports = {
       { property: 'og:url', content: 'https://shogiwebroom.herokuapp.com/' },
       { property: 'og:title', content: '将棋ウェブルーム' },
       { property: 'og:description', content: 'ブラウザで気軽に将棋盤を囲めるWebアプリ。ログイン不要、URL共有で何人でも入室可。リアルタイム同期、ドラッグ＆ドロップ対応、スマートフォン・タブレット対応、簡易チャット機能などが特徴。研究会などにお使いください。' },
-      { property: 'og:image', content: 'https://shogiwebroom.herokuapp.com/logo.png' },
+      { property: 'og:image', content: 'https://shogiwebroom.herokuapp.com/logo-twitter-card.png' },
     ],
     link: [
       { rel: 'icon', type: 'image/x-icon', href: '/favicon.ico' },
