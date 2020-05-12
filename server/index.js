@@ -8,6 +8,8 @@ const moment = require('moment')
 // Import and Set Nuxt.js options
 const config = require('../nuxt.config.js')
 config.dev = process.env.NODE_ENV !== 'production'
+console.log("NODE_ENV: " + process.env.NODE_ENV)
+console.log("config.dev: " + config.dev)
 
 async function start () {
   // Init Nuxt.js
@@ -20,6 +22,14 @@ async function start () {
   if (config.dev) {
     const builder = new Builder(nuxt)
     await builder.build()
+  }
+
+  console.log("NODE_ENV: " + process.env.NODE_ENV)
+  console.log("config.dev: " + config.dev)
+  if (config.dev) {
+    console.log("forceSSL")
+    const forceSSL = require('express-force-ssl')
+    app.use(forceSSL)
   }
 
   // Give nuxt middleware to express
