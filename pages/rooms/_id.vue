@@ -1,6 +1,7 @@
 <template>
   <div class="row">
     <div class="col-xl-8 container">
+      <Clock></Clock>
       <Shogiboard
         class=""
       ></Shogiboard>
@@ -17,11 +18,13 @@ import io from "socket.io-client"
 import Vue from "vue"
 import Shogiboard from '~/components/Shogiboard.vue'
 import Chat from '~/components/Chat.vue'
+import Clock from '~/components/Clock.vue'
 
 export default Vue.extend({
   components: {
     Shogiboard,
     Chat,
+    Clock,
   },
   data() {
     return {
