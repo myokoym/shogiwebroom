@@ -49,6 +49,33 @@ const webSocketPlugin = (store) => {
         name: state.chat.name,
         comment: state.chat.comment,
       })
+    } else if (mutation.type === "clock/enable") {
+      socket.on("clock", (params) => {
+        if (params.type === "changeTurn") {
+          store.commit("clock/onChangeTurn", {
+            nextTurn: params.nextTurn,
+          })
+        } else if (params.type === "pause") {
+          store.commit("clock/onPause")
+        } else if (params.type === "cancelPause") {
+          store.commit("clock/onCancelPause")
+        } else if (params.type === "reset") {
+          store.commit("clock/onReset")
+        }
+      })
+    } else if (mutation.type === "clock/disable") {
+      socket.off("clock")
+    } else if (mutation.type === "clock/emitChangeTurn") {
+      console.log("emit clockChangeTurn: " + state.clock.nextTurn)
+      socket.emit("clockChangeTurn", {
+        nextTurn: state.clock.nextTurn,
+      })
+    } else if (mutation.type === "clock/emitPause") {
+      socket.emit("clockPause")
+    } else if (mutation.type === "clock/emitCancelPause") {
+      socket.emit("clockCancelPause")
+    } else if (mutation.type === "clock/emitReset") {
+      socket.emit("clockReset")
     }
     if (mutation.type === "sfen/setText" ||
         mutation.type === "sfen/receiveText" ||

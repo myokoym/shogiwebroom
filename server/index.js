@@ -93,6 +93,26 @@ function socketStart(server) {
         comment: params.comment,
       })
     })
+
+    socket.on("clockChangeTurn", (params) => {
+      console.log("on clockChangeTurn: " + params.nextTurn)
+      io.to(roomId).emit("clock", {
+        type: "changeTurn",
+        nextTurn: params.nextTurn,
+      })
+    })
+    socket.on("clockPause", () => {
+      console.log("on clockPause")
+      io.to(roomId).emit("clock", {type: "pause"})
+    })
+    socket.on("clockCancelPause", () => {
+      console.log("on clockCancelPause")
+      io.to(roomId).emit("clock", {type: "cancelPause"})
+    })
+    socket.on("clockReset", () => {
+      console.log("on clockReset")
+      io.to(roomId).emit("clock", {type: "reset"})
+    })
   })
 }
 

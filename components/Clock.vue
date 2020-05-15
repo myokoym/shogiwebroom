@@ -1,42 +1,55 @@
 <template>
   <div class="">
-    対局時計: {{displayBTime}} : {{displayWTime}}
-    <button type="button" v-on:click="changeTurn('w')">先手側のボタン</button>
-    <button type="button" v-on:click="changeTurn('b')">後手側のボタン</button>
-    <button type="button" v-on:click="togglePause()">一時停止</button>
-    <button type="button" v-if="pause" v-on:click="reset()">リセット</button>
+    <div v-if="enabled" class="">
+      対局時計: {{displayBTime}} : {{displayWTime}}
+      <button type="button" v-on:click="changeTurn('w')">先手側のボタン</button>
+      <button type="button" v-on:click="changeTurn('b')">後手側のボタン</button>
+      <button type="button" v-on:click="togglePause()">一時停止</button>
+    </div>
+    {{enabled}}
+    {{turn}}
+    {{$store.state.clock.currentTurn}}
+    {{pause}}
+    <button type="button" v-if="!enabled || pause" v-on:click="reset()">リセット</button>
   </div>
 </template>
 <script>
 import Vue from "vue"
+import { mapState } from "vuex"
 
 export default Vue.extend({
   computed: {
     displayBTime: function() {
-      console.log("displayBTime")
+      //console.log("displayBTime")
       return this.displayTime(this.timeLimits['b'])
     },
     displayWTime: function() {
       return this.displayTime(this.timeLimits['w'])
     },
+    turn: function() {
+      return this.$store.state.clock.currentTurn
+    },
+    ...mapState("clock", [
+      "enabled",
+      //"currentTurn",
+      "timeLimits",
+      "pause",
+    ]),
   },
   data() {
     return {
-      mode: undefined,
-      countdown: 0,
-      currentTurn: undefined,
-      requestID: undefined,
       performanceNow: undefined,
+      requestID: undefined,
       subtotal: 0,
-      timeLimits: {
-        b: 0,
-        w: 0,
-      },
-      pause: false,
     }
   },
   mounted() {
-    this.reset()
+    this.loop()
+  },
+  watch: {
+    turn: function() {
+      this.subtotal = 0
+    },
   },
   methods: {
     displayTime(timeLimit) {
@@ -52,18 +65,23 @@ export default Vue.extend({
       if (this.currentTurn === nextTurn) {
         return
       }
-      this.currentTurn = nextTurn
-      this.subtotal = 0
-      if (!this.requestID) {
+      this.$store.commit("clock/emitChangeTurn", {
+        nextTurn: nextTurn,
+      })
+    },
+    loop() {
+      //if (!this.requestID) {
         this.performanceNow = performance.now()
         this.requestID = requestAnimationFrame(this.step)
-      }
+      //}
     },
     step(timestamp) {
-      if (!this.pause) {
+      if (this.enabled && !this.pause) {
         this.subtotal += timestamp - this.performanceNow
         if (this.subtotal >= 100) {
-          this.timeLimits[this.currentTurn] -= 100
+          this.$store.commit("clock/decreaseTimeLimit", {
+            diff: 100,
+          })
           this.subtotal -= 100
         }
       }
@@ -71,18 +89,17 @@ export default Vue.extend({
       requestAnimationFrame(this.step)
     },
     togglePause() {
-      this.pause = !this.pause
+      if (this.pause) {
+        this.$store.commit("clock/emitCancelPause")
+      } else {
+        this.$store.commit("clock/emitPause")
+      }
     },
     reset(turn) {
-      if (this.requestID) {
-        cancelAnimationFrame(this.requestID)
+      if (!this.enabled) {
+        this.$store.commit("clock/enable")
       }
-      this.requestID = undefined
-      this.currentTurn = undefined
-      this.subtotal = 0
-      const timeLimit = 5 * 60 * 1000
-      this.timeLimits['b'] = timeLimit
-      this.timeLimits['w'] = timeLimit
+      this.$store.commit("clock/emitReset")
     },
   }
 })
