@@ -42,14 +42,6 @@ const webSocketPlugin = (store) => {
           comment: params.comment,
         })
       })
-      socket.emit("enterRoom", id)
-    } else if (mutation.type === "chat/sendComment") {
-      socket.emit("sendComment", {
-        id: state.sfen.roomId,
-        name: state.chat.name,
-        comment: state.chat.comment,
-      })
-    } else if (mutation.type === "clock/enable") {
       socket.on("clock", (params) => {
         if (params.type === "changeTurn") {
           store.commit("clock/onChangeTurn", {
@@ -61,10 +53,20 @@ const webSocketPlugin = (store) => {
           store.commit("clock/onCancelPause")
         } else if (params.type === "reset") {
           store.commit("clock/onReset")
+        } else if (params.type === "enable") {
+          console.log("commit onEnable")
+          store.commit("clock/onEnable")
+        } else if (params.type === "disable") {
+          store.commit("clock/onDisable")
         }
       })
-    } else if (mutation.type === "clock/disable") {
-      socket.off("clock")
+      socket.emit("enterRoom", id)
+    } else if (mutation.type === "chat/sendComment") {
+      socket.emit("sendComment", {
+        id: state.sfen.roomId,
+        name: state.chat.name,
+        comment: state.chat.comment,
+      })
     } else if (mutation.type === "clock/emitChangeTurn") {
       console.log("emit clockChangeTurn: " + state.clock.nextTurn)
       socket.emit("clockChangeTurn", {
@@ -76,6 +78,10 @@ const webSocketPlugin = (store) => {
       socket.emit("clockCancelPause")
     } else if (mutation.type === "clock/emitReset") {
       socket.emit("clockReset")
+    } else if (mutation.type === "clock/emitEnable") {
+      socket.emit("clockEnable")
+    } else if (mutation.type === "clock/emitDisable") {
+      socket.emit("clockDisable")
     }
     if (mutation.type === "sfen/setText" ||
         mutation.type === "sfen/receiveText" ||

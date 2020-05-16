@@ -17,12 +17,6 @@ export const mutations = {
     //state.timeLimits['b'] = timeLimit
     //state.timeLimits['w'] = timeLimit
   },
-  enable(state) {
-    state.enabled = true
-  },
-  disable(state) {
-    state.enabled = false
-  },
   decreaseTimeLimit(state, payload) {
     state.timeLimits[state.currentTurn] -= payload.diff
     if (state.timeLimits[state.currentTurn] < 0) {
@@ -38,6 +32,10 @@ export const mutations = {
   },
   emitReset(state) {
     console.log("emitReset")
+  },
+  emitEnable(state) {
+  },
+  emitDisable(state) {
   },
   onChangeTurn(state, payload) {
     console.log("onChangeTurn: " + payload.nextTurn)
@@ -60,5 +58,12 @@ export const mutations = {
     state.timeLimits['b'] = timeLimit
     state.timeLimits['w'] = timeLimit
     state.pause = false
+  },
+  onEnable(state) {
+    console.log("onEnable")
+    state.enabled = true
+  },
+  onDisable(state) {
+    state.enabled = false
   },
 }

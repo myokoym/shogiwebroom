@@ -31,6 +31,9 @@ export default Vue.extend({
     turn: function() {
       return this.$store.state.clock.currentTurn
     },
+    enabled: function() {
+      return this.$store.state.clock.enabled
+    },
     zero: function() {
       return this.timeLimits['b'] === 0 ||
              this.timeLimits['w'] === 0
@@ -55,6 +58,13 @@ export default Vue.extend({
   watch: {
     turn: function() {
       this.subtotal = 0
+    },
+    enabled: function() {
+      if (this.enabled) {
+        this.startLoop()
+      } else {
+        this.stopLoop()
+      }
     },
   },
   methods: {
@@ -111,12 +121,10 @@ export default Vue.extend({
       }
     },
     enable() {
-      this.$store.commit("clock/enable")
-      this.startLoop()
+      this.$store.commit("clock/emitEnable")
     },
     disable() {
-      this.stopLoop()
-      this.$store.commit("clock/disable")
+      this.$store.commit("clock/emitDisable")
     },
     reset() {
       this.$store.commit("clock/emitReset")
