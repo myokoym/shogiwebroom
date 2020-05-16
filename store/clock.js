@@ -25,6 +25,9 @@ export const mutations = {
   },
   decreaseTimeLimit(state, payload) {
     state.timeLimits[state.currentTurn] -= payload.diff
+    if (state.timeLimits[state.currentTurn] < 0) {
+      state.timeLimits[state.currentTurn] = 0
+    }
   },
   emitChangeTurn(state, payload) {
     state.nextTurn = payload.nextTurn

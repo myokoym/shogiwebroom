@@ -4,13 +4,15 @@
       対局時計: {{displayBTime}} : {{displayWTime}}
       <button type="button" v-on:click="changeTurn('w')">先手側のボタン</button>
       <button type="button" v-on:click="changeTurn('b')">後手側のボタン</button>
-      <button type="button" v-on:click="togglePause()">一時停止</button>
+      <button type="button" v-if="turn" v-on:click="togglePause()">{{pause ? "再開" : "一時停止"}}</button>
+      <button type="button" v-if="!turn || pause || zero" v-on:click="reset()">リセット</button>
     </div>
     {{enabled}}
     {{turn}}
     {{$store.state.clock.currentTurn}}
     {{pause}}
-    <button type="button" v-if="!enabled || pause" v-on:click="reset()">リセット</button>
+    <button type="button" v-if="enabled" v-on:click="disable()">時計を非表示</button>
+    <button type="button" v-if="!enabled" v-on:click="enable()">時計を表示</button>
   </div>
 </template>
 <script>
@@ -29,6 +31,10 @@ export default Vue.extend({
     turn: function() {
       return this.$store.state.clock.currentTurn
     },
+    zero: function() {
+      return this.timeLimits['b'] === 0 ||
+             this.timeLimits['w'] === 0
+    },
     ...mapState("clock", [
       "enabled",
       //"currentTurn",
@@ -44,7 +50,7 @@ export default Vue.extend({
     }
   },
   mounted() {
-    this.loop()
+    //this.startLoop()
   },
   watch: {
     turn: function() {
@@ -62,18 +68,26 @@ export default Vue.extend({
       return min + ":" + sec
     },
     changeTurn(nextTurn) {
-      if (this.currentTurn === nextTurn) {
+      if (this.turn === nextTurn) {
         return
+      }
+      if (this.pause) {
+        this.togglePause()
       }
       this.$store.commit("clock/emitChangeTurn", {
         nextTurn: nextTurn,
       })
     },
-    loop() {
-      //if (!this.requestID) {
+    startLoop() {
+      if (!this.requestID) {
         this.performanceNow = performance.now()
         this.requestID = requestAnimationFrame(this.step)
-      //}
+      }
+    },
+    stopLoop() {
+      cancelAnimationFrame(this.requestID)
+      this.performanceNow = undefined
+      this.requestID = undefined
     },
     step(timestamp) {
       if (this.enabled && !this.pause) {
@@ -95,10 +109,15 @@ export default Vue.extend({
         this.$store.commit("clock/emitPause")
       }
     },
-    reset(turn) {
-      if (!this.enabled) {
-        this.$store.commit("clock/enable")
-      }
+    enable() {
+      this.$store.commit("clock/enable")
+      this.startLoop()
+    },
+    disable() {
+      this.stopLoop()
+      this.$store.commit("clock/disable")
+    },
+    reset() {
       this.$store.commit("clock/emitReset")
     },
   }
