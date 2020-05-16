@@ -93,10 +93,11 @@ export default Vue.extend({
       if (this.enabled && !this.pause) {
         this.subtotal += timestamp - this.performanceNow
         if (this.subtotal >= 100) {
+          const rem = this.subtotal % 100
           this.$store.commit("clock/decreaseTimeLimit", {
-            diff: 100,
+            diff: this.subtotal - rem,
           })
-          this.subtotal -= 100
+          this.subtotal = rem
         }
       }
       this.performanceNow = timestamp
