@@ -46,6 +46,9 @@
         v-bind:disabled="beforeX === undefined"
       >成る/駒反転（右クリックでも可）</button>
     </div>
+    <div v-if="showClock" class="my-2 embed-responsive embed-responsive-21by9">
+      <iframe class="embed-responsive-item" src="https://webchessclock.herokuapp.com/"></iframe>
+    </div>
     <div class="m-1 d-flex justify-content-between align-items-center">
       <button
         type="button"
@@ -56,6 +59,15 @@
           'btn-light': !reversed
         }"
       >盤反転: {{reversed ? "ON" : "OFF"}}</button>
+      <button
+        type="button"
+        class="btn btn-sm"
+        v-on:click="toggleClock()"
+        v-bind:class="{
+          'btn-dark': showClock,
+          'btn-light': !showClock,
+        }"
+      >時計表示: {{showClock ? "ON" : "OFF"}}</button>
       <div class="btn-group">
         <div class="btn-group">
           <button
@@ -130,6 +142,7 @@ export default Vue.extend({
       beforeX: undefined,
       beforeY: undefined,
       beforeHand: undefined,
+      showClock: false,
     }
   },
   watch: {
@@ -150,6 +163,9 @@ export default Vue.extend({
     },
     reverseBoard() {
       this.$store.commit("sfen/reverse")
+    },
+    toggleClock() {
+      this.showClock = !this.showClock
     },
     moveFromHand(piece) {
       // debug: console.log("moveFromHand: " + piece)
