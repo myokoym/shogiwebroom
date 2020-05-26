@@ -47,7 +47,7 @@
       >成る/駒反転（右クリックでも可）</button>
     </div>
     <div v-if="showClock" class="my-2 embed-responsive embed-responsive-21by9">
-      <iframe class="embed-responsive-item" src="https://webchessclock.herokuapp.com/"></iframe>
+      <iframe class="embed-responsive-item" v-bind:src="'https://webchessclock.herokuapp.com/rooms/' + roomId"></iframe>
     </div>
     <div class="m-1 d-flex justify-content-between align-items-center">
       <button
@@ -124,6 +124,7 @@ export default Vue.extend({
       return this.$store.getters["sfen/reversedSfen"]
     },
     ...mapState("sfen", {
+      roomId: "roomId",
       text: "text",
       reversed: "reversed",
       rows: "rows",
