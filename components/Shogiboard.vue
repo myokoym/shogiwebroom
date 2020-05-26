@@ -59,15 +59,6 @@
           'btn-light': !reversed
         }"
       >盤反転: {{reversed ? "ON" : "OFF"}}</button>
-      <button
-        type="button"
-        class="btn btn-sm"
-        v-on:click="toggleClock()"
-        v-bind:class="{
-          'btn-dark': showClock,
-          'btn-light': !showClock,
-        }"
-      >時計表示: {{showClock ? "ON" : "OFF"}}</button>
       <div class="btn-group">
         <div class="btn-group">
           <button
@@ -84,6 +75,17 @@
           >一手進む</button>
         </div>
       </div>
+    </div>
+    <div class="m-1 d-flex justify-content-center align-items-center">
+      <button
+        type="button"
+        class="btn btn-sm"
+        v-on:click="toggleClock()"
+        v-bind:class="{
+          'btn-dark': showClock,
+          'btn-light': !showClock,
+        }"
+      >時計表示: {{showClock ? "ON" : "OFF"}}</button>
     </div>
     <div class="mt-3 input-group input-group-sm">
       <div class="input-group-prepend">
