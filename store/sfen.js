@@ -186,6 +186,7 @@ export const mutations = {
       const board = values[0]
       const turn = values[1]
       const hand = values[2]
+      const extra = values[3]
       const reversedCells = []
       const cells = board.match(/\+?./g).reverse()
       for (const cell of cells) {
@@ -216,6 +217,9 @@ export const mutations = {
               turn +
               " " +
               reversedHands.join("")
+      if (extra) {
+        sfen = sfen + " " + extra
+      }
     }
     // debug: console.log(state.text)
     // debug: console.log(sfen)
