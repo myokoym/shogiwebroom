@@ -183,8 +183,8 @@ export default Vue.extend({
       return this.beforeHand === piece
     },
     isBeforeStock(piece) {
-      console.log(this.beforeStock)
-      console.log(piece)
+      // debug: console.log(this.beforeStock)
+      // debug: console.log(piece)
       return this.beforeStock === piece
     },
     isSelectedPiece() {
@@ -215,7 +215,7 @@ export default Vue.extend({
       }
     },
     moveFromStock(piece) {
-      console.log("moveFromStock: " + piece)
+      // debug: console.log("moveFromStock: " + piece)
       if (piece === ".") {
         return
       }

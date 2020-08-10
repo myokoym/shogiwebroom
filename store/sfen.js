@@ -94,7 +94,7 @@ export const mutations = {
     }
   },
   moveStockToBoard(state, payload) {
-    console.log("moveStockToBoard")
+    // debug: console.log("moveStockToBoard")
     const beforeStock = payload.beforeStock
     const afterCell = state.rows[payload.afterY][payload.afterX]
     if (afterCell !== ".") {
@@ -304,7 +304,7 @@ export const mutations = {
     for (let i = 0, len = (pieces.length - filledStock.length); i < len; i++) {
       filledStock.push(".")
     }
-    console.log(filledStock)
+    // debug: console.log(filledStock)
     state.filledStock = filledStock
   },
   buildSfen(state, payload) {
@@ -395,7 +395,7 @@ export const mutations = {
               turn +
               " " +
               reversedHands.join("")
-      console.log("extra: " + extra)
+      // debug: console.log("extra: " + extra)
       if (extra) {
         sfen = sfen + " " + extra
       }
