@@ -58,12 +58,16 @@ const webSocketPlugin = (store) => {
         mutation.type === "sfen/init") {
       store.commit("sfen/parseSfen")
       store.commit("sfen/fillHands")
+      store.commit("sfen/fillStock")
     } else if (mutation.type === "sfen/moveBoardToBoard" ||
                mutation.type === "sfen/moveBoardToHand" ||
                mutation.type === "sfen/moveHandToBoard" ||
                mutation.type === "sfen/moveHandToHand" ||
+               mutation.type === "sfen/moveBoardToStock" ||
+               mutation.type === "sfen/moveStockToBoard" ||
                mutation.type === "sfen/togglePromotedAndTurn") {
       store.commit("sfen/fillHands")
+      store.commit("sfen/fillStock")
       store.commit("sfen/buildSfen")
     }
     if (mutation.type === "sfen/setText" ||

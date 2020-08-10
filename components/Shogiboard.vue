@@ -38,6 +38,15 @@
         v-bind:is-selected-piece="isSelectedPiece"
       ></Hand>
     </div>
+    <div v-if="showStock" class="my-2">
+      <Stock
+        turn="b"
+        v-bind:move-from-hand="moveFromStock"
+        v-bind:move-to-hand="moveToStock"
+        v-bind:is-before-hand="isBeforeStock"
+        v-bind:is-selected-piece="isSelectedPiece"
+      ></Stock>
+    </div>
     <div class="m-1">
       <button
         type="button"
@@ -86,6 +95,15 @@
           'btn-light': !showClock,
         }"
       >時計表示: {{showClock ? "ON" : "OFF"}}</button>
+      <button
+        type="button"
+        class="btn btn-sm"
+        v-on:click="toggleStock()"
+        v-bind:class="{
+          'btn-dark': showStock,
+          'btn-light': !showStock,
+        }"
+      >駒箱表示: {{showStock ? "ON" : "OFF"}}</button>
     </div>
     <div class="mt-3 input-group input-group-sm">
       <div class="input-group-prepend">
@@ -111,6 +129,7 @@ import Vue from "vue"
 import { mapState } from "vuex"
 import Piece from '~/components/Piece.vue'
 import Hand from '~/components/Hand.vue'
+import Stock from '~/components/Stock.vue'
 import VueClipboard from "vue-clipboard2"
 Vue.use(VueClipboard)
 
@@ -118,6 +137,7 @@ export default Vue.extend({
   components: {
     Piece,
     Hand,
+    Stock,
   },
   computed: {
     reversedSfen: function() {
@@ -145,6 +165,8 @@ export default Vue.extend({
       beforeX: undefined,
       beforeY: undefined,
       beforeHand: undefined,
+      beforeStock: undefined,
+      showStock: false,
       showClock: false,
     }
   },
@@ -160,15 +182,24 @@ export default Vue.extend({
     isBeforeHand(piece) {
       return this.beforeHand === piece
     },
+    isBeforeStock(piece) {
+      console.log(this.beforeStock)
+      console.log(piece)
+      return this.beforeStock === piece
+    },
     isSelectedPiece() {
       return this.beforeX !== undefined ||
-             this.beforeHand !== undefined
+             this.beforeHand !== undefined ||
+             this.beforeStock !== undefined
     },
     reverseBoard() {
       this.$store.commit("sfen/reverse")
     },
     toggleClock() {
       this.showClock = !this.showClock
+    },
+    toggleStock() {
+      this.showStock = !this.showStock
     },
     moveFromHand(piece) {
       // debug: console.log("moveFromHand: " + piece)
@@ -181,6 +212,19 @@ export default Vue.extend({
         this.beforeHand = undefined
       } else {
         this.beforeHand = piece
+      }
+    },
+    moveFromStock(piece) {
+      console.log("moveFromStock: " + piece)
+      if (piece === ".") {
+        return
+      }
+      this.beforeX = undefined
+      this.beforeY = undefined
+      if (this.beforeStock === piece) {
+        this.beforeStock = undefined
+      } else {
+        this.beforeStock = piece
       }
     },
     moveToHand(turn) {
@@ -210,6 +254,23 @@ export default Vue.extend({
         this.beforeHand = undefined
       }
     },
+    moveToStock(turn) {
+      // debug: console.log("moveToHand: " + turn)
+      if (this.beforeX === undefined &&
+          this.beforeStock === undefined) {
+        return
+      }
+      if (this.beforeX !== undefined) {
+        this.$store.commit("sfen/moveBoardToStock", {
+          beforeX: this.beforeX,
+          beforeY: this.beforeY,
+        })
+        this.beforeX = undefined
+        this.beforeY = undefined
+      } else if (this.beforeStock) {
+        this.beforeStock = undefined
+      }
+    },
     togglePromotedAndTurn(x, y) {
       this.$store.commit("sfen/togglePromotedAndTurn", {
         x: x,
@@ -236,6 +297,7 @@ export default Vue.extend({
         this.beforeX = x
         this.beforeY = y
         this.beforeHand = undefined
+        this.beforeStock = undefined
       } else if (this.beforeX === x && this.beforeY === y) {
         this.beforeX = undefined
         this.beforeY = undefined
@@ -265,10 +327,21 @@ export default Vue.extend({
               afterY: y,
             })
           }
+        } else if (this.beforeStock) {
+          if (afterCell !== ".") {
+            return
+          } else {
+            this.$store.commit("sfen/moveStockToBoard", {
+              beforeStock: this.beforeStock,
+              afterX: x,
+              afterY: y,
+            })
+          }
         }
         this.beforeX = undefined
         this.beforeY = undefined
         this.beforeHand = undefined
+        this.beforeStock = undefined
       }
     }
   }

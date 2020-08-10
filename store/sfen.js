@@ -3,6 +3,7 @@ export const state = () => ({
   text: "",
   rows: [],
   hands: {},
+  stock: {},
   capturablePieces: {
     b: ["P", "L", "N", "S", "G", "B", "R", "K"],
     w: ["p", "l", "n", "s", "g", "b", "r", "k"],
@@ -11,6 +12,7 @@ export const state = () => ({
     b: undefined,
     w: undefined,
   },
+  filledStock: [],
   currentTurn: "b",
   reversed: false,
   history: [],
@@ -91,6 +93,20 @@ export const mutations = {
       }
     }
   },
+  moveStockToBoard(state, payload) {
+    console.log("moveStockToBoard")
+    const beforeStock = payload.beforeStock
+    const afterCell = state.rows[payload.afterY][payload.afterX]
+    if (afterCell !== ".") {
+      return
+    } else {
+      state.rows[payload.afterY][payload.afterX] = beforeStock
+      state.stock[beforeStock] -= 1
+      if (state.stock[beforeStock] === 0) {
+        delete state.stock[beforeStock]
+      }
+    }
+  },
   moveBoardToHand(state, payload) {
     // debug: console.log("moveBoardToHand")
     // debug: console.log(payload)
@@ -107,6 +123,20 @@ export const mutations = {
     }
     state.hands[newHand] = state.hands[newHand]  || 0
     state.hands[newHand] += 1
+    state.rows[payload.beforeY][payload.beforeX] = "."
+  },
+  moveBoardToStock(state, payload) {
+    // debug: console.log("moveBoardToHand")
+    // debug: console.log(payload)
+    const beforeCell = state.rows[payload.beforeY][payload.beforeX]
+    let newHand = beforeCell
+    // debug: console.log("newHand: " + newHand)
+    if (newHand.match(/\+/)) {
+      newHand = newHand.charAt(1)
+    }
+    newHand = newHand.toUpperCase()
+    state.stock[newHand] = state.stock[newHand]  || 0
+    state.stock[newHand] += 1
     state.rows[payload.beforeY][payload.beforeX] = "."
   },
   moveHandToHand(state, payload) {
@@ -192,6 +222,7 @@ export const mutations = {
     const values = sfen.split(" ")
     const board = values[0]
     const hand = values[2]
+    const extra = values[3]
     const rows = board.split("/").map((row) => {
       const cells = []
       const chars = row.split("")
@@ -226,8 +257,24 @@ export const mutations = {
       }
     }
 
+    const stock = {}
+    if (extra !== undefined &&
+        extra !== "-") {
+      const chars = extra.split("")
+      for (let i = 0, len = chars.length; i < len; i++) {
+        const char = chars[i]
+        if (char.match(/\d/)) {
+          i++
+          stock[chars[i]] = Number(char)
+        } else {
+          stock[char] = 1
+        }
+      }
+    }
+
     state.rows = rows
     state.hands = hands
+    state.stock = stock
     // debug: console.log(rows)
     // debug: console.log(hands)
   },
@@ -246,12 +293,27 @@ export const mutations = {
       state.filledHands[turn] = filledHands
     })
   },
+  fillStock(state) {
+    const filledStock = []
+    const pieces = state.capturablePieces["b"]
+    pieces.forEach((piece) => {
+      if (state.stock[piece]) {
+        filledStock.push(piece)
+      }
+    })
+    for (let i = 0, len = (pieces.length - filledStock.length); i < len; i++) {
+      filledStock.push(".")
+    }
+    console.log(filledStock)
+    state.filledStock = filledStock
+  },
   buildSfen(state, payload) {
     // debug: console.log("buildSfen")
     let sfen = ""
     let nSpaces = 0
     const rows = state.rows
     const hands = state.hands
+    const stock = state.stock
     // debug: console.log(hands)
     rows.forEach((row, index) => {
       if (index !== 0) {
@@ -285,12 +347,23 @@ export const mutations = {
     } else {
       sfen += "-"
     }
+    if (Object.keys(stock).length > 0) {
+      sfen += " "
+      for (let [key, value] of Object.entries(stock)) {
+        if (value > 1) {
+          sfen += value + key
+        } else {
+          sfen += key
+        }
+      }
+    }
     // debug: console.log("built sfen: " + sfen)
     if (state.reversed) {
       const values = sfen.split(" ")
       const board = values[0]
       const turn = values[1]
       const hand = values[2]
+      const extra = values[3]
       const reversedCells = []
       const cells = board.match(/\+?./g).reverse()
       for (const cell of cells) {
@@ -322,6 +395,10 @@ export const mutations = {
               turn +
               " " +
               reversedHands.join("")
+      console.log("extra: " + extra)
+      if (extra) {
+        sfen = sfen + " " + extra
+      }
       // debug: console.log("reversed sfen: " + sfen)
     }
     state.text = sfen
