@@ -182,6 +182,7 @@ export default Vue.extend({
       font: "kirieji1",
       fontOptions: [
         {value: "kirieji1", text: "切絵字"},
+        {value: "sarari", text: "しょかきさらり"},
         {value: "kouzan", text: "衡山毛筆フォント行書"},
       ],
     }
