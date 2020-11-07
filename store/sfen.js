@@ -80,6 +80,8 @@ export const mutations = {
     const afterCell = state.rows[payload.afterY][payload.afterX]
     if (afterCell !== ".") {
       return
+    } else if (!state.hands[beforeHand]) {
+      return
     } else {
       if (beforeHand.match(/[A-Z]/)) {
         state.currentTurn = "w"
@@ -98,6 +100,8 @@ export const mutations = {
     const beforeStock = payload.beforeStock
     const afterCell = state.rows[payload.afterY][payload.afterX]
     if (afterCell !== ".") {
+      return
+    } else if (!state.stock[beforeStock]) {
       return
     } else {
       state.rows[payload.afterY][payload.afterX] = beforeStock
@@ -141,6 +145,9 @@ export const mutations = {
   },
   moveHandToHand(state, payload) {
     // debug: console.log("moveHandToHand")
+    if (!state.hands[payload.beforeHand]) {
+      return
+    }
     let newHand = payload.beforeHand
     if (payload.turn === "b") {
       newHand = newHand.toUpperCase()
