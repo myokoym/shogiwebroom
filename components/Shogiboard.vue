@@ -3,6 +3,7 @@
     <div class="d-md-flex justify-content-around">
       <Hand
         turn="w"
+        v-bind:font="font"
         v-bind:move-from-hand="moveFromHand"
         v-bind:move-to-hand="moveToHand"
         v-bind:is-before-hand="isBeforeHand"
@@ -26,12 +27,14 @@
             <Piece
               type="board"
               v-bind:piece="cell"
+              v-bind:font="font"
             ></Piece>
           </td>
         </tr>
       </table>
       <Hand
         turn="b"
+        v-bind:font="font"
         v-bind:move-from-hand="moveFromHand"
         v-bind:move-to-hand="moveToHand"
         v-bind:is-before-hand="isBeforeHand"
@@ -41,6 +44,7 @@
     <div v-if="showStock" class="my-2">
       <Stock
         turn="b"
+        v-bind:font="font"
         v-bind:move-from-hand="moveFromStock"
         v-bind:move-to-hand="moveToStock"
         v-bind:is-before-hand="isBeforeStock"
@@ -104,6 +108,13 @@
           'btn-light': !showStock,
         }"
       >駒箱表示: {{showStock ? "ON" : "OFF"}}</button>
+      <div>
+        <b-form-select
+          v-model="font"
+          :options="fontOptions"
+          size="sm"
+        ></b-form-select>
+      </div>
     </div>
     <div class="mt-3 input-group input-group-sm">
       <div class="input-group-prepend">
@@ -168,6 +179,11 @@ export default Vue.extend({
       beforeStock: undefined,
       showStock: false,
       showClock: false,
+      font: "kirieji1",
+      fontOptions: [
+        {value: "kirieji1", text: "切絵字フォント"},
+        {value: "kouzan", text: "衡山毛筆フォント"},
+      ],
     }
   },
   watch: {

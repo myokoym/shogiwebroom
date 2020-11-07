@@ -16,6 +16,7 @@
       <Piece
         type="hand"
         v-bind:piece="piece"
+        v-bind:font="font"
       ></Piece>
       <span>{{$store.state.sfen.stock[piece] || "　"}}</span>
     </div>
@@ -32,6 +33,7 @@ export default Vue.extend({
   },
   props: {
     turn: String,
+    font: String,
     moveFromHand: Function,
     moveToHand: Function,
     isBeforeHand: Function,

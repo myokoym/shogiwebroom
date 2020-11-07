@@ -14,6 +14,7 @@ export default Vue.extend({
   props: {
     piece: String,
     type: String,
+    font: String,
   },
   mounted() {
   },
@@ -60,7 +61,11 @@ export default Vue.extend({
       if (path === undefined) {
         path = "hatena"
       }
-      return require("@/assets/images/kirieji1/" + path + ".png")
+      let font = this.font
+      if (!font) {
+        font = "kirieji1"
+      }
+      return require("@/assets/images/" + font + "/" + path + ".png")
     },
   }
 })
