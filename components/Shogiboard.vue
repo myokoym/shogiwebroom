@@ -181,8 +181,8 @@ export default Vue.extend({
       showClock: false,
       font: "kirieji1",
       fontOptions: [
-        {value: "kirieji1", text: "切絵字フォント"},
-        {value: "kouzan", text: "衡山毛筆フォント"},
+        {value: "kirieji1", text: "切絵字"},
+        {value: "kouzan", text: "衡山毛筆フォント行書"},
       ],
     }
   },
