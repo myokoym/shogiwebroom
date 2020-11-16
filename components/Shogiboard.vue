@@ -93,6 +93,15 @@
       <button
         type="button"
         class="btn btn-sm"
+        v-on:click="toggleAudio()"
+        v-bind:class="{
+          'btn-dark': enabledAudio,
+          'btn-light': !enabledAudio,
+        }"
+      >駒音: {{enabledAudio ? "ON" : "OFF"}}</button>
+      <button
+        type="button"
+        class="btn btn-sm"
         v-on:click="toggleClock()"
         v-bind:class="{
           'btn-dark': showClock,
@@ -166,6 +175,7 @@ export default Vue.extend({
   },
   mounted() {
     this.$store.commit("sfen/init")
+    this.komaotoObj = new Audio(this.komaotoPath())
     // debug: console.log("this.text: " + this.text)
     // debug: console.log("this.text: " + this.$store.state.sfen.text)
   },
@@ -177,6 +187,7 @@ export default Vue.extend({
       beforeY: undefined,
       beforeHand: undefined,
       beforeStock: undefined,
+      enabledAudio: false,
       showStock: false,
       showClock: false,
       font: "kirieji1",
@@ -185,14 +196,24 @@ export default Vue.extend({
         {value: "sarari", text: "しょかきさらり"},
         {value: "kouzan", text: "衡山毛筆フォント行書"},
       ],
+      komaotoName: "komaoto1",
+      komaotoObj: undefined,
     }
   },
   watch: {
     "value": function() {
       this.update()
     },
+    "text": function() {
+      if (this.enabledAudio) {
+        this.komaotoObj.play();
+      }
+    },
   },
   methods: {
+    komaotoPath() {
+      return require("@/assets/audio/" + this.komaotoName + ".mp3")
+    },
     isBeforeCell(x, y) {
       return this.beforeX === x && this.beforeY === y
     },
@@ -211,6 +232,9 @@ export default Vue.extend({
     },
     reverseBoard() {
       this.$store.commit("sfen/reverse")
+    },
+    toggleAudio() {
+      this.enabledAudio = !this.enabledAudio
     },
     toggleClock() {
       this.showClock = !this.showClock
