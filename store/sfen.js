@@ -14,6 +14,8 @@ export const state = () => ({
   },
   filledStock: [],
   currentTurn: "b",
+  latestCellX: undefined,
+  latestCellY: undefined,
   reversed: false,
   history: [],
   historyCursor: -1,
@@ -71,6 +73,8 @@ export const mutations = {
     } else {
       state.currentTurn = "b"
     }
+    state.latestCellX = payload.afterX
+    state.latestCellY = payload.afterY
     state.rows[payload.afterY][payload.afterX] = beforeCell
     state.rows[payload.beforeY][payload.beforeX] = "."
   },
@@ -88,6 +92,8 @@ export const mutations = {
       } else {
         state.currentTurn = "b"
       }
+      state.latestCellX = payload.afterX
+      state.latestCellY = payload.afterY
       state.rows[payload.afterY][payload.afterX] = beforeHand
       state.hands[beforeHand] -= 1
       if (state.hands[beforeHand] === 0) {
@@ -104,6 +110,8 @@ export const mutations = {
     } else if (!state.stock[beforeStock]) {
       return
     } else {
+      state.latestCellX = payload.afterX
+      state.latestCellY = payload.afterY
       state.rows[payload.afterY][payload.afterX] = beforeStock
       state.stock[beforeStock] -= 1
       if (state.stock[beforeStock] === 0) {
@@ -114,6 +122,8 @@ export const mutations = {
   moveBoardToHand(state, payload) {
     // debug: console.log("moveBoardToHand")
     // debug: console.log(payload)
+    state.latestCellX = undefined
+    state.latestCellY = undefined
     const beforeCell = state.rows[payload.beforeY][payload.beforeX]
     let newHand = beforeCell
     // debug: console.log("newHand: " + newHand)
@@ -132,6 +142,8 @@ export const mutations = {
   moveBoardToStock(state, payload) {
     // debug: console.log("moveBoardToHand")
     // debug: console.log(payload)
+    state.latestCellX = undefined
+    state.latestCellY = undefined
     const beforeCell = state.rows[payload.beforeY][payload.beforeX]
     let newHand = beforeCell
     // debug: console.log("newHand: " + newHand)
@@ -191,7 +203,7 @@ export const mutations = {
     if (state.reversed) {
       const values = state.text.split(" ")
       const board = values[0]
-      const turn = values[1]
+      const turnAndLatestCellXY = values[1]
       const hand = values[2]
       const extra = values[3]
       const reversedCells = []
@@ -207,6 +219,8 @@ export const mutations = {
         }
         reversedCells.push(reversedCell)
       }
+      const turn = turnAndLatestCellXY.split("")
+      const reversedTurn = turn[0] + (10 - turn[1]) + (10 - turn[2])
       const reversedHands = []
       for (const cell of hand.split("")) {
         let reversedCell = undefined
@@ -221,7 +235,7 @@ export const mutations = {
       }
       sfen = reversedCells.join("") +
               " " +
-              turn +
+              reversedTurn +
               " " +
               reversedHands.join("")
       if (extra) {
@@ -232,6 +246,7 @@ export const mutations = {
     // debug: console.log(sfen)
     const values = sfen.split(" ")
     const board = values[0]
+    const turnAndLatestCellXY = values[1]
     const hand = values[2]
     const extra = values[3]
     const rows = board.split("/").map((row) => {
@@ -252,6 +267,21 @@ export const mutations = {
       }
       return cells
     })
+
+    const turnAndLatestCellXYArray = turnAndLatestCellXY.split("")
+    state.currentTurn = turnAndLatestCellXYArray[0]
+    const latestCellX = String(9 - turnAndLatestCellXYArray[1])
+    if (typeof latestCellX !== "undefined" && latestCellX.match(/[0-9]/)) {
+      state.latestCellX = Number(latestCellX)
+    } else {
+      state.latestCellX = undefined
+    }
+    const latestCellY = String(turnAndLatestCellXYArray[2] - 1)
+    if (typeof latestCellY !== "undefined" && latestCellY.match(/[0-9]/)) {
+      state.latestCellY = Number(latestCellY)
+    } else {
+      state.latestCellY = undefined
+    }
 
     const hands = {}
     if (hand !== undefined &&
@@ -346,7 +376,16 @@ export const mutations = {
         nSpaces = 0
       }
     })
-    sfen += " " + state.currentTurn + " "
+
+    sfen += " "
+    sfen += state.currentTurn
+    if (typeof state.latestCellX !== "undefined" &&
+        typeof state.latestCellY !== "undefined") {
+      sfen += 9 - state.latestCellX
+      sfen += state.latestCellY + 1
+    }
+    sfen += " "
+
     if (Object.keys(hands).length > 0) {
       for (let [key, value] of Object.entries(hands)) {
         if (value > 1) {
@@ -372,7 +411,7 @@ export const mutations = {
     if (state.reversed) {
       const values = sfen.split(" ")
       const board = values[0]
-      const turn = values[1]
+      const turnAndLatestCellXY = values[1]
       const hand = values[2]
       const extra = values[3]
       const reversedCells = []
@@ -388,6 +427,8 @@ export const mutations = {
         }
         reversedCells.push(reversedCell)
       }
+      const turn = turnAndLatestCellXY.split("")
+      const reversedTurn = turn[0] + (10 - turn[1]) + (10 - turn[2])
       const reversedHands = []
       for (const cell of hand.split("")) {
         // debug: console.log(cell)
@@ -403,7 +444,7 @@ export const mutations = {
       }
       sfen = reversedCells.join("") +
               " " +
-              turn +
+              reversedTurn +
               " " +
               reversedHands.join("")
       // debug: console.log("extra: " + extra)

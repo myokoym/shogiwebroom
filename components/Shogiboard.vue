@@ -18,7 +18,10 @@
             v-for="(cell, x) in row"
             v-on:click="moveCell(x, y)"
             v-on:click.right.prevent="togglePromotedAndTurn(x, y)"
-            v-bind:class="{beforeCell: isBeforeCell(x, y)}"
+            v-bind:class="{
+              latestCell: isLatestCell(x, y),
+              beforeCell: isBeforeCell(x, y),
+            }"
             draggable
             v-on:dragstart="dragCellStart(x, y)"
             v-on:drop.prevent="moveCell(x, y)"
@@ -93,6 +96,15 @@
       <button
         type="button"
         class="btn btn-sm"
+        v-on:click="toggleLatestMark()"
+        v-bind:class="{
+          'btn-dark': enabledLatestMark,
+          'btn-light': !enabledLatestMark,
+        }"
+      >着手位置: {{enabledLatestMark ? "ON" : "OFF"}}</button>
+      <button
+        type="button"
+        class="btn btn-sm"
         v-on:click="toggleAudio()"
         v-bind:class="{
           'btn-dark': enabledAudio,
@@ -107,7 +119,7 @@
           'btn-dark': showClock,
           'btn-light': !showClock,
         }"
-      >時計表示: {{showClock ? "ON" : "OFF"}}</button>
+      >時計: {{showClock ? "ON" : "OFF"}}</button>
       <button
         type="button"
         class="btn btn-sm"
@@ -116,7 +128,7 @@
           'btn-dark': showStock,
           'btn-light': !showStock,
         }"
-      >駒箱表示: {{showStock ? "ON" : "OFF"}}</button>
+      >駒箱: {{showStock ? "ON" : "OFF"}}</button>
       <div>
         <b-form-select
           v-model="font"
@@ -169,6 +181,8 @@ export default Vue.extend({
       reversed: "reversed",
       rows: "rows",
       hands: "hands",
+      latestCellX: "latestCellX",
+      latestCellY: "latestCellY",
       history: "history",
       historyCursor: "historyCursor",
     })
@@ -188,6 +202,7 @@ export default Vue.extend({
       beforeHand: undefined,
       beforeStock: undefined,
       enabledAudio: false,
+      enabledLatestMark: false,
       showStock: false,
       showClock: false,
       font: "kirieji1",
@@ -214,6 +229,12 @@ export default Vue.extend({
     komaotoPath() {
       return require("@/assets/audio/" + this.komaotoName + ".mp3")
     },
+    isLatestCell(x, y) {
+      if (!this.enabledLatestMark) {
+        return false
+      }
+      return this.latestCellX == x && this.latestCellY == y
+    },
     isBeforeCell(x, y) {
       return this.beforeX === x && this.beforeY === y
     },
@@ -235,6 +256,9 @@ export default Vue.extend({
     },
     toggleAudio() {
       this.enabledAudio = !this.enabledAudio
+    },
+    toggleLatestMark() {
+      this.enabledLatestMark = !this.enabledLatestMark
     },
     toggleClock() {
       this.showClock = !this.showClock
@@ -389,6 +413,9 @@ export default Vue.extend({
 })
 </script>
 <style>
+.latestCell {
+  background-color: orange;
+}
 .beforeCell {
   background-color: yellow;
 }
