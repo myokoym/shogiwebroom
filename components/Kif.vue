@@ -1,6 +1,6 @@
 <template>
   <div class="m-4">
-    <div class="mt-2 kif-moves">
+    <div id="kif-list" class="mt-2 kif-moves">
       <ul v-if="tab === 'ki2'" class="list-group">
         <li class="list-group-item" v-for="(k, i) in ki2s">
           <span><small>{{i + 1}}</small></span>
@@ -65,6 +65,14 @@ export default Vue.extend({
     return {
       tab: "ki2",
     }
+  },
+  watch: {
+    "ki2s": function() {
+      setTimeout(function() {
+        let obj = document.getElementById("kif-list")
+        obj.scrollTop = obj.scrollHeight
+      })
+    },
   },
   methods: {
     selectKi2() {
