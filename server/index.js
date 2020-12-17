@@ -93,6 +93,18 @@ function socketStart(server) {
         comment: params.comment,
       })
     })
+
+    socket.on("sendMove", (params) => {
+      const time = moment(new Date()).utcOffset('+09:00').format('H:mm:ss')
+      io.to(roomId).emit("receiveMove", {
+        time: time,
+        beforeX: params.beforeX,
+        beforeY: params.beforeY,
+        afterX: params.afterX,
+        afterY: params.afterY,
+        piece: params.piece,
+      })
+    })
   })
 }
 

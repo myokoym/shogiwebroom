@@ -42,12 +42,31 @@ const webSocketPlugin = (store) => {
           comment: params.comment,
         })
       })
+      socket.on("receiveMove", (params) => {
+        store.commit("kif/receiveMove", {
+          time: params.time,
+          beforeX: params.beforeX,
+          beforeY: params.beforeY,
+          afterX: params.afterX,
+          afterY: params.afterY,
+          piece: params.piece,
+        })
+      })
       socket.emit("enterRoom", id)
     } else if (mutation.type === "chat/sendComment") {
       socket.emit("sendComment", {
         id: state.sfen.roomId,
         name: state.chat.name,
         comment: state.chat.comment,
+      })
+    } else if (mutation.type === "kif/sendMove") {
+      socket.emit("sendMove", {
+        id: state.sfen.roomId,
+        beforeX: state.kif.beforeX,
+        beforeY: state.kif.beforeY,
+        afterX: state.kif.afterX,
+        afterY: state.kif.afterY,
+        piece: state.kif.piece,
       })
     }
     if (mutation.type === "sfen/setText" ||

@@ -66,7 +66,7 @@ export default Vue.extend({
   width: 240px;
 }
 .chat-comments {
-  max-height: 640px;
+  max-height: 360px;
   overflow-y: scroll;
 }
 </style>

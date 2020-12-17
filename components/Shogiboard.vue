@@ -185,6 +185,11 @@ export default Vue.extend({
       latestCellY: "latestCellY",
       history: "history",
       historyCursor: "historyCursor",
+    }),
+    ...mapState("kif", {
+      moves: "moves",
+      kifs: "kifs",
+      ki2s: "ki2s",
     })
   },
   mounted() {
@@ -382,6 +387,14 @@ export default Vue.extend({
             afterX: x,
             afterY: y,
           })
+          this.$store.commit("kif/sendMove", {
+            beforeX: this.beforeX,
+            beforeY: this.beforeY,
+            afterX: x,
+            afterY: y,
+            piece: beforeCell,
+            reversed: this.reversed,
+          })
         } else if (this.beforeHand) {
           if (afterCell !== ".") {
             return
@@ -390,6 +403,12 @@ export default Vue.extend({
               beforeHand: this.beforeHand,
               afterX: x,
               afterY: y,
+            })
+            this.$store.commit("kif/sendMove", {
+              afterX: x,
+              afterY: y,
+              piece: this.beforeHand,
+              reversed: this.reversed,
             })
           }
         } else if (this.beforeStock) {

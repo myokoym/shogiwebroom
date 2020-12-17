@@ -8,6 +8,9 @@
     <div class="col-xl-4">
       <Chat
       ></Chat>
+      <hr>
+      <Kif
+      ></Kif>
     </div>
   </div>
 </template>
@@ -17,11 +20,13 @@ import io from "socket.io-client"
 import Vue from "vue"
 import Shogiboard from '~/components/Shogiboard.vue'
 import Chat from '~/components/Chat.vue'
+import Kif from '~/components/Kif.vue'
 
 export default Vue.extend({
   components: {
     Shogiboard,
     Chat,
+    Kif,
   },
   data() {
     return {
