@@ -7,6 +7,7 @@ export const state = () => ({
   moves: [],
   kifs: [],
   ki2s: [],
+  pause: false,
 })
 
 export const mutations = {
@@ -16,6 +17,9 @@ export const mutations = {
     state.ki2s = []
   },
   receiveMove(state, payload) {
+    if (state.pause) {
+      return
+    }
     state.moves.push({
       time: payload.time,
       beforeX: payload.beforeX,
@@ -83,6 +87,9 @@ export const mutations = {
     state.ki2s.push(ki2)
   },
   sendMove(state, payload) {
+    if (state.pause) {
+      return
+    }
     state.beforeX = undefined
     state.beforeY = undefined
     state.afterX = undefined
@@ -108,5 +115,8 @@ export const mutations = {
     state.afterX = String(9 - payload.afterX)
     state.afterY = String(1 + payload.afterY)
     state.piece = payload.piece
+  },
+  togglePause(state) {
+    state.pause = !state.pause
   },
 }

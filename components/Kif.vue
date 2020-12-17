@@ -37,6 +37,15 @@
       </div>
       <button
         type="button"
+        class="btn btn-sm"
+        v-on:click="$store.commit('kif/togglePause')"
+        v-bind:class="{
+          'btn-dark': pause,
+          'btn-light': !pause,
+        }"
+      >一時停止{{pause ? "中" : ""}}</button>
+      <button
+        type="button"
         class="btn btn-light btn-sm"
         v-on:click="copy()"
       >コピー</button>
@@ -57,6 +66,7 @@ export default Vue.extend({
     ...mapState("kif", {
       kifs: "kifs",
       ki2s: "ki2s",
+      pause: "pause",
     })
   },
   mounted() {
