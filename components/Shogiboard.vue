@@ -9,10 +9,17 @@
         v-bind:is-before-hand="isBeforeHand"
         v-bind:is-selected-piece="isSelectedPiece"
       ></Hand>
+    <div class="my-2 pl-3 pb-2 boardOutside">
       <table
         class="board"
         border="1"
       >
+        <tr>
+          <td
+            class="boardGuide boardGuideTop"
+            v-for="(cell, x) in rows[0]"
+          >{{boardGuideTop(x + 1)}}</td>
+        </tr>
         <tr v-for="(row, y) in rows">
           <td
             v-for="(cell, x) in row"
@@ -33,8 +40,12 @@
               v-bind:font="font"
             ></Piece>
           </td>
+          <td
+            class="boardGuide boardGuideRight"
+          >{{boardGuideRight(y + 1)}}</td>
         </tr>
       </table>
+    </div>
       <Hand
         turn="b"
         v-bind:font="font"
@@ -102,6 +113,15 @@
           'btn-light': !enabledLatestMark,
         }"
       >着手位置: {{enabledLatestMark ? "ON" : "OFF"}}</button>
+      <button
+        type="button"
+        class="btn btn-sm"
+        v-on:click="toggleBoardGuide()"
+        v-bind:class="{
+          'btn-dark': enabledBoardGuide,
+          'btn-light': !enabledBoardGuide,
+        }"
+      >符号ガイド: {{enabledBoardGuide ? "ON" : "OFF"}}</button>
       <button
         type="button"
         class="btn btn-sm"
@@ -190,6 +210,8 @@ export default Vue.extend({
       moves: "moves",
       kifs: "kifs",
       ki2s: "ki2s",
+      xChars: "xChars",
+      yChars: "yChars",
     })
   },
   mounted() {
@@ -208,6 +230,7 @@ export default Vue.extend({
       beforeStock: undefined,
       enabledAudio: false,
       enabledLatestMark: false,
+      enabledBoardGuide: false,
       showStock: false,
       showClock: false,
       font: "kirieji1",
@@ -233,6 +256,24 @@ export default Vue.extend({
   methods: {
     komaotoPath() {
       return require("@/assets/audio/" + this.komaotoName + ".mp3")
+    },
+    boardGuideTop(x) {
+      if (!this.enabledBoardGuide) {
+        return "　"
+      }
+      if (!this.reversed) {
+        x = 10 - x
+      }
+      return this.xChars[x]
+    },
+    boardGuideRight(y) {
+      if (!this.enabledBoardGuide) {
+        return "　"
+      }
+      if (this.reversed) {
+        y = 10 - y
+      }
+      return this.yChars[y]
     },
     isLatestCell(x, y) {
       if (!this.enabledLatestMark) {
@@ -264,6 +305,9 @@ export default Vue.extend({
     },
     toggleLatestMark() {
       this.enabledLatestMark = !this.enabledLatestMark
+    },
+    toggleBoardGuide() {
+      this.enabledBoardGuide = !this.enabledBoardGuide
     },
     toggleClock() {
       this.showClock = !this.showClock
@@ -439,10 +483,30 @@ export default Vue.extend({
   background-color: yellow;
 }
 .board {
-  margin: 2% 0 2% 0;
-  outline: solid 1px;
+  margin: 0 0 2% 0;
   background-color: #d6c6af;
   border-collapse: collapse;
+}
+.boardOutside {
+  outline: solid 1px;
+  outline-color: gray;
+  background-color: #d6c6af;
+}
+.boardGuide {
+  font-size: small;
+  text-align: center;
+}
+.boardGuideTop {
+  border-top-style: hidden;
+  border-left-style: hidden;
+  border-right-style: hidden;
+  border-bottom-style: outset; /* 枠線の復元 */
+}
+.boardGuideRight {
+  border-top-style: hidden;
+  border-right-style: hidden;
+  border-bottom-style: hidden;
+  border-left-style: outset; /* 枠線の復元 */
 }
 .toggleButtonOn {
   color: white;

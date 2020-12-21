@@ -72,6 +72,7 @@ export default Vue.extend({
   margin: 2%;
   background-color: #d6c6af;
   outline: solid 1px;
+  outline-color: gray;
   text-align: center;
 }
 
