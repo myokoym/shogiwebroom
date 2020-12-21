@@ -8,6 +8,44 @@ export const state = () => ({
   kifs: [],
   ki2s: [],
   pause: false,
+  xChars: {
+    "1": "１",
+    "2": "２",
+    "3": "３",
+    "4": "４",
+    "5": "５",
+    "6": "６",
+    "7": "７",
+    "8": "８",
+    "9": "９",
+  },
+  yChars: {
+    "1": "一",
+    "2": "二",
+    "3": "三",
+    "4": "四",
+    "5": "五",
+    "6": "六",
+    "7": "七",
+    "8": "八",
+    "9": "九",
+  },
+  komaChars: {
+    "K": "玉",
+    "G": "金",
+    "S": "銀",
+    "N": "桂",
+    "L": "香",
+    "R": "飛",
+    "B": "角",
+    "P": "歩",
+    "+S": "成銀",
+    "+N": "成桂",
+    "+L": "成香",
+    "+R": "竜",
+    "+B": "馬",
+    "+P": "と",
+  },
 })
 
 export const mutations = {
@@ -28,53 +66,15 @@ export const mutations = {
       afterY: payload.afterY,
       piece: payload.piece,
     })
-    const xChars = {
-      "1": "１",
-      "2": "２",
-      "3": "３",
-      "4": "４",
-      "5": "５",
-      "6": "６",
-      "7": "７",
-      "8": "８",
-      "9": "９",
-    }
-    const yChars = {
-      "1": "一",
-      "2": "二",
-      "3": "三",
-      "4": "四",
-      "5": "五",
-      "6": "六",
-      "7": "七",
-      "8": "八",
-      "9": "九",
-    }
-    const komaChars = {
-      "K": "玉",
-      "G": "金",
-      "S": "銀",
-      "N": "桂",
-      "L": "香",
-      "R": "飛",
-      "B": "角",
-      "P": "歩",
-      "+S": "成銀",
-      "+N": "成桂",
-      "+L": "成香",
-      "+R": "竜",
-      "+B": "馬",
-      "+P": "と",
-    }
-    const koma = komaChars[payload.piece.toUpperCase()]
+    const koma = state.komaChars[payload.piece.toUpperCase()]
     let turn = undefined
     if (payload.piece.match(/[A-Z]/)) {
       turn = "▲"
     } else {
       turn = "△"
     }
-    const afterXChar = xChars[payload.afterX]
-    const afterYChar = yChars[payload.afterY]
+    const afterXChar = state.xChars[payload.afterX]
+    const afterYChar = state.yChars[payload.afterY]
     let kif = afterXChar + afterYChar + koma
     let ki2 = turn + afterXChar + afterYChar + koma
     if (payload.beforeX) {
