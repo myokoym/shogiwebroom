@@ -238,6 +238,7 @@ export default Vue.extend({
         {value: "kirieji1", text: "切絵字"},
         {value: "sarari", text: "しょかきさらり"},
         {value: "kouzan", text: "衡山毛筆フォント行書"},
+        {value: "aoyagireisho", text: "青柳隷書しも"},
       ],
       komaotoName: "komaoto1",
       komaotoObj: undefined,
