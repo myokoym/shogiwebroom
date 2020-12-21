@@ -18,7 +18,7 @@
             <td
               class="boardGuide boardGuideTop"
               v-for="(cell, x) in rows[0]"
-            >{{boardGuideTop(x + 1)}}</td>
+            >{{boardGuideTop(x + 1, rows[0].length + 1)}}</td>
           </tr>
           <tr v-for="(row, y) in rows">
             <td
@@ -42,7 +42,7 @@
             </td>
             <td
               class="boardGuide boardGuideRight"
-            >{{boardGuideRight(y + 1)}}</td>
+            >{{boardGuideRight(y + 1, row.length + 1)}}</td>
           </tr>
         </table>
       </div>
@@ -257,21 +257,27 @@ export default Vue.extend({
     komaotoPath() {
       return require("@/assets/audio/" + this.komaotoName + ".mp3")
     },
-    boardGuideTop(x) {
+    boardGuideTop(x, max) {
       if (!this.enabledBoardGuide) {
         return "　"
       }
+      if (!max) {
+        max = 10
+      }
       if (!this.reversed) {
-        x = 10 - x
+        x = max - x
       }
       return this.xChars[x]
     },
-    boardGuideRight(y) {
+    boardGuideRight(y, max) {
       if (!this.enabledBoardGuide) {
         return "　"
       }
+      if (!max) {
+        max = 10
+      }
       if (this.reversed) {
-        y = 10 - y
+        y = max - y
       }
       return this.yChars[y]
     },
