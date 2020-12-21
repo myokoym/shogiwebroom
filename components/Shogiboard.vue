@@ -9,43 +9,43 @@
         v-bind:is-before-hand="isBeforeHand"
         v-bind:is-selected-piece="isSelectedPiece"
       ></Hand>
-    <div class="my-2 pl-3 pb-2 boardOutside">
-      <table
-        class="board"
-        border="1"
-      >
-        <tr>
-          <td
-            class="boardGuide boardGuideTop"
-            v-for="(cell, x) in rows[0]"
-          >{{boardGuideTop(x + 1)}}</td>
-        </tr>
-        <tr v-for="(row, y) in rows">
-          <td
-            v-for="(cell, x) in row"
-            v-on:click="moveCell(x, y)"
-            v-on:click.right.prevent="togglePromotedAndTurn(x, y)"
-            v-bind:class="{
-              latestCell: isLatestCell(x, y),
-              beforeCell: isBeforeCell(x, y),
-            }"
-            draggable
-            v-on:dragstart="dragCellStart(x, y)"
-            v-on:drop.prevent="moveCell(x, y)"
-            v-on:dragover.prevent
-          >
-            <Piece
-              type="board"
-              v-bind:piece="cell"
-              v-bind:font="font"
-            ></Piece>
-          </td>
-          <td
-            class="boardGuide boardGuideRight"
-          >{{boardGuideRight(y + 1)}}</td>
-        </tr>
-      </table>
-    </div>
+      <div class="my-2 pl-3 pb-2 boardOutside">
+        <table
+          class="board"
+          border="1"
+        >
+          <tr>
+            <td
+              class="boardGuide boardGuideTop"
+              v-for="(cell, x) in rows[0]"
+            >{{boardGuideTop(x + 1)}}</td>
+          </tr>
+          <tr v-for="(row, y) in rows">
+            <td
+              v-for="(cell, x) in row"
+              v-on:click="moveCell(x, y)"
+              v-on:click.right.prevent="togglePromotedAndTurn(x, y)"
+              v-bind:class="{
+                latestCell: isLatestCell(x, y),
+                beforeCell: isBeforeCell(x, y),
+              }"
+              draggable
+              v-on:dragstart="dragCellStart(x, y)"
+              v-on:drop.prevent="moveCell(x, y)"
+              v-on:dragover.prevent
+            >
+              <Piece
+                type="board"
+                v-bind:piece="cell"
+                v-bind:font="font"
+              ></Piece>
+            </td>
+            <td
+              class="boardGuide boardGuideRight"
+            >{{boardGuideRight(y + 1)}}</td>
+          </tr>
+        </table>
+      </div>
       <Hand
         turn="b"
         v-bind:font="font"
