@@ -85,7 +85,7 @@
           'btn-dark': reversed,
           'btn-light': !reversed
         }"
-      >盤反転: {{reversed ? "ON" : "OFF"}}</button>
+      >盤反転{{reversed ? "中" : ""}}</button>
       <div class="btn-group">
         <div class="btn-group">
           <button
@@ -112,7 +112,7 @@
           'btn-dark': enabledLatestMark,
           'btn-light': !enabledLatestMark,
         }"
-      >着手位置: {{enabledLatestMark ? "ON" : "OFF"}}</button>
+      >着手位置</button>
       <button
         type="button"
         class="btn btn-sm"
@@ -121,7 +121,7 @@
           'btn-dark': enabledBoardGuide,
           'btn-light': !enabledBoardGuide,
         }"
-      >符号ガイド: {{enabledBoardGuide ? "ON" : "OFF"}}</button>
+      >符号ガイド</button>
       <button
         type="button"
         class="btn btn-sm"
@@ -130,7 +130,7 @@
           'btn-dark': enabledAudio,
           'btn-light': !enabledAudio,
         }"
-      >駒音: {{enabledAudio ? "ON" : "OFF"}}</button>
+      >駒音</button>
       <button
         type="button"
         class="btn btn-sm"
@@ -139,7 +139,7 @@
           'btn-dark': showClock,
           'btn-light': !showClock,
         }"
-      >時計: {{showClock ? "ON" : "OFF"}}</button>
+      >時計</button>
       <button
         type="button"
         class="btn btn-sm"
@@ -148,7 +148,7 @@
           'btn-dark': showStock,
           'btn-light': !showStock,
         }"
-      >駒箱: {{showStock ? "ON" : "OFF"}}</button>
+      >駒箱</button>
       <div>
         <b-form-select
           v-model="font"
