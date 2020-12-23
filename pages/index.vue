@@ -28,6 +28,12 @@
           >自動生成</button>
         </div>
       </div>
+      <div>
+      <Option
+        :hideClock="true"
+        :hideStock="true"
+      ></Option>
+      </div>
       <div class="row">
         <div class="input-group input-group-sm">
           <div class="input-group-prepend">
@@ -64,13 +70,16 @@
 
 <script>
 import Vue from "vue"
+import { mapState } from "vuex"
 import cryptoRandomString from "crypto-random-string"
 import VueClipboard from "vue-clipboard2"
 Vue.use(VueClipboard)
+import Option from '~/components/Option.vue'
 import Usage from '~/components/Usage.vue'
 
 export default Vue.extend({
   components: {
+    Option,
     Usage,
   },
   data() {
@@ -86,11 +95,38 @@ export default Vue.extend({
     roomPath: function() {
       return "/rooms/" + this.roomId
     },
+    ...mapState("option", {
+      enabledAudio: "enabledAudio",
+      enabledLatestMark: "enabledLatestMark",
+      enabledBoardGuide: "enabledBoardGuide",
+      font: "font",
+    }),
+    roomOptions: function() {
+      let params = []
+      if (this.enabledLatestMark) {
+        params.push("latestMark=1")
+      }
+      if (this.enabledBoardGuide) {
+        params.push("boardGuide=1")
+      }
+      if (this.enabledAudio) {
+        params.push("audio=1")
+      }
+      if (this.font !== "kirieji1") {
+        params.push("font=" + this.font)
+      }
+      let paramText = ""
+      if (params.length) {
+        paramText += "?"
+        paramText += params.join("&")
+      }
+      return paramText
+    },
     roomUrl: function() {
       if (!this.roomId) {
         return
       }
-      return this.origin + this.roomPath
+      return this.origin + this.roomPath + this.roomOptions
     },
   },
   methods: {

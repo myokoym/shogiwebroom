@@ -39,7 +39,18 @@ export default Vue.extend({
       return
     }
     this.$store.commit("sfen/setRoomId", {roomId: this.$route.params.id})
-    // debug: console.log(this.$store.state.sfen.roomId)
+    if (this.$route.query.audio == "1") {
+      this.$store.commit("option/setAudio", true)
+    }
+    if (this.$route.query.latestMark == "1") {
+      this.$store.commit("option/setLatestMark", true)
+    }
+    if (this.$route.query.boardGuide == "1") {
+      this.$store.commit("option/setBoardGuide", true)
+    }
+    if (this.$route.query.font) {
+      this.$store.commit("option/setFont", this.$route.query.font)
+    }
   },
 })
 </script>
