@@ -4,11 +4,11 @@ export const state = () => ({
   enabledBoardGuide: false,
   showStock: false,
   showClock: false,
-  font: "kirieji1",
+  font: "kirieji",
   fontOptions: [
-    {value: "kirieji1", text: "切絵字"},
-    {value: "sarari", text: "しょかきさらり"},
-    {value: "kouzan", text: "衡山毛筆フォント行書"},
+    {value: "kirieji", text: "切絵字"},
+    {value: "shokaki-gyo", text: "しょかきさらり"},
+    {value: "kouzangyousho", text: "衡山毛筆フォント行書"},
     {value: "aoyagireisho", text: "青柳隷書しも"},
     {value: "genei-chikumin", text: "源暎ちくご明朝"},
   ],
@@ -42,9 +42,9 @@ export const mutations = {
   setFont(state, payload) {
     let font = undefined
     switch (payload) {
-      case "kirieji1":
-      case "sarari":
-      case "kouzan":
+      case "kirieji":
+      case "shokaki-gyo":
+      case "kouzangyousho":
       case "aoyagireisho":
       case "genei-chikumin":
         font = payload
