@@ -48,6 +48,6 @@ body {
   background-color: #b9d08b;
 }
 .container {
-  max-width: 640px;
+  max-width: 666px;
 }
 </style>
