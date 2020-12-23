@@ -112,7 +112,7 @@ export default Vue.extend({
       if (this.enabledAudio) {
         params.push("audio=1")
       }
-      if (this.font !== "kirieji1") {
+      if (this.font !== "kirieji") {
         params.push("font=" + this.font)
       }
       let paramText = ""

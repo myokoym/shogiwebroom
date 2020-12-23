@@ -63,7 +63,7 @@ export default Vue.extend({
       }
       let font = this.font
       if (!font) {
-        font = "kirieji1"
+        font = "kirieji"
       }
       return require("@/assets/images/" + font + "/" + path + ".png")
     },

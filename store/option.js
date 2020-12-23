@@ -50,7 +50,7 @@ export const mutations = {
         font = payload
         break
       default:
-        font = "kirieji1"
+        font = "kirieji"
         break
     }
     state.font = font
