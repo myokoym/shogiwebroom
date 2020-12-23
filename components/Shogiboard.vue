@@ -103,60 +103,7 @@
         </div>
       </div>
     </div>
-    <div class="m-1 d-flex justify-content-center align-items-center">
-      <button
-        type="button"
-        class="btn btn-sm"
-        v-on:click="toggleLatestMark()"
-        v-bind:class="{
-          'btn-dark': enabledLatestMark,
-          'btn-light': !enabledLatestMark,
-        }"
-      >着手位置</button>
-      <button
-        type="button"
-        class="btn btn-sm"
-        v-on:click="toggleBoardGuide()"
-        v-bind:class="{
-          'btn-dark': enabledBoardGuide,
-          'btn-light': !enabledBoardGuide,
-        }"
-      >符号ガイド</button>
-      <button
-        type="button"
-        class="btn btn-sm"
-        v-on:click="toggleAudio()"
-        v-bind:class="{
-          'btn-dark': enabledAudio,
-          'btn-light': !enabledAudio,
-        }"
-      >駒音</button>
-      <button
-        type="button"
-        class="btn btn-sm"
-        v-on:click="toggleClock()"
-        v-bind:class="{
-          'btn-dark': showClock,
-          'btn-light': !showClock,
-        }"
-      >時計</button>
-      <button
-        type="button"
-        class="btn btn-sm"
-        v-on:click="toggleStock()"
-        v-bind:class="{
-          'btn-dark': showStock,
-          'btn-light': !showStock,
-        }"
-      >駒箱</button>
-      <div>
-        <b-form-select
-          v-model="font"
-          :options="fontOptions"
-          size="sm"
-        ></b-form-select>
-      </div>
-    </div>
+    <Option></Option>
     <div class="mt-3 input-group input-group-sm">
       <div class="input-group-prepend">
         <span class="input-group-text" id="sfen-label">SFEN</span>
@@ -182,6 +129,7 @@ import { mapState } from "vuex"
 import Piece from '~/components/Piece.vue'
 import Hand from '~/components/Hand.vue'
 import Stock from '~/components/Stock.vue'
+import Option from '~/components/Option.vue'
 import VueClipboard from "vue-clipboard2"
 Vue.use(VueClipboard)
 
@@ -190,6 +138,7 @@ export default Vue.extend({
     Piece,
     Hand,
     Stock,
+    Option,
   },
   computed: {
     reversedSfen: function() {
@@ -212,7 +161,15 @@ export default Vue.extend({
       ki2s: "ki2s",
       xChars: "xChars",
       yChars: "yChars",
-    })
+    }),
+    ...mapState("option", {
+      enabledAudio: "enabledAudio",
+      enabledLatestMark: "enabledLatestMark",
+      enabledBoardGuide: "enabledBoardGuide",
+      showStock: "showStock",
+      showClock: "showClock",
+      font: "font",
+    }),
   },
   mounted() {
     this.$store.commit("sfen/init")
@@ -228,19 +185,6 @@ export default Vue.extend({
       beforeY: undefined,
       beforeHand: undefined,
       beforeStock: undefined,
-      enabledAudio: false,
-      enabledLatestMark: false,
-      enabledBoardGuide: false,
-      showStock: false,
-      showClock: false,
-      font: "kirieji1",
-      fontOptions: [
-        {value: "kirieji1", text: "切絵字"},
-        {value: "sarari", text: "しょかきさらり"},
-        {value: "kouzan", text: "衡山毛筆フォント行書"},
-        {value: "aoyagireisho", text: "青柳隷書しも"},
-        {value: "genei-chikumin", text: "源暎ちくご明朝"},
-      ],
       komaotoName: "komaoto1",
       komaotoObj: undefined,
     }
@@ -307,21 +251,6 @@ export default Vue.extend({
     },
     reverseBoard() {
       this.$store.commit("sfen/reverse")
-    },
-    toggleAudio() {
-      this.enabledAudio = !this.enabledAudio
-    },
-    toggleLatestMark() {
-      this.enabledLatestMark = !this.enabledLatestMark
-    },
-    toggleBoardGuide() {
-      this.enabledBoardGuide = !this.enabledBoardGuide
-    },
-    toggleClock() {
-      this.showClock = !this.showClock
-    },
-    toggleStock() {
-      this.showStock = !this.showStock
     },
     moveFromHand(piece) {
       // debug: console.log("moveFromHand: " + piece)
