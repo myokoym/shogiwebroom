@@ -75,7 +75,7 @@ export const mutations = {
     }
     state.latestCellX = payload.afterX
     state.latestCellY = payload.afterY
-    state.rows[payload.afterY][payload.afterX] = beforeCell
+    state.rows[payload.afterY][payload.afterX] = payload.piece
     state.rows[payload.beforeY][payload.beforeX] = "."
   },
   moveHandToBoard(state, payload) {

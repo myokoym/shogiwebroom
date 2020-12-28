@@ -362,20 +362,27 @@ export default Vue.extend({
             this.beforeY = y
             return
           }
-          this.$store.commit("sfen/moveBoardToBoard", {
-            beforeX: this.beforeX,
-            beforeY: this.beforeY,
-            afterX: x,
-            afterY: y,
-          })
-          this.$store.commit("kif/sendMove", {
-            beforeX: this.beforeX,
-            beforeY: this.beforeY,
-            afterX: x,
-            afterY: y,
-            piece: beforeCell,
-            reversed: this.reversed,
-          })
+          if ((beforeCell.match(/^[PLNSBR]$/) &&
+               (y <= 2 || this.beforeY <= 2)) ||
+              (beforeCell.match(/^[plnsbr]$/) &&
+               (y >= 6 || this.beforeY >= 6))) {
+            this.$bvModal.msgBoxConfirm("成りますか？", {
+              size: "sm",
+              okTitle: "成る",
+              cancelTitle: "不成",
+              noCloseOnBackdrop: true,
+            }).then(promote => {
+              let afterPiece = beforeCell
+              if (promote) {
+                afterPiece = "+" + afterPiece
+              }
+              this.moveCellFromBoard(x, y, afterPiece)
+              this.moveCellFinally()
+            })
+          } else {
+            this.moveCellFromBoard(x, y, beforeCell)
+            this.moveCellFinally()
+          }
         } else if (this.beforeHand) {
           if (afterCell !== ".") {
             return
@@ -392,6 +399,7 @@ export default Vue.extend({
               reversed: this.reversed,
             })
           }
+          this.moveCellFinally()
         } else if (this.beforeStock) {
           if (afterCell !== ".") {
             return
@@ -402,13 +410,34 @@ export default Vue.extend({
               afterY: y,
             })
           }
+          this.moveCellFinally()
         }
-        this.beforeX = undefined
-        this.beforeY = undefined
-        this.beforeHand = undefined
-        this.beforeStock = undefined
       }
-    }
+    },
+    moveCellFromBoard(x, y, piece) {
+      this.$store.commit("sfen/moveBoardToBoard", {
+        beforeX: this.beforeX,
+        beforeY: this.beforeY,
+        afterX: x,
+        afterY: y,
+        piece: piece,
+      })
+      this.$store.commit("kif/sendMove", {
+        beforeX: this.beforeX,
+        beforeY: this.beforeY,
+        afterX: x,
+        afterY: y,
+        piece: piece, // TODO: add promote option
+        reversed: this.reversed,
+      })
+      this.moveCellFinally()
+    },
+    moveCellFinally() {
+      this.beforeX = undefined
+      this.beforeY = undefined
+      this.beforeHand = undefined
+      this.beforeStock = undefined
+    },
   }
 })
 </script>
