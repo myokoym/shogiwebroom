@@ -363,10 +363,9 @@ export default Vue.extend({
             this.beforeY = y
             return
           }
-          if ((beforeCell.match(/^[PLNSBR]$/) &&
-               (y <= 2 || this.beforeY <= 2)) ||
-              (beforeCell.match(/^[plnsbr]$/) &&
-               (y >= 6 || this.beforeY >= 6))) {
+          if (this.enabledGameMode &&
+              ((beforeCell.match(/^[PLNSBR]$/) && (y <= 2 || this.beforeY <= 2)) ||
+               (beforeCell.match(/^[plnsbr]$/) && (y >= 6 || this.beforeY >= 6)))) {
             this.$bvModal.msgBoxConfirm("成りますか？", {
               size: "sm",
               okTitle: "成る",
