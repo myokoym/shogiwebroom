@@ -1,4 +1,5 @@
 export const state = () => ({
+  enabledGameMode: false,
   enabledAudio: false,
   enabledLatestMark: false,
   enabledBoardGuide: false,
@@ -15,6 +16,9 @@ export const state = () => ({
 })
 
 export const mutations = {
+  toggleGameMode(state) {
+    state.enabledGameMode = !state.enabledGameMode
+  },
   toggleAudio(state) {
     state.enabledAudio = !state.enabledAudio
   },

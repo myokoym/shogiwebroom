@@ -4,6 +4,15 @@
       <button
         type="button"
         class="btn btn-sm"
+        v-on:click="$store.commit('option/toggleGameMode')"
+        v-bind:class="{
+          'btn-dark': enabledGameMode,
+          'btn-light': !enabledGameMode,
+        }"
+      >対局</button>
+      <button
+        type="button"
+        class="btn btn-sm"
         v-on:click="$store.commit('option/toggleLatestMark')"
         v-bind:class="{
           'btn-dark': enabledLatestMark,
@@ -18,7 +27,7 @@
           'btn-dark': enabledBoardGuide,
           'btn-light': !enabledBoardGuide,
         }"
-      >符号ガイド</button>
+      >符号</button>
       <button
         type="button"
         class="btn btn-sm"
@@ -70,6 +79,7 @@ export default Vue.extend({
   },
   computed: {
     ...mapState("option", {
+      enabledGameMode: "enabledGameMode",
       enabledAudio: "enabledAudio",
       enabledLatestMark: "enabledLatestMark",
       enabledBoardGuide: "enabledBoardGuide",

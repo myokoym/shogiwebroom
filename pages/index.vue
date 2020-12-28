@@ -96,6 +96,7 @@ export default Vue.extend({
       return "/rooms/" + this.roomId
     },
     ...mapState("option", {
+      enabledGameMode: "enabledGameMode",
       enabledAudio: "enabledAudio",
       enabledLatestMark: "enabledLatestMark",
       enabledBoardGuide: "enabledBoardGuide",
@@ -103,6 +104,9 @@ export default Vue.extend({
     }),
     roomOptions: function() {
       let params = []
+      if (this.enabledGameMode) {
+        params.push("gameMode=1")
+      }
       if (this.enabledLatestMark) {
         params.push("latestMark=1")
       }

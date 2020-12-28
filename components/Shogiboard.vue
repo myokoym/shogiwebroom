@@ -163,6 +163,7 @@ export default Vue.extend({
       yChars: "yChars",
     }),
     ...mapState("option", {
+      enabledGameMode: "enabledGameMode",
       enabledAudio: "enabledAudio",
       enabledLatestMark: "enabledLatestMark",
       enabledBoardGuide: "enabledBoardGuide",
