@@ -37,14 +37,15 @@ async function start () {
 }
 
 const Redis = require('ioredis');
-//console.log(Redis)
+//console.log("Redis: ", Redis)
 let redis = undefined
+//console.log("REDIS_URL: ", process.env.REDIS_URL)
 if (process.env.REDIS_URL) {
   redis = new Redis(process.env.REDIS_URL);
 } else {
   redis = new Redis();
 }
-//console.log(redis)
+//console.log("redis: ", redis)
 
 function socketStart(server) {
   const io = require("socket.io").listen(server)
