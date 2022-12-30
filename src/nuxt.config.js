@@ -6,6 +6,9 @@ module.exports = {
   */
   head: {
     title: '将棋ウェブルーム',
+    base: {
+     href: 'router.base'
+    },
     meta: [
       { charset: 'utf-8' },
       { name: 'viewport', content: 'width=device-width, initial-scale=1' },
@@ -21,6 +24,9 @@ module.exports = {
       { rel: 'icon', type: 'image/x-icon', href: '/favicon.ico' },
       { rel: "apple-touch-icon", sizes: "180x180", href: "/apple-touch-icon.png" },
     ]
+  },
+  router: {
+    base: '/shogiwebroom/'
   },
   /*
   ** Customize the progress-bar color
