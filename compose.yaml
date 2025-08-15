@@ -42,6 +42,33 @@ services:
       timeout: 3s
       retries: 3
 
+  # テストサービス（ビルドとテスト実行）
+  test:
+    build:
+      context: .
+      dockerfile: Dockerfile.dev
+    environment:
+      - NODE_ENV=test
+      - NODE_OPTIONS=--openssl-legacy-provider
+      - HOST=0.0.0.0
+      - PORT=3000
+      - REDIS_URL=redis://redis:6379
+    volumes:
+      # テスト用ソースコードマウント
+      - .:/app:cached
+      # node_modulesは除外（パーミッション問題回避）
+      - /app/node_modules
+      # .nuxtディレクトリも除外
+      - /app/.nuxt
+    depends_on:
+      redis:
+        condition: service_healthy
+    networks:
+      - shogiwebroom-network
+    # デフォルトコマンドはビルドテスト
+    command: ["npm", "run", "build"]
+    working_dir: /app
+
 # 名前付きボリューム
 volumes:
   # node_modules用ボリューム（コンテナ間でのnode_modules共有とパフォーマンス向上）
