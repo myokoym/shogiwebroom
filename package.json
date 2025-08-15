@@ -47,7 +47,6 @@
     "vue-clipboard2": "^0.3.1"
   },
   "devDependencies": {
-    "nodemon": "^1.18.9",
-    "@nuxt/typescript-build": "^0.6.0"
+    "nodemon": "^1.18.9"
   }
 }
