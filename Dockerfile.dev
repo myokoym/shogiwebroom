@@ -27,8 +27,9 @@ WORKDIR /app
 COPY package*.json ./
 
 # 開発環境用の依存関係をインストール
+# npm ciを使用してpackage-lock.jsonから確実にインストール
 # --no-auditと--no-fundでインストール時の余分な出力を抑制
-RUN npm install --no-audit --no-fund
+RUN npm ci --no-audit --no-fund && npm cache clean --force
 
 # Nuxt.jsの開発サーバーが使用するポート3000を公開
 EXPOSE 3000
