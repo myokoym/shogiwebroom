@@ -8,7 +8,7 @@ version: '3.8'
 
 services:
   # アプリケーションの開発用オーバーライド
-  app:
+  web:
     ports:
       # Nuxt.js開発サーバー
       - "3000:3000"
