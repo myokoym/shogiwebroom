@@ -8,7 +8,11 @@
     "dev": "cross-env NODE_ENV=development NODE_OPTIONS=\"--openssl-legacy-provider\" nodemon server/index.js --watch server",
     "build": "cross-env NODE_OPTIONS=\"--openssl-legacy-provider\" nuxt build",
     "start": "cross-env NODE_ENV=production NODE_OPTIONS=\"--openssl-legacy-provider\" node server/index.js",
-    "generate": "cross-env NODE_OPTIONS=\"--openssl-legacy-provider\" nuxt generate"
+    "generate": "cross-env NODE_OPTIONS=\"--openssl-legacy-provider\" nuxt generate",
+    "test": "docker compose run --rm test npm run build",
+    "test:build": "docker compose run --rm test npm run build",
+    "test:redis": "docker compose run --rm test sh -c 'redis-cli -h redis ping && echo Redis connection successful'",
+    "test:local": "npm run build"
   },
   "dependencies": {
     "bootstrap-vue": "^2.13.1",
