@@ -45,9 +45,9 @@ HEALTHCHECK --interval=30s --timeout=3s --start-period=10s --retries=3 \
   CMD wget --no-verbose --tries=1 --spider http://localhost:3000 || exit 1
 
 # 開発サーバーを起動
-# package.jsonのdevスクリプト（nodemon使用）を実行
+# package.jsonのdev:nativeスクリプト（nodemon使用）を実行
 # --inspect=0.0.0.0:9229でリモートデバッグを有効化
-CMD ["npm", "run", "dev"]
+CMD ["npm", "run", "dev:native"]
 
 # ====================================
 # 開発環境での使用方法
