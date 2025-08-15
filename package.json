@@ -4,15 +4,35 @@
   "description": "synchronized Shogi board on Web",
   "author": "Masafumi Yokoyama",
   "private": true,
+  "engines": {
+    "node": ">=14.0.0 <24.0.0",
+    "npm": ">=6.0.0"
+  },
   "scripts": {
-    "dev": "cross-env NODE_ENV=development NODE_OPTIONS=\"--openssl-legacy-provider\" nodemon server/index.js --watch server",
+    "dev": "docker compose up --build",
+    "dev:detached": "docker compose up --build -d",
+    "dev:native": "cross-env NODE_ENV=development NODE_OPTIONS=\"--openssl-legacy-provider\" nodemon server/index.js --watch server",
+    "dev:native:redis": "cross-env NODE_ENV=development NODE_OPTIONS=\"--openssl-legacy-provider\" REDIS_URL=redis://localhost:6379 nodemon server/index.js --watch server",
+    "dev:rebuild": "docker compose down && docker compose up --build",
     "build": "cross-env NODE_OPTIONS=\"--openssl-legacy-provider\" nuxt build",
     "start": "cross-env NODE_ENV=production NODE_OPTIONS=\"--openssl-legacy-provider\" node server/index.js",
     "generate": "cross-env NODE_OPTIONS=\"--openssl-legacy-provider\" nuxt generate",
+    "docker:build": "docker build -t shogiwebroom .",
+    "docker:run": "docker run -p 3000:3000 --env-file .env shogiwebroom",
+    "docker:up": "docker compose up -d",
+    "docker:down": "docker compose down",
+    "docker:logs": "docker compose logs -f",
+    "docker:logs:web": "docker compose logs -f web",
+    "docker:logs:redis": "docker compose logs -f redis",
+    "docker:clean": "docker compose down -v && docker system prune -f",
+    "docker:status": "docker compose ps",
+    "deploy:fly": "fly deploy",
+    "deploy:setup": "fly launch",
     "test": "docker compose run --rm test npm run build",
     "test:build": "docker compose run --rm test npm run build",
     "test:redis": "docker compose run --rm test sh -c 'redis-cli -h redis ping && echo Redis connection successful'",
-    "test:local": "npm run build"
+    "test:native": "npm run build",
+    "clean": "rm -rf .nuxt dist node_modules/.cache"
   },
   "dependencies": {
     "bootstrap-vue": "^2.13.1",
