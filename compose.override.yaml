@@ -1,0 +1,34 @@
+# ====================================
+# Docker Compose Override - ローカル開発用
+# ====================================
+# ローカル開発環境での追加設定とオーバーライド
+# このファイルは自動的にcompose.yamlと組み合わせて実行されます
+
+version: '3.8'
+
+services:
+  # アプリケーションの開発用オーバーライド
+  app:
+    ports:
+      # Nuxt.js開発サーバー
+      - "3000:3000"
+      # Node.jsデバッガーポート（VS Code、Chrome DevToolsでのリモートデバッグ用）
+      - "9229:9229"
+    environment:
+      # 開発環境用の追加環境変数
+      - NODE_ENV=development
+      - DEBUG=socket.io:*
+      - CHOKIDAR_USEPOLLING=true  # ファイル監視の安定性向上（WindowsのWSL環境等）
+      - NUXT_HOST=0.0.0.0         # 外部からのアクセスを許可
+      - NUXT_PORT=3000
+    # 開発時の利便性向上
+    stdin_open: true  # docker run -i
+    tty: true         # docker run -t
+
+  # Redis開発用オーバーライド
+  redis:
+    ports:
+      # Redis CLI接続用（開発時のデバッグ用）
+      - "6379:6379"
+    # 開発環境では永続化を無効にしてパフォーマンス向上
+    command: redis-server

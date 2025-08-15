@@ -1,0 +1,66 @@
+# fly.toml app configuration file generated for shogiwebroom on 2025-08-15T22:49:00+09:00
+# See https://fly.io/docs/reference/configuration/ for information about how to use this file.
+
+app = 'shogiwebroom'
+primary_region = 'nrt'
+
+[build]
+
+[deploy]
+  release_command = 'npm run build'
+
+[env]
+  NODE_ENV = 'production'
+  PORT = '3000'
+
+[http_service]
+  internal_port = 3000
+  force_https = true
+  auto_stop_machines = false
+  auto_start_machines = true
+  min_machines_running = 0
+  processes = ['app']
+
+[[http_service.checks]]
+  interval = '10s'
+  timeout = '5s'
+  grace_period = '10s'
+  method = 'GET'
+  path = '/api/health'
+  protocol = 'http'
+  tls_skip_verify = false
+
+[http_service.concurrency]
+  type = 'connections'
+  hard_limit = 25
+  soft_limit = 20
+
+[[vm]]
+  memory = '256mb'
+  cpu_kind = 'shared'
+  cpus = 1
+
+# WebSocket support
+[[services]]
+  protocol = 'tcp'
+  internal_port = 3000
+
+  [[services.ports]]
+    port = 80
+    handlers = ['http']
+    force_https = true
+
+  [[services.ports]]
+    port = 443
+    handlers = ['tls', 'http']
+
+  [[services.tcp_checks]]
+    interval = '15s'
+    timeout = '5s'
+    grace_period = '10s'
+    restart_limit = 0
+
+# Machine restart policy
+[restart]
+  policy = 'on-failure'
+  max_retries = 3

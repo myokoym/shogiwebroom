@@ -1,0 +1,57 @@
+# ====================================
+# Docker Compose - メイン設定
+# ====================================
+# プロダクション環境にも対応可能な基本設定
+
+version: '3.8'
+
+services:
+  # メインアプリケーション
+  app:
+    build:
+      context: .
+      dockerfile: Dockerfile.dev
+    depends_on:
+      - redis
+    environment:
+      - NODE_ENV=development
+      - NODE_OPTIONS=--openssl-legacy-provider
+      - REDIS_URL=redis://redis:6379
+    volumes:
+      # ソースコードをマウント（開発時のホットリロード用）
+      - .:/app
+      # node_modulesは名前付きボリュームで管理（パフォーマンス向上）
+      - node_modules:/app/node_modules
+    networks:
+      - shogiwebroom-network
+    restart: unless-stopped
+
+  # Redis サービス
+  redis:
+    image: redis:7-alpine
+    restart: unless-stopped
+    networks:
+      - shogiwebroom-network
+    volumes:
+      # Redisデータの永続化
+      - redis_data:/data
+    command: redis-server --appendonly yes
+    healthcheck:
+      test: ["CMD", "redis-cli", "ping"]
+      interval: 30s
+      timeout: 3s
+      retries: 3
+
+# 名前付きボリューム
+volumes:
+  # node_modules用ボリューム（コンテナ間でのnode_modules共有とパフォーマンス向上）
+  node_modules:
+    driver: local
+  # Redisデータ永続化用
+  redis_data:
+    driver: local
+
+# ネットワーク設定
+networks:
+  shogiwebroom-network:
+    driver: bridge

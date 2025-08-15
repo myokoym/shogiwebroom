@@ -1,0 +1,70 @@
+# ====================================
+# 開発用Dockerfile
+# ====================================
+# 開発環境での効率的な作業を支援するための設定
+
+FROM node:18-alpine3.18
+
+# 開発環境の環境変数を設定
+ENV NODE_ENV=development
+# OpenSSL legacy providerを有効にしてNode.js 18での互換性問題を解決
+ENV NODE_OPTIONS="--openssl-legacy-provider"
+
+# 開発に必要なツールをインストール
+# git: バージョン管理
+# bash: シェル操作の利便性向上
+RUN apk add --no-cache git bash
+
+# グローバルにnodemonをインストール
+# ファイル変更を監視してサーバーを自動再起動
+RUN npm install -g nodemon
+
+# 作業ディレクトリを設定
+WORKDIR /app
+
+# package.json と package-lock.json をコピー
+# Dockerレイヤーキャッシュを活用して依存関係インストールを最適化
+COPY package*.json ./
+
+# 開発環境用の依存関係をインストール
+# --no-auditと--no-fundでインストール時の余分な出力を抑制
+RUN npm install --no-audit --no-fund
+
+# Nuxt.jsの開発サーバーが使用するポート3000を公開
+EXPOSE 3000
+
+# Node.jsデバッガーのポート9229を公開
+# VS CodeやChrome DevToolsでのリモートデバッグに対応
+EXPOSE 9229
+
+# 開発環境では通常ボリュームマウントを使用するため、
+# ソースコードのコピーはdocker-compose.ymlで行う想定
+
+# ヘルスチェックを設定（開発環境でのコンテナ監視用）
+HEALTHCHECK --interval=30s --timeout=3s --start-period=10s --retries=3 \
+  CMD wget --no-verbose --tries=1 --spider http://localhost:3000 || exit 1
+
+# 開発サーバーを起動
+# package.jsonのdevスクリプト（nodemon使用）を実行
+# --inspect=0.0.0.0:9229でリモートデバッグを有効化
+CMD ["npm", "run", "dev"]
+
+# ====================================
+# 開発環境での使用方法
+# ====================================
+# docker-compose.yml と組み合わせて使用することを推奨
+# 
+# version: '3.8'
+# services:
+#   app:
+#     build:
+#       context: .
+#       dockerfile: Dockerfile.dev
+#     ports:
+#       - "3000:3000"
+#       - "9229:9229"  # デバッグポート
+#     volumes:
+#       - .:/app
+#       - /app/node_modules  # node_modulesは除外
+#     environment:
+#       - NODE_ENV=development

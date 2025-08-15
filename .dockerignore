@@ -1,0 +1,77 @@
+# ====================================
+# Docker Build時に除外するファイル/ディレクトリ
+# ====================================
+
+# Node.js関連
+node_modules/
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+
+# Nuxt.js関連
+.nuxt/
+dist/
+.output/
+
+# 開発・テスト関連
+.kiro/
+*.test.js
+*.spec.js
+coverage/
+.nyc_output/
+
+# エディタ・IDE関連
+.vscode/
+.idea/
+*.swp
+*.swo
+*~
+
+# OS関連
+.DS_Store
+.DS_Store?
+._*
+.Spotlight-V100
+.Trashes
+ehthumbs.db
+Thumbs.db
+
+# Git関連
+.git/
+.gitignore
+.gitattributes
+
+# Docker関連
+Dockerfile*
+compose*.yaml
+compose*.yml
+.dockerignore
+
+# ログファイル
+logs/
+*.log
+
+# 環境設定ファイル
+.env*
+!.env.example
+
+# 一時ファイル
+tmp/
+temp/
+.tmp/
+
+# キャッシュ
+.cache/
+
+# 設定ファイル（プロジェクト固有）
+.editorconfig
+
+# ドキュメント
+*.md
+!README.md
+
+# ライセンスファイル
+LICENSE
+
+# Heroku関連
+Procfile

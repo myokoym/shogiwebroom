@@ -9,6 +9,9 @@ const moment = require('moment')
 const config = require('../nuxt.config.js')
 config.dev = process.env.NODE_ENV !== 'production'
 
+// ヘルスチェックAPIをインポート
+const healthRouter = require('./api/health');
+
 async function start () {
   // Init Nuxt.js
   const nuxt = new Nuxt(config)
@@ -22,6 +25,9 @@ async function start () {
     await builder.build()
   }
 
+  // ヘルスチェックAPIを登録（Nuxtミドルウェアの前に）
+  app.use('/api/health', healthRouter);
+
   // Give nuxt middleware to express
   app.use(nuxt.render)
 
@@ -32,19 +38,15 @@ async function start () {
     badge: true
   })
 
+  // Test Redis connection
+  const isRedisConnected = await redis.ping();
+  console.log('Redis connection status:', isRedisConnected ? 'Connected' : 'Fallback to in-memory');
+
   socketStart(server)
   console.log("Socket.IO starts")
 }
 
-const Redis = require('ioredis');
-//console.log(Redis)
-let redis = undefined
-if (process.env.REDIS_URL) {
-  redis = new Redis(process.env.REDIS_URL);
-} else {
-  redis = new Redis();
-}
-//console.log(redis)
+const redis = require('./lib/redis-client');
 
 function socketStart(server) {
   const io = require("socket.io").listen(server)

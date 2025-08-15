@@ -5,10 +5,10 @@
   "author": "Masafumi Yokoyama",
   "private": true,
   "scripts": {
-    "dev": "cross-env NODE_ENV=development nodemon server/index.js --watch server",
-    "build": "nuxt build",
-    "start": "cross-env NODE_ENV=production node server/index.js",
-    "generate": "nuxt generate"
+    "dev": "cross-env NODE_ENV=development NODE_OPTIONS=\"--openssl-legacy-provider\" nodemon server/index.js --watch server",
+    "build": "cross-env NODE_OPTIONS=\"--openssl-legacy-provider\" nuxt build",
+    "start": "cross-env NODE_ENV=production NODE_OPTIONS=\"--openssl-legacy-provider\" node server/index.js",
+    "generate": "cross-env NODE_OPTIONS=\"--openssl-legacy-provider\" nuxt generate"
   },
   "dependencies": {
     "bootstrap-vue": "^2.13.1",
@@ -17,7 +17,7 @@
     "express": "^4.16.4",
     "ioredis": "^4.16.3",
     "moment": "^2.25.3",
-    "nuxt": "^2.0.0",
+    "nuxt": "^2.18.1",
     "socket.io": "^2.3.0",
     "socket.io-client": "^2.3.0",
     "vue-clipboard2": "^0.3.1"

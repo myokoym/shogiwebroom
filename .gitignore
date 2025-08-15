@@ -91,3 +91,6 @@ sw.*
 
 # Redis
 *.rdb
+
+# Fly.io
+.fly/
