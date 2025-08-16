@@ -1,151 +1,149 @@
-const express = require('express');
-const router = express.Router();
-const redis = require('../lib/redis-client');
+const express = require('express')
+const router = express.Router()
 
-// アプリケーション開始時刻
-const startTime = Date.now();
+// Track server start time for uptime calculation
+const startTime = new Date()
 
-/**
- * Redisのレイテンシーを測定
- */
-async function measureRedisLatency() {
+// Health check endpoint
+router.get('/health', async (req, res) => {
+  const startCheck = process.hrtime()
+  
   try {
-    if (!redis.redis || !redis.isConnected) {
-      return null;
-    }
+    // Get Redis instance from the parent scope (will be passed in)
+    const redis = req.app.locals.redis
     
-    const start = Date.now();
-    await redis.ping();
-    const end = Date.now();
-    return end - start;
-  } catch (error) {
-    console.error('Redis latency measurement failed:', error.message);
-    return null;
-  }
-}
-
-/**
- * システム全体のヘルスチェック
- */
-router.get('/', async (req, res) => {
-  try {
-    const timestamp = new Date().toISOString();
-    const uptime = Math.floor((Date.now() - startTime) / 1000);
-    
-    // Redis接続状態とレイテンシーを取得
-    const redisConnected = await redis.ping();
-    const redisLatency = await measureRedisLatency();
-    
-    // メモリ使用量を取得
-    const memoryUsage = process.memoryUsage();
-    
-    // システム状態を判定
-    const isHealthy = redisConnected !== false; // Redis接続が成功またはフォールバック状態
+    // Basic system information
+    const memUsage = process.memoryUsage()
+    const uptime = new Date() - startTime
     
     const healthData = {
-      status: isHealthy ? 'healthy' : 'unhealthy',
-      timestamp,
-      service: 'shogiwebroom',
-      redis: {
-        connected: redisConnected,
-        latency: redisLatency
-      },
-      memory: {
-        heapUsed: memoryUsage.heapUsed,
-        heapTotal: memoryUsage.heapTotal,
-        external: memoryUsage.external
-      },
-      uptime
-    };
-    
-    const statusCode = isHealthy ? 200 : 503;
-    res.status(statusCode).json(healthData);
-    
-  } catch (error) {
-    console.error('Health check error:', error);
-    
-    res.status(503).json({
-      status: 'unhealthy',
+      status: 'healthy',
       timestamp: new Date().toISOString(),
-      service: 'shogiwebroom',
-      error: {
-        message: 'Internal health check error',
-        details: process.env.NODE_ENV === 'development' ? error.message : undefined
-      },
-      redis: {
-        connected: false,
-        latency: null
-      },
+      uptime: Math.floor(uptime / 1000), // uptime in seconds
+      version: require('../../package.json').version,
       memory: {
-        heapUsed: 0,
-        heapTotal: 0,
-        external: 0
+        rss: Math.round(memUsage.rss / 1024 / 1024), // MB
+        heapUsed: Math.round(memUsage.heapUsed / 1024 / 1024), // MB
+        heapTotal: Math.round(memUsage.heapTotal / 1024 / 1024), // MB
+        external: Math.round(memUsage.external / 1024 / 1024) // MB
       },
-      uptime: Math.floor((Date.now() - startTime) / 1000)
-    });
-  }
-});
-
-/**
- * Redis詳細ヘルスチェック
- */
-router.get('/redis', async (req, res) => {
-  try {
-    const timestamp = new Date().toISOString();
-    
-    // Redis接続状態の詳細チェック
-    const pingResult = await redis.ping();
-    const latency = await measureRedisLatency();
-    
-    // Redis接続情報
-    const redisInfo = {
-      connected: pingResult,
-      latency,
-      connectionStatus: redis.isConnected ? 'connected' : 'disconnected',
-      fallbackMode: !redis.isConnected && redis.inMemoryCache.size >= 0
-    };
-    
-    // インメモリキャッシュの統計（フォールバック時）
-    if (!redis.isConnected) {
-      redisInfo.inMemoryCache = {
-        size: redis.inMemoryCache.size,
-        keys: Array.from(redis.inMemoryCache.keys())
-      };
+      services: {}
     }
+
+    // Test Redis connection
+    let redisStatus = 'unknown'
+    let redisError = null
     
-    const isHealthy = pingResult !== false;
-    
-    const healthData = {
-      status: isHealthy ? 'healthy' : 'unhealthy',
-      timestamp,
-      service: 'shogiwebroom',
-      component: 'redis',
-      redis: redisInfo
-    };
-    
-    const statusCode = isHealthy ? 200 : 503;
-    res.status(statusCode).json(healthData);
-    
-  } catch (error) {
-    console.error('Redis health check error:', error);
-    
-    res.status(503).json({
-      status: 'unhealthy',
-      timestamp: new Date().toISOString(),
-      service: 'shogiwebroom',
-      component: 'redis',
-      error: {
-        message: 'Redis health check failed',
-        details: process.env.NODE_ENV === 'development' ? error.message : undefined
-      },
-      redis: {
-        connected: false,
-        latency: null,
-        connectionStatus: 'error',
-        fallbackMode: false
+    if (redis) {
+      try {
+        // Use ping with timeout
+        const pingResult = await Promise.race([
+          redis.ping(),
+          new Promise((_, reject) => 
+            setTimeout(() => reject(new Error('Redis ping timeout')), 2000)
+          )
+        ])
+        
+        if (pingResult === 'PONG') {
+          redisStatus = 'healthy'
+        } else {
+          redisStatus = 'unhealthy'
+          redisError = 'Unexpected ping response'
+        }
+        
+        // Add connection status info
+        const status = redis.getStatus()
+        healthData.services.redis = {
+          status: redisStatus,
+          connected: status.connected,
+          isUpstash: status.isUpstash,
+          usingMemoryFallback: status.usingMemoryFallback,
+          memoryKeys: status.memoryKeys,
+          ...(redisError && { error: redisError })
+        }
+      } catch (error) {
+        redisStatus = 'unhealthy'
+        redisError = error.message
+        const status = redis.getStatus()
+        healthData.services.redis = {
+          status: redisStatus,
+          connected: status.connected,
+          isUpstash: status.isUpstash,
+          usingMemoryFallback: status.usingMemoryFallback,
+          memoryKeys: status.memoryKeys,
+          error: redisError
+        }
       }
-    });
-  }
-});
+    } else {
+      redisStatus = 'not_configured'
+      healthData.services.redis = {
+        status: redisStatus
+      }
+    }
 
-module.exports = router;
+
+    // Calculate response time
+    const [seconds, nanoseconds] = process.hrtime(startCheck)
+    healthData.responseTime = Math.round((seconds * 1000) + (nanoseconds / 1000000)) // ms
+
+    // Determine overall health status
+    const isHealthy = redisStatus === 'healthy' || redisStatus === 'not_configured'
+    
+    if (!isHealthy) {
+      healthData.status = 'degraded'
+      return res.status(503).json(healthData)
+    }
+
+    res.status(200).json(healthData)
+
+  } catch (error) {
+    // Calculate response time even for errors
+    const [seconds, nanoseconds] = process.hrtime(startCheck)
+    const responseTime = Math.round((seconds * 1000) + (nanoseconds / 1000000))
+
+    res.status(500).json({
+      status: 'unhealthy',
+      timestamp: new Date().toISOString(),
+      error: error.message,
+      responseTime
+    })
+  }
+})
+
+// Simple liveness probe (for Kubernetes/Docker health checks)
+router.get('/health/live', (req, res) => {
+  res.status(200).json({
+    status: 'alive',
+    timestamp: new Date().toISOString()
+  })
+})
+
+// Readiness probe (checks if app is ready to serve traffic)
+router.get('/health/ready', async (req, res) => {
+  try {
+    const redis = req.app.locals.redis
+    
+    // Check if Redis is available (if configured)
+    if (redis) {
+      await Promise.race([
+        redis.ping(),
+        new Promise((_, reject) => 
+          setTimeout(() => reject(new Error('Redis timeout')), 1000)
+        )
+      ])
+    }
+    
+    res.status(200).json({
+      status: 'ready',
+      timestamp: new Date().toISOString()
+    })
+  } catch (error) {
+    res.status(503).json({
+      status: 'not_ready',
+      timestamp: new Date().toISOString(),
+      error: error.message
+    })
+  }
+})
+
+module.exports = router

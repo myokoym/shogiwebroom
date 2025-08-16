@@ -9,8 +9,8 @@ const moment = require('moment')
 const config = require('../nuxt.config.js')
 config.dev = process.env.NODE_ENV !== 'production'
 
-// ヘルスチェックAPIをインポート
-const healthRouter = require('./api/health');
+// Import health check routes
+const healthRoutes = require('./api/health')
 
 async function start () {
   // Init Nuxt.js
@@ -25,8 +25,8 @@ async function start () {
     await builder.build()
   }
 
-  // ヘルスチェックAPIを登録（Nuxtミドルウェアの前に）
-  app.use('/api/health', healthRouter);
+  // Mount health check routes before Nuxt middleware
+  app.use('/api', healthRoutes)
 
   // Give nuxt middleware to express
   app.use(nuxt.render)
@@ -38,15 +38,15 @@ async function start () {
     badge: true
   })
 
-  // Test Redis connection
-  const isRedisConnected = await redis.ping();
-  console.log('Redis connection status:', isRedisConnected ? 'Connected' : 'Fallback to in-memory');
-
   socketStart(server)
-  console.log("Socket.IO starts")
+  // debug: console.log("Socket.IO starts")
 }
 
-const redis = require('./lib/redis-client');
+const RedisClient = require('./lib/redis-client');
+const redis = new RedisClient();
+
+// Make Redis instance available to health check routes
+app.locals.redis = redis
 
 // Input validation helpers
 function validateRoomId(roomId) {

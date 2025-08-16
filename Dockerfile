@@ -41,10 +41,12 @@ FROM node:18-alpine3.18 AS production
 
 # 本番環境の環境変数を設定
 ENV NODE_ENV=production
+ENV NUXT_HOST=0.0.0.0
+ENV NUXT_PORT=3000
 ENV NODE_OPTIONS="--openssl-legacy-provider"
 
-# curlをインストール（ヘルスチェック用）
-RUN apk add --no-cache curl
+# Install dumb-init for proper signal handling
+RUN apk add --no-cache dumb-init
 
 # セキュリティ向上のため非rootユーザーを使用
 # Alpine Linuxでは標準でnodeユーザーが利用可能
@@ -65,11 +67,17 @@ COPY --from=builder --chown=node:node /app/nuxt.config.js ./
 # アプリケーションが使用するポート3000を公開
 EXPOSE 3000
 
-# ヘルスチェックを設定（オプション）
-# Dockerコンテナの健全性を監視
-HEALTHCHECK --interval=30s --timeout=3s --start-period=5s --retries=3 \
-  CMD curl -f http://localhost:3000/api/health || exit 1
+# Add health check for container health monitoring
+HEALTHCHECK --interval=30s --timeout=10s --start-period=5s --retries=3 \
+    CMD node -e "const http = require('http'); \
+                 const options = { host: 'localhost', port: 3000, timeout: 2000 }; \
+                 const request = http.request(options, (res) => { \
+                   console.log('Health check status:', res.statusCode); \
+                   process.exit(res.statusCode === 200 ? 0 : 1); \
+                 }); \
+                 request.on('error', () => process.exit(1)); \
+                 request.end();"
 
-# 本番サーバーを起動
-# package.jsonのstartスクリプトを実行
-CMD ["npm", "start"]
+# Use dumb-init to handle signals properly and start the application
+ENTRYPOINT ["dumb-init", "--"]
+CMD ["node", "server/index.js"]
