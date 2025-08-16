@@ -1,71 +1,51 @@
-# ====================================
-# 開発用Dockerfile
-# ====================================
-# 開発環境での効率的な作業を支援するための設定
+# Development Dockerfile for ShogiWebRoom
+# Optimized for hot reload and fast development cycles
 
-FROM node:18-alpine3.18
+FROM node:18-alpine
 
-# 開発環境の環境変数を設定
-ENV NODE_ENV=development
-# OpenSSL legacy providerを有効にしてNode.js 18での互換性問題を解決
-ENV NODE_OPTIONS="--openssl-legacy-provider"
+# Install system dependencies
+RUN apk add --no-cache \
+    libc6-compat \
+    python3 \
+    make \
+    g++ \
+    git \
+    curl \
+    wget
 
-# 開発に必要なツールをインストール
-# git: バージョン管理
-# bash: シェル操作の利便性向上
-RUN apk add --no-cache git bash
-
-# グローバルにnodemonをインストール
-# ファイル変更を監視してサーバーを自動再起動
-RUN npm install -g nodemon
-
-# 作業ディレクトリを設定
+# Create app directory
 WORKDIR /app
 
-# package.json と package-lock.json をコピー
-# Dockerレイヤーキャッシュを活用して依存関係インストールを最適化
+# Create non-root user for development
+RUN addgroup --system --gid 1001 nodejs && \
+    adduser --system --uid 1001 --shell /bin/sh nuxtjs
+
+# Install dependencies as root
 COPY package*.json ./
+RUN npm ci && npm cache clean --force
 
-# 開発環境用の依存関係をインストール
-# npm ciを使用してpackage-lock.jsonから確実にインストール
-# --no-auditと--no-fundでインストール時の余分な出力を抑制
-RUN npm ci --no-audit --no-fund && npm cache clean --force
+# Copy source code
+COPY . .
 
-# Nuxt.jsの開発サーバーが使用するポート3000を公開
+# Create .nuxt directory with correct permissions
+RUN mkdir -p /app/.nuxt && \
+    chown -R nuxtjs:nodejs /app
+
+# Switch to non-root user
+USER nuxtjs
+
+# Expose port
 EXPOSE 3000
 
-# Node.jsデバッガーのポート9229を公開
-# VS CodeやChrome DevToolsでのリモートデバッグに対応
-EXPOSE 9229
+# Set environment for development
+ENV NODE_ENV=development
+ENV HOST=0.0.0.0
+ENV PORT=3000
+ENV NODE_OPTIONS="--openssl-legacy-provider"
 
-# 開発環境では通常ボリュームマウントを使用するため、
-# ソースコードのコピーはdocker-compose.ymlで行う想定
+# Health check
+HEALTHCHECK --interval=30s --timeout=10s --start-period=30s --retries=3 \
+    CMD curl -f http://localhost:3000/ || exit 1
 
-# ヘルスチェックを設定（開発環境でのコンテナ監視用）
-HEALTHCHECK --interval=30s --timeout=3s --start-period=10s --retries=3 \
-  CMD wget --no-verbose --tries=1 --spider http://localhost:3000 || exit 1
-
-# 開発サーバーを起動
-# package.jsonのdev:nativeスクリプト（nodemon使用）を実行
-# --inspect=0.0.0.0:9229でリモートデバッグを有効化
+# Start development server with hot reload
 CMD ["npm", "run", "dev:native"]
-
-# ====================================
-# 開発環境での使用方法
-# ====================================
-# docker-compose.yml と組み合わせて使用することを推奨
-# 
-# version: '3.8'
-# services:
-#   app:
-#     build:
-#       context: .
-#       dockerfile: Dockerfile.dev
-#     ports:
-#       - "3000:3000"
-#       - "9229:9229"  # デバッグポート
-#     volumes:
-#       - .:/app
-#       - /app/node_modules  # node_modulesは除外
-#     environment:
-#       - NODE_ENV=development

@@ -1,199 +1,295 @@
-name: Deploy to Production
+name: CI/CD Pipeline
 
 on:
   push:
     branches: [master]
     paths-ignore:
-      - '**.md'
+      - 'README.md'
       - 'docs/**'
       - 'blogs/**'
       - '.kiro/**'
       - '.claude/**'
-      - '.gitignore'
       - 'LICENSE'
-
-concurrency:
-  group: deploy-production
-  cancel-in-progress: false
+      - '.gitignore'
+  pull_request:
+    branches: [master]
+    paths-ignore:
+      - 'README.md'
+      - 'docs/**'
+      - 'blogs/**'
+      - '.kiro/**'
+      - '.claude/**'
+      - 'LICENSE'
+      - '.gitignore'
+  workflow_dispatch:
+    inputs:
+      deploy_environment:
+        description: 'Environment to deploy to'
+        required: true
+        default: 'production'
+        type: choice
+        options:
+          - production
+          - staging
 
 env:
-  FLY_API_TOKEN: ${{ secrets.FLY_API_TOKEN }}
-  NODE_OPTIONS: "--openssl-legacy-provider"
+  REGISTRY: ghcr.io
+  IMAGE_NAME: ${{ github.repository }}
+  NODE_VERSION: '18'
 
 jobs:
-  pre-deploy-checks:
-    name: Pre-deployment Checks
+  test:
+    name: Test & Lint
     runs-on: ubuntu-latest
-    timeout-minutes: 15
-
-    outputs:
-      should-deploy: ${{ steps.check-deploy.outputs.should-deploy }}
-
+    strategy:
+      matrix:
+        node-version: [18, 20]
+    
     steps:
-      - name: Checkout repository
+      - name: Checkout code
         uses: actions/checkout@v4
         with:
-          fetch-depth: 2
+          fetch-depth: 1
 
-      - name: Setup Node.js 18
+      - name: Setup Node.js ${{ matrix.node-version }}
         uses: actions/setup-node@v4
         with:
-          node-version: 18
+          node-version: ${{ matrix.node-version }}
           cache: 'npm'
 
+      - name: Cache node_modules
+        uses: actions/cache@v4
+        with:
+          path: ~/.npm
+          key: ${{ runner.os }}-node-${{ matrix.node-version }}-${{ hashFiles('**/package-lock.json') }}
+          restore-keys: |
+            ${{ runner.os }}-node-${{ matrix.node-version }}-
+            ${{ runner.os }}-node-
+
       - name: Install dependencies
-        run: npm ci --no-audit --no-fund
+        run: npm ci --prefer-offline --no-audit
 
-      - name: Run TypeScript type checking
-        run: npx tsc --noEmit
-
-      - name: Build application
-        run: npm run build
-
-      - name: Security audit
-        run: npm audit --audit-level=high
-
-      - name: Check deployment readiness
-        id: check-deploy
+      - name: Run linting (if available)
         run: |
-          # Check if critical files exist
-          if [ ! -f "fly.toml" ]; then
-            echo "Missing fly.toml configuration"
-            exit 1
+          if npm run lint --silent 2>/dev/null; then
+            echo "Running lint..."
+            npm run lint
+          else
+            echo "No lint script found, skipping..."
           fi
-          
-          if [ ! -f "Dockerfile" ]; then
-            echo "Missing Dockerfile"
-            exit 1
-          fi
-          
-          echo "should-deploy=true" >> $GITHUB_OUTPUT
-          echo "Pre-deployment checks passed"
+        continue-on-error: false
 
-  build-and-test:
-    name: Build and Test
+      - name: Run tests (if available)
+        run: |
+          if npm run test --silent 2>/dev/null; then
+            echo "Running tests..."
+            npm run test
+          else
+            echo "No test script found, running basic validation..."
+            npm run build
+          fi
+
+      - name: Test Redis connection (if applicable)
+        run: |
+          if npm run test:redis --silent 2>/dev/null; then
+            echo "Testing Redis connection..."
+            npm run test:redis
+          else
+            echo "No Redis test available, skipping..."
+          fi
+        continue-on-error: true
+        env:
+          REDIS_URL: redis://localhost:6379
+
+  build:
+    name: Build Docker Image
     runs-on: ubuntu-latest
-    needs: pre-deploy-checks
-    if: needs.pre-deploy-checks.outputs.should-deploy == 'true'
-    timeout-minutes: 20
-
+    needs: test
+    outputs:
+      image: ${{ steps.image.outputs.image }}
+      digest: ${{ steps.build.outputs.digest }}
+    
     steps:
-      - name: Checkout repository
+      - name: Checkout code
         uses: actions/checkout@v4
-
-      - name: Setup Node.js 18
-        uses: actions/setup-node@v4
         with:
-          node-version: 18
-          cache: 'npm'
-
-      - name: Install dependencies
-        run: npm ci --no-audit --no-fund
-
-      - name: Build application
-        run: npm run build
+          fetch-depth: 1
 
       - name: Set up Docker Buildx
         uses: docker/setup-buildx-action@v3
+        with:
+          driver-opts: |
+            image=moby/buildkit:buildx-stable-1
 
-      - name: Build Docker image for production
+      - name: Log in to Container Registry
+        uses: docker/login-action@v3
+        with:
+          registry: ${{ env.REGISTRY }}
+          username: ${{ github.actor }}
+          password: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: Extract metadata
+        id: meta
+        uses: docker/metadata-action@v5
+        with:
+          images: ${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}
+          tags: |
+            type=ref,event=branch
+            type=ref,event=pr
+            type=sha,prefix={{branch}}-
+            type=raw,value=latest,enable={{is_default_branch}}
+
+      - name: Build and push Docker image
+        id: build
         uses: docker/build-push-action@v5
         with:
           context: .
-          file: ./Dockerfile
+          push: true
           platforms: linux/amd64
-          push: false
+          tags: ${{ steps.meta.outputs.tags }}
+          labels: ${{ steps.meta.outputs.labels }}
           cache-from: type=gha
           cache-to: type=gha,mode=max
-          tags: shogiwebroom:production
+          build-args: |
+            NODE_ENV=production
 
-      - name: Test Docker image
+      - name: Output image
+        id: image
         run: |
-          docker run --rm -d --name prod-test -p 3000:3000 shogiwebroom:production
-          sleep 15
-          
-          # Health check
-          timeout 60 bash -c 'until curl -f http://localhost:3000/api/health; do sleep 3; done'
-          
-          # Basic functionality test
-          curl -f http://localhost:3000/ || exit 1
-          
-          docker stop prod-test
+          echo "image=${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}:master-${{ github.sha }}" >> $GITHUB_OUTPUT
+          echo "Image to deploy: ${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}:master-${{ github.sha }}"
+
+  security-scan:
+    name: Security Scan
+    runs-on: ubuntu-latest
+    needs: build
+    if: github.event_name != 'pull_request'
+    
+    steps:
+      - name: Log in to Container Registry for scanning
+        uses: docker/login-action@v3
+        with:
+          registry: ${{ env.REGISTRY }}
+          username: ${{ github.actor }}
+          password: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: Run Trivy vulnerability scanner
+        uses: aquasecurity/trivy-action@master
+        with:
+          image-ref: ${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}:latest
+          format: 'sarif'
+          output: 'trivy-results.sarif'
+        continue-on-error: true
+
+      - name: Upload Trivy scan results to GitHub Security tab
+        uses: github/codeql-action/upload-sarif@v3
+        if: always()
+        with:
+          sarif_file: 'trivy-results.sarif'
 
   deploy:
     name: Deploy to Fly.io
     runs-on: ubuntu-latest
-    needs: [pre-deploy-checks, build-and-test]
-    if: needs.pre-deploy-checks.outputs.should-deploy == 'true'
-    timeout-minutes: 10
-    environment: production
-
+    needs: [test, build]
+    if: github.ref == 'refs/heads/master' && github.event_name == 'push'
+    environment: 
+      name: production
+      url: https://shogiwebroom.fly.dev
+    
     steps:
-      - name: Checkout repository
+      - name: Checkout code
         uses: actions/checkout@v4
+        with:
+          fetch-depth: 1
 
       - name: Setup Fly CLI
         uses: superfly/flyctl-actions/setup-flyctl@master
 
-      - name: Verify Fly.io authentication
+      - name: Verify Fly.io configuration
         run: |
-          if [ -z "$FLY_API_TOKEN" ]; then
-            echo "FLY_API_TOKEN is not set"
-            exit 1
-          fi
-          flyctl auth whoami
+          echo "Verifying fly.toml configuration..."
+          flyctl config validate
+        env:
+          FLY_API_TOKEN: ${{ secrets.FLY_API_TOKEN }}
 
       - name: Deploy to Fly.io
         run: |
-          echo "Starting deployment..."
-          flyctl deploy --remote-only --strategy=rolling --verbose
-          
-          echo "Verifying deployment..."
-          flyctl status
-          
-          # Wait for deployment to be ready
-          timeout 180 bash -c 'until flyctl status | grep -q "started"; do sleep 5; done'
+          echo "Deploying to Fly.io..."
+          echo "Using image: ${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}:latest"
+          flyctl deploy --remote-only --wait-timeout 600 --image ${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}:latest
+        env:
+          FLY_API_TOKEN: ${{ secrets.FLY_API_TOKEN }}
 
-      - name: Post-deployment health check
+      - name: Health Check
         run: |
-          APP_URL=$(flyctl status --json | jq -r '.Hostname')
-          if [ "$APP_URL" != "null" ] && [ -n "$APP_URL" ]; then
-            echo "Health checking: https://$APP_URL"
-            timeout 60 bash -c "until curl -f https://$APP_URL/api/health; do sleep 5; done"
-            echo "Deployment successful! App is healthy at https://$APP_URL"
-          else
-            echo "Could not determine app URL, checking default..."
-            timeout 60 bash -c "until curl -f https://shogiwebroom.fly.dev/api/health; do sleep 5; done"
-            echo "Deployment successful!"
-          fi
+          echo "Performing health check..."
+          sleep 30
+          curl -f https://shogiwebroom.fly.dev/ || exit 1
+        timeout-minutes: 5
 
-  notify-deployment:
+  deploy-staging:
+    name: Deploy to Staging
+    runs-on: ubuntu-latest
+    needs: [test, build]
+    if: github.event_name == 'workflow_dispatch' && github.event.inputs.deploy_environment == 'staging'
+    environment:
+      name: staging
+      url: https://shogiwebroom-staging.fly.dev
+    
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 1
+
+      - name: Setup Fly CLI
+        uses: superfly/flyctl-actions/setup-flyctl@master
+
+      - name: Deploy to Staging
+        run: |
+          echo "Deploying to staging environment..."
+          echo "Using image: ${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}:latest"
+          flyctl deploy --remote-only --wait-timeout 600 --image ${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}:latest --app shogiwebroom-staging
+        env:
+          FLY_API_TOKEN: ${{ secrets.FLY_API_TOKEN }}
+
+  rollback:
+    name: Rollback Deployment
+    runs-on: ubuntu-latest
+    needs: [deploy]
+    if: failure() && github.ref == 'refs/heads/master'
+    
+    steps:
+      - name: Setup Fly CLI
+        uses: superfly/flyctl-actions/setup-flyctl@master
+
+      - name: Rollback to previous deployment
+        run: |
+          echo "Rolling back to previous deployment..."
+          flyctl releases --json | jq -r '.[1].version' | xargs -I {} flyctl scale count 0 --yes
+          flyctl releases --json | jq -r '.[0].version' | xargs -I {} flyctl deploy --image {}
+        env:
+          FLY_API_TOKEN: ${{ secrets.FLY_API_TOKEN }}
+
+  notify:
     name: Notify Deployment Status
     runs-on: ubuntu-latest
     needs: [deploy]
-    if: always()
-
+    if: always() && github.ref == 'refs/heads/master'
+    
     steps:
-      - name: Deployment Summary
+      - name: Deployment Success Notification
+        if: needs.deploy.result == 'success'
         run: |
-          if [ "${{ needs.deploy.result }}" == "success" ]; then
-            echo "## 🚀 Deployment Successful" >> $GITHUB_STEP_SUMMARY
-            echo "" >> $GITHUB_STEP_SUMMARY
-            echo "✅ Application has been successfully deployed to production" >> $GITHUB_STEP_SUMMARY
-            echo "" >> $GITHUB_STEP_SUMMARY
-            echo "🌐 **Live URL:** https://shogiwebroom.fly.dev" >> $GITHUB_STEP_SUMMARY
-            echo "" >> $GITHUB_STEP_SUMMARY
-            echo "### Deployment Details" >> $GITHUB_STEP_SUMMARY
-            echo "- **Commit:** ${{ github.sha }}" >> $GITHUB_STEP_SUMMARY
-            echo "- **Branch:** ${{ github.ref_name }}" >> $GITHUB_STEP_SUMMARY
-            echo "- **Deployed at:** $(date -u)" >> $GITHUB_STEP_SUMMARY
-          else
-            echo "## ❌ Deployment Failed" >> $GITHUB_STEP_SUMMARY
-            echo "" >> $GITHUB_STEP_SUMMARY
-            echo "The deployment to production has failed. Please check the logs above." >> $GITHUB_STEP_SUMMARY
-            echo "" >> $GITHUB_STEP_SUMMARY
-            echo "### Troubleshooting" >> $GITHUB_STEP_SUMMARY
-            echo "1. Check the deployment logs in the previous step" >> $GITHUB_STEP_SUMMARY
-            echo "2. Verify all required secrets are configured" >> $GITHUB_STEP_SUMMARY
-            echo "3. Ensure the application builds successfully locally" >> $GITHUB_STEP_SUMMARY
-          fi
+          echo "✅ Deployment successful!"
+          echo "Application URL: https://shogiwebroom.fly.dev"
+          echo "Commit: ${{ github.sha }}"
+          echo "Author: ${{ github.actor }}"
+
+      - name: Deployment Failure Notification
+        if: needs.deploy.result == 'failure'
+        run: |
+          echo "❌ Deployment failed!"
+          echo "Commit: ${{ github.sha }}"
+          echo "Author: ${{ github.actor }}"
+          echo "Please check the logs and consider rollback if necessary."

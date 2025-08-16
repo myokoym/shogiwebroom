@@ -1,82 +1,167 @@
-# ====================================
-# Docker Compose - メイン設定
-# ====================================
-# プロダクション環境にも対応可能な基本設定
+# =================================
+# ShogiWebRoom Docker Compose Configuration
+# Development Environment Setup
+# =================================
 
 services:
-  # メインアプリケーション
+  # =================================
+  # Web Application Service (Nuxt.js)
+  # =================================
   web:
     build:
       context: .
-      dockerfile: Dockerfile.dev
-    depends_on:
-      - redis
+      dockerfile: Dockerfile.dev  # Use development-optimized Dockerfile
+    container_name: shogiwebroom-web
+    ports:
+      - "${WEB_PORT:-3000}:3000"  # Expose Nuxt.js development server
     environment:
       - NODE_ENV=development
-      - NODE_OPTIONS=--openssl-legacy-provider
-      - REDIS_URL=redis://redis:6379
-    volumes:
-      # ソースコードをマウント（開発時のホットリロード用）
-      - .:/app
-      # node_modulesは名前付きボリュームで管理（パフォーマンス向上）
-      - node_modules:/app/node_modules
-    networks:
-      - shogiwebroom-network
-    restart: unless-stopped
-
-  # Redis サービス
-  redis:
-    image: redis:7-alpine
-    restart: unless-stopped
-    networks:
-      - shogiwebroom-network
-    volumes:
-      # Redisデータの永続化
-      - redis_data:/data
-    command: redis-server --appendonly yes
-    healthcheck:
-      test: ["CMD", "redis-cli", "ping"]
-      interval: 30s
-      timeout: 3s
-      retries: 3
-
-  # テストサービス（ビルドとテスト実行）
-  test:
-    build:
-      context: .
-      dockerfile: Dockerfile.dev
-    environment:
-      - NODE_ENV=test
-      - NODE_OPTIONS=--openssl-legacy-provider
       - HOST=0.0.0.0
       - PORT=3000
-      - REDIS_URL=redis://redis:6379
+      - REDIS_URL=redis://redis:6379  # Connect to Redis service
+      - NODE_OPTIONS=--openssl-legacy-provider
+    env_file:
+      - .env  # Load additional environment variables from .env file
     volumes:
-      # テスト用ソースコードマウント
+      # Mount source code for hot reload during development
       - .:/app:cached
-      # node_modulesは除外（パーミッション問題回避）
+      # Exclude node_modules from being overwritten by host volume
       - /app/node_modules
-      # .nuxtディレクトリも除外
+      # Exclude .nuxt directory from host mount to avoid permission issues
       - /app/.nuxt
     depends_on:
       redis:
         condition: service_healthy
     networks:
       - shogiwebroom-network
-    # デフォルトコマンドはビルドテスト
+    restart: unless-stopped
+    # Override the default command to run development server
+    command: ["npm", "run", "dev:native"]
+    # Health check for the web service
+    healthcheck:
+      test: ["CMD", "wget", "--no-verbose", "--tries=1", "--spider", "http://localhost:3000/api/health"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+      start_period: 40s
+
+  # =================================
+  # Redis Service (Real-time Data)
+  # =================================
+  redis:
+    image: redis:7-alpine
+    container_name: shogiwebroom-redis
+    ports:
+      - "${REDIS_PORT:-6379}:6379"  # Expose Redis port for external connections (debugging)
+    volumes:
+      # Persist Redis data across container restarts
+      - redis_data:/data
+      # Custom Redis configuration for development
+      - ./docker/redis/redis.conf:/usr/local/etc/redis/redis.conf:ro
+    networks:
+      - shogiwebroom-network
+    restart: unless-stopped
+    # Redis configuration optimized for development
+    command: redis-server /usr/local/etc/redis/redis.conf
+    # Health check for Redis service
+    healthcheck:
+      test: ["CMD", "redis-cli", "ping"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+      start_period: 10s
+    # Resource limits for development environment
+    deploy:
+      resources:
+        limits:
+          memory: 512M
+        reservations:
+          memory: 256M
+
+  # =================================
+  # Test Service (Build and Test Execution)
+  # =================================
+  test:
+    build:
+      context: .
+      dockerfile: Dockerfile.dev
+    container_name: shogiwebroom-test
+    environment:
+      - NODE_ENV=test
+      - HOST=0.0.0.0
+      - PORT=3000
+      - REDIS_URL=redis://redis:6379
+      - NODE_OPTIONS=--openssl-legacy-provider
+    env_file:
+      - .env
+    volumes:
+      # Mount source code for testing
+      - .:/app:cached
+      # Exclude node_modules from being overwritten
+      - /app/node_modules
+      # Exclude .nuxt directory to avoid permission issues
+      - /app/.nuxt
+    depends_on:
+      redis:
+        condition: service_healthy
+    networks:
+      - shogiwebroom-network
+    # Default command is to run build test
     command: ["npm", "run", "build"]
+    # Working directory
     working_dir: /app
 
-# 名前付きボリューム
+# =================================
+# Named Volumes for Data Persistence
+# =================================
 volumes:
-  # node_modules用ボリューム（コンテナ間でのnode_modules共有とパフォーマンス向上）
-  node_modules:
-    driver: local
-  # Redisデータ永続化用
+  # Redis data persistence across container restarts
   redis_data:
     driver: local
 
-# ネットワーク設定
+# =================================
+# Network Configuration
+# =================================
 networks:
   shogiwebroom-network:
     driver: bridge
+    name: shogiwebroom-network
+
+# =================================
+# Development Helper Commands
+# =================================
+# Use these commands for development:
+#
+# Start services:
+#   docker-compose up --build
+#
+# Start in background:
+#   docker-compose up -d --build
+#
+# View logs:
+#   docker-compose logs -f web
+#   docker-compose logs -f redis
+#
+# Stop services:
+#   docker-compose down
+#
+# Clean rebuild (remove volumes):
+#   docker-compose down -v && docker-compose up --build
+#
+# Execute commands in running containers:
+#   docker-compose exec web npm install
+#   docker-compose exec redis redis-cli
+#
+# Scale services (multiple web instances):
+#   docker-compose up --scale web=2
+#
+# =================================
+# Development Notes
+# =================================
+# 1. Source code is mounted for hot reload
+# 2. Redis data persists across restarts
+# 3. Node modules are cached in named volume
+# 4. Services use health checks for reliability
+# 5. .env file is automatically loaded
+# 6. Network isolation for service communication
+# 7. Resource limits prevent memory issues

@@ -1,32 +1,64 @@
-# ====================================
-# Docker Compose Override - ローカル開発用
-# ====================================
-# ローカル開発環境での追加設定とオーバーライド
-# このファイルは自動的にcompose.yamlと組み合わせて実行されます
+# Docker Compose Override for Development
+# This file extends compose.yaml with development-specific settings
+# It's automatically loaded by docker compose when present
 
 services:
-  # アプリケーションの開発用オーバーライド
   web:
-    ports:
-      # Nuxt.js開発サーバー
-      - "3000:3000"
-      # Node.jsデバッガーポート（VS Code、Chrome DevToolsでのリモートデバッグ用）
-      - "9229:9229"
+    # Enable debugging and development features
     environment:
-      # 開発環境用の追加環境変数
-      - NODE_ENV=development
-      - DEBUG=socket.io:*
-      - CHOKIDAR_USEPOLLING=true  # ファイル監視の安定性向上（WindowsのWSL環境等）
-      - NUXT_HOST=0.0.0.0         # 外部からのアクセスを許可
-      - NUXT_PORT=3000
-    # 開発時の利便性向上
-    stdin_open: true  # docker run -i
-    tty: true         # docker run -t
-
-  # Redis開発用オーバーライド
-  redis:
+      - DEBUG=true
+      - NUXT_DEBUG=true
+      # NODE_OPTIONS removed to avoid port conflict - uncomment if needed
+      # - NODE_OPTIONS=--inspect=0.0.0.0:9229 --openssl-legacy-provider
     ports:
-      # Redis CLI接続用（開発時のデバッグ用）
-      - "6379:6379"
-    # 開発環境では永続化を無効にしてパフォーマンス向上
-    command: redis-server
+      - "3000:3000"
+      # Debugger port removed to avoid conflict - uncomment if needed
+      # - "9229:9229"
+    # Override development command for debugging
+    # Uncomment the line below to enable debugging
+    # command: ["node", "--inspect=0.0.0.0:9229", "node_modules/.bin/nuxt", "dev"]
+    
+    # Development-specific volume mounts
+    volumes:
+      # Mount source code for hot reload
+      - .:/app:cached
+      # Exclude node_modules from being overwritten
+      - /app/node_modules
+      # Exclude .nuxt directory - let container manage it
+      - /app/.nuxt
+      # Mount specific directories for hot reload
+      - ./static:/app/static:cached
+      - ./assets:/app/assets:cached
+      - ./components:/app/components:cached
+      - ./layouts:/app/layouts:cached
+      - ./middleware:/app/middleware:cached
+      - ./pages:/app/pages:cached
+      - ./plugins:/app/plugins:cached
+      - ./server:/app/server:cached
+      - ./store:/app/store:cached
+    
+    # Development-specific labels for easier identification
+    labels:
+      - "dev.shogiwebroom.service=web"
+      - "dev.shogiwebroom.environment=development"
+
+  redis:
+    # Development-specific Redis configuration
+    environment:
+      - REDIS_APPENDONLY=yes
+      - REDIS_APPENDFSYNC=everysec
+    
+    # Development-specific labels
+    labels:
+      - "dev.shogiwebroom.service=redis"
+      - "dev.shogiwebroom.environment=development"
+    
+    # Enable Redis CLI access for debugging
+    command: >
+      redis-server 
+      --appendonly yes 
+      --appendfsync everysec 
+      --save 60 1 
+      --loglevel notice 
+      --maxmemory 256mb 
+      --maxmemory-policy allkeys-lru
