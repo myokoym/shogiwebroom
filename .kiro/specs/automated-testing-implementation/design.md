@@ -43,36 +43,43 @@ graph TB
         B --> F[Nuxt Build Process]
         C --> G[Jest + Vue Test Utils]
         D --> H[API & Redis Tests]
-        E --> I[Puppeteer + Socket.IO Client]
+        E --> I[Playwright + WebSocket Route API]
         
-        J[Redis Container] --> D
+        J[TestContainers Redis] --> D
         J --> E
         K[Web Container] --> E
+        L[Artillery Load Test] --> K
     end
     
-    L[GitHub Actions] --> A
-    A --> M[Test Reports]
-    M --> N[Coverage Report]
-    M --> O[JUnit XML]
+    M[GitHub Actions] --> A
+    A --> N[Test Reports]
+    N --> O[Coverage Report]
+    N --> P[Allure Report]
+    N --> Q[JUnit XML]
 ```
 
 ### 技術スタック
 
-テスト研究と要件分析に基づく選定：
+2025年最新のWebSocketテスト調査に基づく選定：
 
 - **テストランナー**: Jest 26.x（Nuxt.js 2.xとの互換性）
 - **Vueコンポーネントテスト**: @vue/test-utils 1.x + jest-serializer-vue
-- **E2Eテスト**: Puppeteer + Socket.IO Client
-- **アサーション**: Chai / Jest Expect
-- **モック**: Jest Mocks + Sinon for Socket.IO
+- **E2Eテスト**: Playwright v1.51.1（WebSocket Route API対応）
+- **WebSocketテスト**: Socket.IO Client + カスタムEventTester
+- **動的環境**: TestContainers（Redis独立環境）
+- **負荷テスト**: Artillery.io（Socket.io v3エンジン）
+- **アサーション**: Jest Expect + Playwright Assertions
+- **モック**: Mock Service Worker (MSW) + Jest Mocks
 - **カバレッジ**: Istanbul (jest --coverage)
-- **レポート**: Jest HTML Reporter + Allure
+- **レポート**: Allure + Jest HTML Reporter
 - **CI/CD**: GitHub Actions + Docker Layer Caching
 
 ### アーキテクチャ決定の根拠
 
+- **なぜPlaywright**: ネイティブWebSocketサポート（Route API）、Puppeteerより15%高速、市場採用率45.1%
+- **なぜTestContainers**: 動的環境構築、ポート競合回避、完全なテスト分離
+- **なぜArtillery.io**: Socket.io v3ネイティブサポート、100同時接続シミュレーション
 - **なぜJest**: Nuxt.js 2.xの公式サポート、Vue Test Utilsとの統合、カバレッジ機能内蔵
-- **なぜPuppeteer**: ヘッドレスChrome、Socket.IO対応、Docker内での安定動作
 - **なぜ複数コンテナ**: テストタイプごとの分離、並列実行、リソース最適化
 - **なぜGitHub Actions**: 既存のCI/CD設定との統合、Dockerサポート、無料枠
 
@@ -114,16 +121,30 @@ class TestOrchestrator {
   generateReport(results: TestResults[]): Report // レポート生成
 }
 
+class EventTester {
+  captureEvents(expectedEvents: string[], timeout?: number): Promise<ReceivedEvent[]>  // イベントキャプチャ
+  verifyEventSequence(events: string[]): Promise<boolean>  // イベント順序検証
+  waitForEvent(eventName: string, timeout?: number): Promise<any>  // 単一イベント待機
+}
+
+class ReconnectingWebSocketTester {
+  testReconnection(maxAttempts: number): Promise<number>  // 再接続テスト
+  simulateNetworkFailure(duration: number): Promise<void>  // ネットワーク障害シミュレート
+  verifyReconnectStrategy(): Promise<boolean>  // 再接続戦略検証
+}
+
 class RedisTestClient {
   async testConnection(): Promise<boolean>       // 接続テスト
   async testUpstashAPI(): Promise<boolean>      // Upstash REST API検証
   async testOperations(): Promise<TestResults>   // CRUD操作テスト
+  async testPubSub(): Promise<boolean>          // Pub/Sub機能テスト
 }
 
 class SocketTestClient {
   async connectMultipleClients(count: number): Promise<Client[]>  // 複数接続
   async testRoomSync(roomId: string): Promise<boolean>           // 同期テスト
   async testMoveEvent(move: Move): Promise<boolean>              // 駒移動テスト
+  async measureLatency(): Promise<number>                        // レイテンシ測定
 }
 ```
 
@@ -232,9 +253,11 @@ services:
       - .:/app:cached
       - /app/node_modules
       - test-results:/app/test-results
+      - playwright-cache:/ms-playwright
     environment:
       - NODE_ENV=test
       - TEST_MODE=full
+      - PLAYWRIGHT_BROWSERS_PATH=/ms-playwright
     depends_on:
       - redis
       - web
@@ -251,6 +274,14 @@ services:
   test-e2e:
     extends: test-orchestrator
     command: ["npm", "run", "test:e2e"]
+    
+  test-load:
+    image: artilleryio/artillery:latest
+    volumes:
+      - ./test/load:/scripts
+    command: ["run", "/scripts/websocket-load.yml"]
+    depends_on:
+      - web
 ```
 
 ### テストスクリプト構成
@@ -258,22 +289,32 @@ services:
 ```javascript
 // scripts/test-runner.js
 const orchestrator = new TestOrchestrator({
-  suites: ['unit', 'integration', 'e2e'],
+  suites: ['unit', 'integration', 'e2e', 'load'],
   parallel: true,
   timeout: 300000,
-  reporters: ['json', 'html', 'junit']
+  reporters: ['json', 'html', 'junit', 'allure']
 });
 
-// scripts/test-redis.js
+// scripts/test-redis.js (TestContainers使用)
+const { GenericContainer } = require('testcontainers');
+const redisContainer = await new GenericContainer('redis:7-alpine')
+  .withExposedPorts(6379)
+  .start();
+
 const redisTest = new RedisTestClient({
-  url: process.env.REDIS_URL,
+  host: redisContainer.getHost(),
+  port: redisContainer.getMappedPort(6379),
   testMode: 'full'
 });
 
 // scripts/test-websocket.js
+const eventTester = new EventTester();
+const reconnectTester = new ReconnectingWebSocketTester();
 const socketTest = new SocketTestClient({
   serverUrl: 'http://web:3000',
-  numClients: 5
+  numClients: 5,
+  eventTester,
+  reconnectTester
 });
 ```
 
@@ -315,9 +356,13 @@ const socketTest = new SocketTestClient({
 |-----------|------|---------|
 | ユニットテスト実行時間 | < 1分 | Jest timer |
 | 統合テスト実行時間 | < 3分 | Docker logs |
-| E2Eテスト実行時間 | < 5分 | Puppeteer metrics |
+| E2Eテスト実行時間 | < 5分 | Playwright metrics |
 | 全テスト実行時間 | < 10分 | CI/CD duration |
 | 並列実行数 | 4 | Docker containers |
+| WebSocket接続安定性 | 切断率 <1% | Artillery metrics |
+| レイテンシ | <50ms（優秀） | EventTester |
+| 再接続成功率 | >95% | ReconnectTester |
+| WebSocketカバレッジ | ≥80% | Istanbul |
 
 ### 最適化戦略
 
@@ -325,6 +370,74 @@ const socketTest = new SocketTestClient({
 - **Dockerレイヤーキャッシング**: buildxによる効率化
 - **選択的テスト実行**: 変更ファイルに基づくテスト選択
 - **テストデータの事前準備**: Fixtureの活用
+
+## WebSocketテスト専用パターン
+
+### Page Object Pattern実装
+
+```typescript
+// test/e2e/pages/ShogiRoomPage.ts
+export class ShogiRoomPage {
+  private wsMessages: any[] = [];
+  
+  constructor(private page: Page) {
+    this.setupWebSocketMonitoring();
+  }
+  
+  private setupWebSocketMonitoring() {
+    this.page.on('websocket', ws => {
+      ws.on('framereceived', event => {
+        const message = JSON.parse(event.payload);
+        this.wsMessages.push(message);
+      });
+    });
+  }
+  
+  async makeMove(from: string, to: string) {
+    await this.page.getByTestId(`square-${from}`).click();
+    await this.page.getByTestId(`square-${to}`).click();
+  }
+  
+  async waitForGameUpdate() {
+    await this.page.waitForFunction(
+      () => window.gameState?.lastMove
+    );
+  }
+  
+  async verifySync(otherPlayer: Page) {
+    const currentBoard = await this.page.evaluate(() => window.gameState.board);
+    const otherBoard = await otherPlayer.evaluate(() => window.gameState.board);
+    return JSON.stringify(currentBoard) === JSON.stringify(otherBoard);
+  }
+}
+```
+
+### WebSocket Route API活用
+
+```typescript
+// Playwright WebSocket モック
+await page.routeWebSocket('/socket.io/*', ws => {
+  ws.onMessage(message => {
+    const data = JSON.parse(message);
+    if (data.type === 'join_room') {
+      ws.send(JSON.stringify({
+        type: 'room_joined',
+        roomId: data.roomId,
+        players: ['player1', 'player2']
+      }));
+    }
+    if (data.type === 'move_piece') {
+      // 他のクライアントへの同期をシミュレート
+      ws.send(JSON.stringify({
+        type: 'piece_moved',
+        from: data.from,
+        to: data.to,
+        playerId: 'opponent'
+      }));
+    }
+  });
+});
+```
 
 ## テスト戦略
 
@@ -334,6 +447,7 @@ const socketTest = new SocketTestClient({
 - **統合テスト**: 全APIエンドポイントとRedis操作
 - **E2Eテスト**: 主要なユーザーフロー5つ
 - **パフォーマンステスト**: 100同時接続
+- **WebSocketコード**: ≥80% カバレッジ
 
 ### テストアプローチ
 
@@ -358,6 +472,55 @@ const socketTest = new SocketTestClient({
    - Artillery.ioによる負荷テスト
    - メモリリークの検出
    - WebSocket接続数の上限確認
+
+### Artillery.io負荷テスト設定
+
+```yaml
+# test/load/websocket-load.yml
+config:
+  target: "http://localhost:3000"
+  phases:
+    - duration: 60
+      arrivalRate: 10
+      name: "Warm up"
+    - duration: 120
+      arrivalRate: 50
+      name: "Ramp up"
+    - duration: 60
+      arrivalRate: 100
+      name: "Sustained load"
+engines:
+  socketio-v3: {}
+scenarios:
+  - name: "Multi-player shogi game"
+    engine: socketio-v3
+    flow:
+      - emit:
+          channel: "join_room"
+          data: 
+            roomId: "test_room_{{ $randomNumber(1, 100) }}"
+            playerId: "player_{{ $uuid }}"
+      - think: 2
+      - emit:
+          channel: "move_piece"
+          data:
+            from: "7g"
+            to: "7f"
+      - think: 3
+      - emit:
+          channel: "send_message"
+          data:
+            message: "よろしくお願いします"
+      - think: 5
+      - loop:
+        - emit:
+            channel: "move_piece"
+            data:
+              from: "{{ $randomString(2) }}"
+              to: "{{ $randomString(2) }}"
+        - think: "{{ $randomNumber(1, 5) }}"
+        count: 10
+```
 
 ### CI/CDパイプライン
 
