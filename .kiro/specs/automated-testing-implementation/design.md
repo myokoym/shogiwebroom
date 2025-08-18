@@ -60,28 +60,22 @@ graph TB
 
 ### 技術スタック
 
-2025年最新のWebSocketテスト調査に基づく選定：
+小規模システム向けの最小限構成：
 
 - **テストランナー**: Jest 26.x（Nuxt.js 2.xとの互換性）
-- **Vueコンポーネントテスト**: @vue/test-utils 1.x + jest-serializer-vue
-- **E2Eテスト**: Playwright v1.51.1（WebSocket Route API対応）
-- **WebSocketテスト**: Socket.IO Client + カスタムEventTester
-- **動的環境**: TestContainers（Redis独立環境）
-- **負荷テスト**: Artillery.io（Socket.io v3エンジン）
-- **アサーション**: Jest Expect + Playwright Assertions
-- **モック**: Mock Service Worker (MSW) + Jest Mocks
+- **Vueコンポーネントテスト**: @vue/test-utils 1.x
+- **E2Eテスト**: Playwright（基本機能のみ）
+- **WebSocketテスト**: Socket.IO Client（シンプルな接続テスト）
+- **モック**: Jest Mocks
 - **カバレッジ**: Istanbul (jest --coverage)
-- **レポート**: Allure + Jest HTML Reporter
-- **CI/CD**: GitHub Actions + Docker Layer Caching
+- **CI/CD**: GitHub Actions
 
 ### アーキテクチャ決定の根拠
 
-- **なぜPlaywright**: ネイティブWebSocketサポート（Route API）、Puppeteerより15%高速、市場採用率45.1%
-- **なぜTestContainers**: 動的環境構築、ポート競合回避、完全なテスト分離
-- **なぜArtillery.io**: Socket.io v3ネイティブサポート、100同時接続シミュレーション
-- **なぜJest**: Nuxt.js 2.xの公式サポート、Vue Test Utilsとの統合、カバレッジ機能内蔵
-- **なぜ複数コンテナ**: テストタイプごとの分離、並列実行、リソース最適化
-- **なぜGitHub Actions**: 既存のCI/CD設定との統合、Dockerサポート、無料枠
+- **なぜPlaywright**: WebSocketテストの基本機能をサポート、軽量で高速
+- **なぜJest**: Nuxt.js 2.xの公式サポート、カバレッジ機能内蔵
+- **なぜ最小構成**: 小規模システムに適したシンプルなテスト環境
+- **なぜGitHub Actions**: 既存のCI/CD設定との統合、無料枠
 
 ## データフロー
 
@@ -109,42 +103,28 @@ sequenceDiagram
 
 ## コンポーネントとインターフェース
 
-### バックエンドサービス & メソッドシグネチャ
+### シンプルなテスト関数
 
 ```javascript
-class TestOrchestrator {
-  async runAllTests(): Promise<TestReport>       // 全テストスイート実行
-  async runBuildTest(): Promise<BuildResult>     // ビルドテスト実行
-  async runUnitTests(): Promise<TestResults>     // ユニットテスト実行
-  async runIntegrationTests(): Promise<TestResults>  // 統合テスト実行
-  async runE2ETests(): Promise<TestResults>      // E2Eテスト実行
-  generateReport(results: TestResults[]): Report // レポート生成
+// 基本的なテスト関数のみ実装
+async function testBuild() {
+  // Nuxt.jsビルドテスト
+  return await exec('npm run build');
 }
 
-class EventTester {
-  captureEvents(expectedEvents: string[], timeout?: number): Promise<ReceivedEvent[]>  // イベントキャプチャ
-  verifyEventSequence(events: string[]): Promise<boolean>  // イベント順序検証
-  waitForEvent(eventName: string, timeout?: number): Promise<any>  // 単一イベント待機
+async function testRedisConnection() {
+  // Redis接続テスト
+  const redis = new Redis(process.env.REDIS_URL);
+  return await redis.ping();
 }
 
-class ReconnectingWebSocketTester {
-  testReconnection(maxAttempts: number): Promise<number>  // 再接続テスト
-  simulateNetworkFailure(duration: number): Promise<void>  // ネットワーク障害シミュレート
-  verifyReconnectStrategy(): Promise<boolean>  // 再接続戦略検証
-}
-
-class RedisTestClient {
-  async testConnection(): Promise<boolean>       // 接続テスト
-  async testUpstashAPI(): Promise<boolean>      // Upstash REST API検証
-  async testOperations(): Promise<TestResults>   // CRUD操作テスト
-  async testPubSub(): Promise<boolean>          // Pub/Sub機能テスト
-}
-
-class SocketTestClient {
-  async connectMultipleClients(count: number): Promise<Client[]>  // 複数接続
-  async testRoomSync(roomId: string): Promise<boolean>           // 同期テスト
-  async testMoveEvent(move: Move): Promise<boolean>              // 駒移動テスト
-  async measureLatency(): Promise<number>                        // レイテンシ測定
+async function testWebSocketConnection() {
+  // WebSocket基本接続テスト
+  const socket = io('http://web:3000');
+  return new Promise(resolve => {
+    socket.on('connect', () => resolve(true));
+    setTimeout(() => resolve(false), 5000);
+  });
 }
 ```
 
@@ -245,7 +225,7 @@ interface CoverageData {
 ```yaml
 # compose.test.yaml
 services:
-  test-orchestrator:
+  test:
     build:
       context: .
       dockerfile: Dockerfile.test
@@ -253,69 +233,33 @@ services:
       - .:/app:cached
       - /app/node_modules
       - test-results:/app/test-results
-      - playwright-cache:/ms-playwright
     environment:
       - NODE_ENV=test
-      - TEST_MODE=full
-      - PLAYWRIGHT_BROWSERS_PATH=/ms-playwright
+      - TEST_MODE=minimal
     depends_on:
       - redis
       - web
-    command: ["npm", "run", "test:all"]
-
-  test-unit:
-    extends: test-orchestrator
-    command: ["npm", "run", "test:unit"]
-
-  test-integration:
-    extends: test-orchestrator
-    command: ["npm", "run", "test:integration"]
-
-  test-e2e:
-    extends: test-orchestrator
-    command: ["npm", "run", "test:e2e"]
-    
-  test-load:
-    image: artilleryio/artillery:latest
-    volumes:
-      - ./test/load:/scripts
-    command: ["run", "/scripts/websocket-load.yml"]
-    depends_on:
-      - web
+    command: ["npm", "run", "test:quick"]
 ```
 
 ### テストスクリプト構成
 
 ```javascript
 // scripts/test-runner.js
-const orchestrator = new TestOrchestrator({
-  suites: ['unit', 'integration', 'e2e', 'load'],
-  parallel: true,
-  timeout: 300000,
-  reporters: ['json', 'html', 'junit', 'allure']
-});
+const testRunner = {
+  suites: ['unit', 'integration', 'e2e'],
+  parallel: false,  // 順次実行でシンプル化
+  timeout: 30000,   // 30秒タイムアウト
+  reporters: ['jest-default']
+};
 
-// scripts/test-redis.js (TestContainers使用)
-const { GenericContainer } = require('testcontainers');
-const redisContainer = await new GenericContainer('redis:7-alpine')
-  .withExposedPorts(6379)
-  .start();
+// scripts/test-redis.js (シンプルな接続テスト)
+const Redis = require('ioredis');
+const redis = new Redis(process.env.REDIS_URL || 'redis://redis:6379');
 
-const redisTest = new RedisTestClient({
-  host: redisContainer.getHost(),
-  port: redisContainer.getMappedPort(6379),
-  testMode: 'full'
-});
-
-// scripts/test-websocket.js
-const eventTester = new EventTester();
-const reconnectTester = new ReconnectingWebSocketTester();
-const socketTest = new SocketTestClient({
-  serverUrl: 'http://web:3000',
-  numClients: 5,
-  eventTester,
-  reconnectTester
-});
+// scripts/test-websocket.js (基本的な接続テスト)
+const io = require('socket.io-client');
+const socket = io('http://web:3000');
 ```
 
 ## エラーハンドリング
@@ -329,10 +273,10 @@ const socketTest = new SocketTestClient({
 
 ### タイムアウト管理
 
-- ユニットテスト: 10秒
-- 統合テスト: 30秒
-- E2Eテスト: 60秒
-- 全体のタイムアウト: 10分
+- ユニットテスト: 5秒
+- 統合テスト: 10秒
+- E2Eテスト: 15秒
+- 全体のタイムアウト: 1分
 
 ## セキュリティ考慮事項
 
@@ -354,100 +298,28 @@ const socketTest = new SocketTestClient({
 
 | メトリック | 目標 | 測定方法 |
 |-----------|------|---------|
-| ユニットテスト実行時間 | < 1分 | Jest timer |
-| 統合テスト実行時間 | < 3分 | Docker logs |
-| E2Eテスト実行時間 | < 5分 | Playwright metrics |
-| 全テスト実行時間 | < 10分 | CI/CD duration |
-| 並列実行数 | 4 | Docker containers |
-| WebSocket接続安定性 | 切断率 <1% | Artillery metrics |
-| レイテンシ | <50ms（優秀） | EventTester |
-| 再接続成功率 | >95% | ReconnectTester |
-| WebSocketカバレッジ | ≥80% | Istanbul |
+| ユニットテスト実行時間 | < 10秒 | Jest timer |
+| 統合テスト実行時間 | < 20秒 | Docker logs |
+| E2Eテスト実行時間 | < 30秒 | Playwright metrics |
+| 全テスト実行時間 | < 1分 | CI/CD duration |
+| 並列実行数 | 2 | Docker containers |
+| WebSocketカバレッジ | ≥60% | Istanbul |
 
 ### 最適化戦略
 
-- **テストの並列実行**: Jest --maxWorkers=4
-- **Dockerレイヤーキャッシング**: buildxによる効率化
-- **選択的テスト実行**: 変更ファイルに基づくテスト選択
-- **テストデータの事前準備**: Fixtureの活用
+- **テストの順次実行**: シンプルな実行でデバッグを容易に
+- **必要最小限のテスト**: 重要な機能のみテスト
+- **Dockerキャッシュ活用**: 既存のイメージを再利用
 
-## WebSocketテスト専用パターン
-
-### Page Object Pattern実装
-
-```typescript
-// test/e2e/pages/ShogiRoomPage.ts
-export class ShogiRoomPage {
-  private wsMessages: any[] = [];
-  
-  constructor(private page: Page) {
-    this.setupWebSocketMonitoring();
-  }
-  
-  private setupWebSocketMonitoring() {
-    this.page.on('websocket', ws => {
-      ws.on('framereceived', event => {
-        const message = JSON.parse(event.payload);
-        this.wsMessages.push(message);
-      });
-    });
-  }
-  
-  async makeMove(from: string, to: string) {
-    await this.page.getByTestId(`square-${from}`).click();
-    await this.page.getByTestId(`square-${to}`).click();
-  }
-  
-  async waitForGameUpdate() {
-    await this.page.waitForFunction(
-      () => window.gameState?.lastMove
-    );
-  }
-  
-  async verifySync(otherPlayer: Page) {
-    const currentBoard = await this.page.evaluate(() => window.gameState.board);
-    const otherBoard = await otherPlayer.evaluate(() => window.gameState.board);
-    return JSON.stringify(currentBoard) === JSON.stringify(otherBoard);
-  }
-}
-```
-
-### WebSocket Route API活用
-
-```typescript
-// Playwright WebSocket モック
-await page.routeWebSocket('/socket.io/*', ws => {
-  ws.onMessage(message => {
-    const data = JSON.parse(message);
-    if (data.type === 'join_room') {
-      ws.send(JSON.stringify({
-        type: 'room_joined',
-        roomId: data.roomId,
-        players: ['player1', 'player2']
-      }));
-    }
-    if (data.type === 'move_piece') {
-      // 他のクライアントへの同期をシミュレート
-      ws.send(JSON.stringify({
-        type: 'piece_moved',
-        from: data.from,
-        to: data.to,
-        playerId: 'opponent'
-      }));
-    }
-  });
-});
-```
 
 ## テスト戦略
 
 ### テストカバレッジ要件
 
-- **ユニットテスト**: ≥70% コードカバレッジ
-- **統合テスト**: 全APIエンドポイントとRedis操作
-- **E2Eテスト**: 主要なユーザーフロー5つ
-- **パフォーマンステスト**: 100同時接続
-- **WebSocketコード**: ≥80% カバレッジ
+- **ユニットテスト**: ≥50% コードカバレッジ
+- **統合テスト**: 主要APIエンドポイントとRedis基本操作
+- **E2Eテスト**: 最重要フロー2つ（ルーム作成、駒移動）
+- **WebSocketコード**: ≥60% カバレッジ
 
 ### テストアプローチ
 
@@ -468,59 +340,7 @@ await page.routeWebSocket('/socket.io/*', ws => {
    - 棋譜の保存と読み込み
    - 複数デバイス間の同期
 
-4. **パフォーマンステスト**
-   - Artillery.ioによる負荷テスト
-   - メモリリークの検出
-   - WebSocket接続数の上限確認
 
-### Artillery.io負荷テスト設定
-
-```yaml
-# test/load/websocket-load.yml
-config:
-  target: "http://localhost:3000"
-  phases:
-    - duration: 60
-      arrivalRate: 10
-      name: "Warm up"
-    - duration: 120
-      arrivalRate: 50
-      name: "Ramp up"
-    - duration: 60
-      arrivalRate: 100
-      name: "Sustained load"
-engines:
-  socketio-v3: {}
-scenarios:
-  - name: "Multi-player shogi game"
-    engine: socketio-v3
-    flow:
-      - emit:
-          channel: "join_room"
-          data: 
-            roomId: "test_room_{{ $randomNumber(1, 100) }}"
-            playerId: "player_{{ $uuid }}"
-      - think: 2
-      - emit:
-          channel: "move_piece"
-          data:
-            from: "7g"
-            to: "7f"
-      - think: 3
-      - emit:
-          channel: "send_message"
-          data:
-            message: "よろしくお願いします"
-      - think: 5
-      - loop:
-        - emit:
-            channel: "move_piece"
-            data:
-              from: "{{ $randomString(2) }}"
-              to: "{{ $randomString(2) }}"
-        - think: "{{ $randomNumber(1, 5) }}"
-        count: 10
-```
 
 ### CI/CDパイプライン
 
