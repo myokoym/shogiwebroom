@@ -64,7 +64,8 @@ module.exports = {
   // Ignore patterns
   testPathIgnorePatterns: [
     '<rootDir>/.nuxt/',
-    '<rootDir>/node_modules/'
+    '<rootDir>/node_modules/',
+    '<rootDir>/test/e2e/'  // E2E tests should be run with Playwright
   ],
   
   // Module paths for better resolution

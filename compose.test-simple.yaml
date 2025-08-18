@@ -55,8 +55,8 @@ services:
     networks:
       - test-network
     working_dir: /app
-    # Default command for quick tests
-    command: ["npm", "run", "test:quick"]
+    # Build and run tests
+    command: ["sh", "-c", "npm run build && npm run test:quick"]
 
 # =================================
 # Test Network Configuration
