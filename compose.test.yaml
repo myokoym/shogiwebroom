@@ -1,0 +1,149 @@
+# =================================
+# ShogiWebRoom Test Environment
+# Docker Compose Configuration for Testing
+# =================================
+
+services:
+  # =================================
+  # Redis Service (Shared for Tests)
+  # =================================
+  redis:
+    image: redis:7-alpine
+    container_name: shogiwebroom-test-redis
+    ports:
+      - "6380:6379"  # Different port to avoid conflicts with dev environment
+    command: >
+      redis-server 
+      --save "" 
+      --appendonly no 
+      --maxmemory 128mb 
+      --maxmemory-policy allkeys-lru
+      --loglevel warning
+    networks:
+      - test-network
+    healthcheck:
+      test: ["CMD", "redis-cli", "ping"]
+      interval: 5s
+      timeout: 3s
+      retries: 3
+      start_period: 5s
+    # Optimized for test speed
+    deploy:
+      resources:
+        limits:
+          memory: 128M
+        reservations:
+          memory: 64M
+
+  # =================================
+  # Web Service (For Integration Tests)
+  # =================================
+  web:
+    build:
+      context: .
+      dockerfile: Dockerfile.dev
+    container_name: shogiwebroom-test-web
+    ports:
+      - "3001:3000"  # Different port to avoid conflicts with dev environment
+    environment:
+      - NODE_ENV=test
+      - HOST=0.0.0.0
+      - PORT=3000
+      - REDIS_URL=redis://redis:6379
+      - NODE_OPTIONS=--openssl-legacy-provider
+      - TEST_MODE=integration
+    volumes:
+      # Mount source code for real-time test updates
+      - .:/app:cached
+      # Exclude node_modules from being overwritten
+      - /app/node_modules
+      # Exclude .nuxt directory
+      - /app/.nuxt
+    depends_on:
+      redis:
+        condition: service_healthy
+    networks:
+      - test-network
+    # Start server for integration tests
+    command: ["npm", "run", "dev:native"]
+    healthcheck:
+      test: ["CMD", "wget", "--no-verbose", "--tries=1", "--spider", "http://localhost:3000/api/health/live"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+      start_period: 30s
+
+  # =================================
+  # Test Runner Service
+  # =================================
+  test:
+    build:
+      context: .
+      dockerfile: Dockerfile.dev
+    container_name: shogiwebroom-test-runner
+    environment:
+      - NODE_ENV=test
+      - HOST=0.0.0.0
+      - PORT=3000
+      - REDIS_URL=redis://redis:6379
+      - NODE_OPTIONS=--openssl-legacy-provider
+      - TEST_MODE=minimal
+      - CI=true
+      - JEST_WORKERS=2  # Limit workers for faster startup
+    volumes:
+      # Mount source code for testing
+      - .:/app:cached
+      # Exclude node_modules from being overwritten
+      - /app/node_modules
+      # Exclude .nuxt directory
+      - /app/.nuxt
+      # Mount test results directory
+      - ./test-results:/app/test-results
+      # Mount coverage directory
+      - ./coverage:/app/coverage
+    depends_on:
+      redis:
+        condition: service_healthy
+    networks:
+      - test-network
+    working_dir: /app
+    # Default command for quick tests
+    command: ["npm", "run", "test:quick"]
+
+# =================================
+# Named Volumes for Test Data
+# =================================
+volumes:
+  test_results:
+    driver: local
+
+# =================================
+# Test Network Configuration
+# =================================
+networks:
+  test-network:
+    driver: bridge
+    name: shogiwebroom-test-network
+
+# =================================
+# Test Environment Usage Examples
+# =================================
+# Run quick tests:
+#   docker compose -f compose.test.yaml up test --abort-on-container-exit
+#
+# Run specific test suites:
+#   docker compose -f compose.test.yaml run --rm test npm run test:unit
+#   docker compose -f compose.test.yaml run --rm test npm run test:integration
+#
+# Run tests with coverage:
+#   docker compose -f compose.test.yaml run --rm test npm run test:coverage
+#
+# Interactive test mode:
+#   docker compose -f compose.test.yaml run --rm test npm run test:watch
+#
+# Clean test environment:
+#   docker compose -f compose.test.yaml down -v
+#
+# Background test services for development:
+#   docker compose -f compose.test.yaml up redis web -d
+#   docker compose -f compose.test.yaml run --rm test npm run test:quick

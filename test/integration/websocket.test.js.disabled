@@ -1,0 +1,145 @@
+/**
+ * WebSocket Integration Test
+ * Tests basic Socket.IO client connection functionality
+ */
+
+const io = require('socket.io-client');
+
+describe('WebSocket Integration Tests', () => {
+  let client;
+  const serverUrl = process.env.TEST_SERVER_URL || 'http://localhost:3000';
+  const connectionTimeout = 5000;
+
+  beforeEach(() => {
+    // Clean up any existing connection
+    if (client) {
+      client.disconnect();
+      client = null;
+    }
+  });
+
+  afterEach(() => {
+    if (client) {
+      client.disconnect();
+      client = null;
+    }
+  });
+
+  test('should establish WebSocket connection', (done) => {
+    client = io(serverUrl, {
+      timeout: connectionTimeout,
+      forceNew: true
+    });
+
+    client.on('connect', () => {
+      expect(client.connected).toBe(true);
+      expect(client.id).toBeTruthy();
+      done();
+    });
+
+    client.on('connect_error', (error) => {
+      done(new Error(`Connection failed: ${error.message}`));
+    });
+
+    // Timeout protection
+    setTimeout(() => {
+      if (!client.connected) {
+        done(new Error(`Connection timeout after ${connectionTimeout}ms`));
+      }
+    }, connectionTimeout);
+  });
+
+  test('should handle disconnection', (done) => {
+    client = io(serverUrl, {
+      timeout: connectionTimeout,
+      forceNew: true
+    });
+
+    client.on('connect', () => {
+      expect(client.connected).toBe(true);
+      client.disconnect();
+    });
+
+    client.on('disconnect', (reason) => {
+      expect(client.connected).toBe(false);
+      expect(reason).toBe('io client disconnect');
+      done();
+    });
+
+    client.on('connect_error', (error) => {
+      done(new Error(`Connection failed: ${error.message}`));
+    });
+  });
+
+  test('should join room successfully', (done) => {
+    client = io(serverUrl, {
+      timeout: connectionTimeout,
+      forceNew: true
+    });
+
+    client.on('connect', () => {
+      const testRoom = 'test-room-' + Date.now();
+      
+      // Listen for room join confirmation
+      client.on('joined', (data) => {
+        expect(data.room).toBe(testRoom);
+        done();
+      });
+
+      // Join room
+      client.emit('join', { room: testRoom });
+    });
+
+    client.on('connect_error', (error) => {
+      done(new Error(`Connection failed: ${error.message}`));
+    });
+
+    // Timeout protection for room join
+    setTimeout(() => {
+      done(new Error(`Room join timeout after ${connectionTimeout}ms`));
+    }, connectionTimeout);
+  });
+
+  test('should handle connection timeout gracefully', (done) => {
+    // Use invalid URL to test timeout
+    client = io('http://invalid-host:9999', {
+      timeout: 1000,
+      forceNew: true
+    });
+
+    client.on('connect_error', (error) => {
+      expect(error).toBeTruthy();
+      done();
+    });
+
+    client.on('connect', () => {
+      done(new Error('Should not connect to invalid host'));
+    });
+  });
+
+  test('should maintain connection state', (done) => {
+    client = io(serverUrl, {
+      timeout: connectionTimeout,
+      forceNew: true
+    });
+
+    client.on('connect', () => {
+      expect(client.connected).toBe(true);
+      expect(client.disconnected).toBe(false);
+      
+      // Test that connection is stable for a short period
+      setTimeout(() => {
+        expect(client.connected).toBe(true);
+        done();
+      }, 1000);
+    });
+
+    client.on('connect_error', (error) => {
+      done(new Error(`Connection failed: ${error.message}`));
+    });
+
+    client.on('disconnect', () => {
+      done(new Error('Unexpected disconnection'));
+    });
+  });
+});
