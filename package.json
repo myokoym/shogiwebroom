@@ -32,10 +32,23 @@
     "docker:helper": "./docker/dev-helper.sh",
     "deploy:fly": "fly deploy",
     "deploy:setup": "fly launch",
-    "test": "docker compose run --rm test",
-    "test:build": "docker compose run --rm test npm run build",
-    "test:redis": "docker compose run --rm test node scripts/test-redis.js",
+    "test": "docker compose -f compose.test-simple.yaml up test --abort-on-container-exit",
+    "test:quick": "./scripts/test-runner.sh",
+    "test:unit": "./scripts/test-runner.sh --testPathPattern=test/unit --passWithNoTests --maxWorkers=2",
+    "test:integration": "./scripts/test-runner.sh --testPathPattern=test/integration --passWithNoTests --maxWorkers=2 --testTimeout=60000",
+    "test:e2e": "echo 'E2E tests not implemented yet. Use test/e2e directory for future E2E tests.'",
+    "test:watch": "./scripts/test-runner.sh --watch --passWithNoTests",
+    "test:coverage": "./scripts/test-runner.sh --coverage --passWithNoTests --maxWorkers=2",
+    "test:ci": "./scripts/test-runner.sh --ci --coverage --passWithNoTests --maxWorkers=2",
+    "test:build": "node scripts/test-build.js",
+    "test:build:docker": "docker compose -f compose.test-simple.yaml run --rm test npm run build",
+    "test:build:jest": "./scripts/test-runner.sh --testPathPattern=test/integration/build.test.js --testTimeout=60000",
+    "test:redis": "docker compose -f compose.test-simple.yaml run --rm test node scripts/test-redis.js",
     "test:native": "npm run build",
+    "test:env:up": "docker compose -f compose.test.yaml up redis web -d",
+    "test:env:down": "docker compose -f compose.test.yaml down -v",
+    "test:simple": "docker compose -f compose.test-simple.yaml up test --abort-on-container-exit",
+    "test:simple:down": "docker compose -f compose.test-simple.yaml down -v",
     "clean": "rm -rf .nuxt dist node_modules/.cache"
   },
   "dependencies": {
@@ -51,6 +64,10 @@
     "vue-clipboard2": "^0.3.1"
   },
   "devDependencies": {
-    "nodemon": "^1.18.9"
+    "nodemon": "^1.18.9",
+    "jest": "26.6.3",
+    "@vue/test-utils": "1.3.0",
+    "babel-jest": "26.6.3",
+    "jest-serializer-vue": "2.0.2"
   }
 }
