@@ -50,14 +50,9 @@ jobs:
 
       - name: Run tests with Docker Compose
         run: |
-          # Set Docker Buildx cache
-          export BUILDX_CACHE_FROM=type=local,src=/tmp/.buildx-cache
-          export BUILDX_CACHE_TO=type=local,dest=/tmp/.buildx-cache-new,mode=max
-          
           # Run tests using the simple test compose file
           docker compose -f compose.test-simple.yaml build \
-            --build-arg BUILDKIT_INLINE_CACHE=1 \
-            --cache-from /tmp/.buildx-cache
+            --build-arg BUILDKIT_INLINE_CACHE=1
           
           # Execute tests with timeout protection
           timeout 300 docker compose -f compose.test-simple.yaml up test --abort-on-container-exit
@@ -110,12 +105,6 @@ jobs:
           docker compose -f compose.test-simple.yaml down -v --remove-orphans
           docker system prune -f --volumes
 
-      - name: Move cache
-        if: always()
-        run: |
-          rm -rf /tmp/.buildx-cache
-          mv /tmp/.buildx-cache-new /tmp/.buildx-cache || true
-
   test-performance:
     name: Performance Tests
     runs-on: ubuntu-latest
@@ -141,9 +130,8 @@ jobs:
           echo "NODE_ENV=test" >> .env
           echo "CI=true" >> .env
           
-          # Build with cache
-          docker compose -f compose.test-simple.yaml build \
-            --cache-from /tmp/.buildx-cache
+          # Build test environment
+          docker compose -f compose.test-simple.yaml build
           
           # Run integration tests specifically
           timeout 240 docker compose -f compose.test-simple.yaml run --rm \
