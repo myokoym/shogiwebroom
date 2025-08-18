@@ -27,6 +27,9 @@ RUN npm ci && npm cache clean --force
 # Copy source code
 COPY . .
 
+# Make scripts executable
+RUN chmod +x scripts/*.sh scripts/*.js 2>/dev/null || true
+
 # Create .nuxt directory with correct permissions
 RUN mkdir -p /app/.nuxt && \
     chown -R nuxtjs:nodejs /app

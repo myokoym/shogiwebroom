@@ -1,16 +1,20 @@
-#!/bin/bash
+#!/bin/sh
 # Test runner script for Docker environment
 
 set -e
 
 # Check for --log option
 SAVE_LOG=false
-JEST_ARGS=()
+JEST_ARGS=""
 for arg in "$@"; do
     if [ "$arg" = "--log" ]; then
         SAVE_LOG=true
     else
-        JEST_ARGS+=("$arg")
+        if [ -z "$JEST_ARGS" ]; then
+            JEST_ARGS="$arg"
+        else
+            JEST_ARGS="$JEST_ARGS $arg"
+        fi
     fi
 done
 
@@ -47,26 +51,26 @@ if [ ! -f "node_modules/.bin/jest" ]; then
 fi
 
 # Run the appropriate test command based on arguments
-if [ ${#JEST_ARGS[@]} -eq 0 ]; then
+if [ -z "$JEST_ARGS" ]; then
     echo "🚀 Running quick tests..."
     
     # Run tests (with or without capturing output)
     if [ "$SAVE_LOG" = true ]; then
         npx jest --passWithNoTests --maxWorkers=2 --testTimeout=30000 2>&1 | tee "$TEMP_OUTPUT"
-        TEST_EXIT_CODE=${PIPESTATUS[0]}
+        TEST_EXIT_CODE=$?
     else
         npx jest --passWithNoTests --maxWorkers=2 --testTimeout=30000
         TEST_EXIT_CODE=$?
     fi
 else
-    echo "🚀 Running custom test command: ${JEST_ARGS[@]}"
+    echo "🚀 Running custom test command: $JEST_ARGS"
     
     # Run tests (with or without capturing output)
     if [ "$SAVE_LOG" = true ]; then
-        npx jest "${JEST_ARGS[@]}" 2>&1 | tee "$TEMP_OUTPUT"
-        TEST_EXIT_CODE=${PIPESTATUS[0]}
+        npx jest $JEST_ARGS 2>&1 | tee "$TEMP_OUTPUT"
+        TEST_EXIT_CODE=$?
     else
-        npx jest "${JEST_ARGS[@]}"
+        npx jest $JEST_ARGS
         TEST_EXIT_CODE=$?
     fi
 fi
