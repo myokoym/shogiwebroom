@@ -11,6 +11,12 @@ on:
       - '.claude/**'
       - 'LICENSE'
       - '.gitignore'
+      - 'test/**'
+      - '**/*.test.js'
+      - '**/*.spec.js'
+      - 'jest.config.js'
+      - 'playwright.config.js'
+      - 'playwright.docker.config.js'
   pull_request:
     branches: [master]
     paths-ignore:
@@ -21,6 +27,12 @@ on:
       - '.claude/**'
       - 'LICENSE'
       - '.gitignore'
+      - 'test/**'
+      - '**/*.test.js'
+      - '**/*.spec.js'
+      - 'jest.config.js'
+      - 'playwright.config.js'
+      - 'playwright.docker.config.js'
   workflow_dispatch:
     inputs:
       deploy_environment:

@@ -7,12 +7,20 @@ on:
       - '**.md'
       - '.gitignore'
       - 'LICENSE'
+      - 'docs/**'
+      - 'blogs/**'
+      - '.kiro/**'
+      - '.claude/**'
   push:
     branches: [master]
     paths-ignore:
       - '**.md'
       - '.gitignore'
       - 'LICENSE'
+      - 'docs/**'
+      - 'blogs/**'
+      - '.kiro/**'
+      - '.claude/**'
 
 concurrency:
   group: test-${{ github.ref }}
