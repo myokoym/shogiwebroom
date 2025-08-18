@@ -1,145 +1,196 @@
 /**
  * WebSocket Integration Test
- * Tests basic Socket.IO client connection functionality
+ * Tests Socket.IO functionality with a mock server
  */
 
-const io = require('socket.io-client');
+const SocketIO = require('socket.io');
+const Client = require('socket.io-client');
+const http = require('http');
 
-describe.skip('WebSocket Integration Tests - Skipped: requires server to be running', () => {
-  let client;
-  const serverUrl = process.env.TEST_SERVER_URL || 'http://localhost:3000';
-  const connectionTimeout = 5000;
+describe('WebSocket Integration Tests', () => {
+  let io, serverSocket, clientSocket, httpServer;
+  const TEST_PORT = 3333;
+
+  beforeAll((done) => {
+    // Create a test HTTP server
+    httpServer = http.createServer();
+    
+    // Create Socket.IO server (v2 syntax)
+    io = SocketIO(httpServer, {
+      cors: {
+        origin: '*',
+        methods: ['GET', 'POST']
+      }
+    });
+
+    // Start listening
+    httpServer.listen(TEST_PORT, () => {
+      console.log(`Test WebSocket server listening on port ${TEST_PORT}`);
+    });
+
+    // Handle server connections
+    io.on('connection', (socket) => {
+      console.log('Test server: Client connected');
+      serverSocket = socket;
+      
+      // Echo back any message for testing
+      socket.on('test-message', (data) => {
+        socket.emit('test-response', data);
+      });
+      
+      socket.on('join-room', (roomId) => {
+        socket.join(roomId);
+        socket.emit('room-joined', roomId);
+      });
+    });
+
+    done();
+  });
+
+  afterAll((done) => {
+    // Close all connections
+    if (io) {
+      io.close();
+    }
+    if (httpServer) {
+      httpServer.close();
+    }
+    done();
+  });
 
   beforeEach(() => {
-    // Clean up any existing connection
-    if (client) {
-      client.disconnect();
-      client = null;
+    // Clean up any existing client connection
+    if (clientSocket) {
+      clientSocket.disconnect();
+      clientSocket = null;
     }
   });
 
   afterEach(() => {
-    if (client) {
-      client.disconnect();
-      client = null;
+    if (clientSocket) {
+      clientSocket.disconnect();
+      clientSocket = null;
     }
   });
 
-  test('should establish WebSocket connection', (done) => {
-    client = io(serverUrl, {
-      timeout: connectionTimeout,
+  test('should establish WebSocket connection to test server', (done) => {
+    clientSocket = Client(`http://localhost:${TEST_PORT}`, {
+      transports: ['websocket'],
       forceNew: true
     });
 
-    client.on('connect', () => {
-      expect(client.connected).toBe(true);
-      expect(client.id).toBeTruthy();
+    clientSocket.on('connect', () => {
+      expect(clientSocket.connected).toBe(true);
+      expect(clientSocket.id).toBeTruthy();
       done();
     });
 
-    client.on('connect_error', (error) => {
-      done(new Error(`Connection failed: ${error.message}`));
-    });
-
-    // Timeout protection
-    setTimeout(() => {
-      if (!client.connected) {
-        done(new Error(`Connection timeout after ${connectionTimeout}ms`));
-      }
-    }, connectionTimeout);
-  });
-
-  test('should handle disconnection', (done) => {
-    client = io(serverUrl, {
-      timeout: connectionTimeout,
-      forceNew: true
-    });
-
-    client.on('connect', () => {
-      expect(client.connected).toBe(true);
-      client.disconnect();
-    });
-
-    client.on('disconnect', (reason) => {
-      expect(client.connected).toBe(false);
-      expect(reason).toBe('io client disconnect');
-      done();
-    });
-
-    client.on('connect_error', (error) => {
+    clientSocket.on('connect_error', (error) => {
       done(new Error(`Connection failed: ${error.message}`));
     });
   });
 
-  test('should join room successfully', (done) => {
-    client = io(serverUrl, {
-      timeout: connectionTimeout,
+  test('should send and receive messages', (done) => {
+    clientSocket = Client(`http://localhost:${TEST_PORT}`, {
+      transports: ['websocket'],
       forceNew: true
     });
 
-    client.on('connect', () => {
-      const testRoom = 'test-room-' + Date.now();
+    const testData = { message: 'Hello WebSocket', timestamp: Date.now() };
+
+    clientSocket.on('connect', () => {
+      // Send test message
+      clientSocket.emit('test-message', testData);
+    });
+
+    clientSocket.on('test-response', (data) => {
+      expect(data).toEqual(testData);
+      done();
+    });
+
+    clientSocket.on('connect_error', (error) => {
+      done(new Error(`Connection failed: ${error.message}`));
+    });
+  });
+
+  test('should handle room joining', (done) => {
+    clientSocket = Client(`http://localhost:${TEST_PORT}`, {
+      transports: ['websocket'],
+      forceNew: true
+    });
+
+    const roomId = 'test-room-123';
+
+    clientSocket.on('connect', () => {
+      clientSocket.emit('join-room', roomId);
+    });
+
+    clientSocket.on('room-joined', (joinedRoomId) => {
+      expect(joinedRoomId).toBe(roomId);
+      done();
+    });
+
+    clientSocket.on('connect_error', (error) => {
+      done(new Error(`Connection failed: ${error.message}`));
+    });
+  });
+
+  test('should handle disconnection gracefully', (done) => {
+    clientSocket = Client(`http://localhost:${TEST_PORT}`, {
+      transports: ['websocket'],
+      forceNew: true
+    });
+
+    clientSocket.on('connect', () => {
+      expect(clientSocket.connected).toBe(true);
       
-      // Listen for room join confirmation
-      client.on('joined', (data) => {
-        expect(data.room).toBe(testRoom);
-        done();
-      });
-
-      // Join room
-      client.emit('join', { room: testRoom });
-    });
-
-    client.on('connect_error', (error) => {
-      done(new Error(`Connection failed: ${error.message}`));
-    });
-
-    // Timeout protection for room join
-    setTimeout(() => {
-      done(new Error(`Room join timeout after ${connectionTimeout}ms`));
-    }, connectionTimeout);
-  });
-
-  test('should handle connection timeout gracefully', (done) => {
-    // Use invalid URL to test timeout
-    client = io('http://invalid-host:9999', {
-      timeout: 1000,
-      forceNew: true
-    });
-
-    client.on('connect_error', (error) => {
-      expect(error).toBeTruthy();
-      done();
-    });
-
-    client.on('connect', () => {
-      done(new Error('Should not connect to invalid host'));
-    });
-  });
-
-  test('should maintain connection state', (done) => {
-    client = io(serverUrl, {
-      timeout: connectionTimeout,
-      forceNew: true
-    });
-
-    client.on('connect', () => {
-      expect(client.connected).toBe(true);
-      expect(client.disconnected).toBe(false);
+      // Disconnect after connection
+      clientSocket.disconnect();
       
-      // Test that connection is stable for a short period
+      // Give it a moment to disconnect
       setTimeout(() => {
-        expect(client.connected).toBe(true);
+        expect(clientSocket.connected).toBe(false);
         done();
-      }, 1000);
+      }, 100);
     });
 
-    client.on('connect_error', (error) => {
+    clientSocket.on('connect_error', (error) => {
       done(new Error(`Connection failed: ${error.message}`));
     });
+  });
 
-    client.on('disconnect', () => {
-      done(new Error('Unexpected disconnection'));
+  test('should handle multiple simultaneous connections', async () => {
+    const client1 = Client(`http://localhost:${TEST_PORT}`, {
+      transports: ['websocket'],
+      forceNew: true
     });
+    
+    const client2 = Client(`http://localhost:${TEST_PORT}`, {
+      transports: ['websocket'],
+      forceNew: true
+    });
+
+    // Wait for both to connect
+    await new Promise((resolve) => {
+      let connected = 0;
+      
+      client1.on('connect', () => {
+        connected++;
+        if (connected === 2) resolve();
+      });
+      
+      client2.on('connect', () => {
+        connected++;
+        if (connected === 2) resolve();
+      });
+    });
+
+    expect(client1.connected).toBe(true);
+    expect(client2.connected).toBe(true);
+    expect(client1.id).not.toBe(client2.id);
+
+    // Clean up
+    client1.disconnect();
+    client2.disconnect();
   });
 });

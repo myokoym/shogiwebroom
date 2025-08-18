@@ -41,6 +41,7 @@ services:
       - TEST_MODE=minimal
       - CI=true
       - JEST_WORKERS=1  # Minimize resource usage
+      - DOCKER_CONTAINER=true  # Indicate Docker environment for tests
     volumes:
       # Mount source code for testing
       - .:/app:cached
