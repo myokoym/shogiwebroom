@@ -41,12 +41,12 @@
 
 ### 要件4: Redis接続テスト
 
-**ユーザーストーリー:** 開発者として、RedisサービスとアプリケーションがUpstash Redis REST API経由で正常に通信できることを確認したい
+**ユーザーストーリー:** 開発者として、ローカルのRedisコンテナとアプリケーションが正常に通信できることを確認したい
 
 #### 受け入れ基準
 
-1. WHEN Redisテストを実行 THEN システムはredis:6379への接続を試みる
-2. IF REDIS_URLが設定されている THEN システムはUpstash REST APIを使用して接続する
+1. WHEN Redisテストを実行 THEN システムはローカルのredis:6379への接続を試みる
+2. IF Docker Composeで起動 THEN システムはredisサービスコンテナに接続する
 3. WHERE Redis接続が成功 THE システムは基本的なget/set操作をテストする
 4. WHEN test:redisスクリプトを実行 AND 接続エラーが発生 THEN システムは詳細な接続エラー情報を表示する
 
