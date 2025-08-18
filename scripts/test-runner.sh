@@ -82,8 +82,8 @@ if [ $TEST_EXIT_CODE -eq 0 ]; then
     
     # Save log file if --log option was used and tests passed
     if [ "$SAVE_LOG" = true ]; then
-        mkdir -p test-results/logs
-        LOG_FILE="test-results/logs/test-success-$(date +%Y%m%d-%H%M%S).log"
+        mkdir -p tmp/logs
+        LOG_FILE="tmp/logs/test-success-$(date +%Y%m%d-%H%M%S).log"
         
         {
             echo "🧪 ShogiWebRoom Test Runner - SUCCESS LOG"
@@ -106,8 +106,8 @@ else
     
     # Always save log file on failure (if output was captured)
     if [ "$SAVE_LOG" = true ]; then
-        mkdir -p test-results/logs
-        LOG_FILE="test-results/logs/test-failure-$(date +%Y%m%d-%H%M%S).log"
+        mkdir -p tmp/logs
+        LOG_FILE="tmp/logs/test-failure-$(date +%Y%m%d-%H%M%S).log"
         
         {
             echo "🧪 ShogiWebRoom Test Runner - FAILURE LOG"

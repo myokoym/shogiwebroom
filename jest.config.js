@@ -50,7 +50,7 @@ module.exports = {
     '!<rootDir>/server/index.js', // Exclude main server file
     '!**/node_modules/**'
   ],
-  coverageDirectory: '<rootDir>/coverage',
+  coverageDirectory: '<rootDir>/tmp/coverage',
   coverageReporters: ['html', 'text-summary', 'lcov'],
   coverageThreshold: {
     global: {
