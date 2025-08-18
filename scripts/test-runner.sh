@@ -3,65 +3,127 @@
 
 set -e
 
-# Create logs directory
-mkdir -p test-results/logs
+# Check for --log option
+SAVE_LOG=false
+JEST_ARGS=()
+for arg in "$@"; do
+    if [ "$arg" = "--log" ]; then
+        SAVE_LOG=true
+    else
+        JEST_ARGS+=("$arg")
+    fi
+done
 
-# Set up log file with timestamp
-LOG_FILE="test-results/logs/test-$(date +%Y%m%d-%H%M%S).log"
+# Create temp file for capturing output if logging is enabled
+if [ "$SAVE_LOG" = true ]; then
+    TEMP_OUTPUT=$(mktemp)
+    trap "rm -f $TEMP_OUTPUT" EXIT
+fi
 
-# Function to log to both console and file
-log_output() {
-    echo "$@" | tee -a "$LOG_FILE"
-}
-
-log_output "🧪 ShogiWebRoom Test Runner"
-log_output "=========================="
-log_output "Node version: $(node --version)"
-log_output "NPM version: $(npm --version)"
-log_output "Working directory: $(pwd)"
-log_output "Test mode: ${TEST_MODE:-default}"
-log_output ""
+echo "🧪 ShogiWebRoom Test Runner"
+echo "=========================="
+echo "Node version: $(node --version)"
+echo "NPM version: $(npm --version)"
+echo "Working directory: $(pwd)"
+echo "Test mode: ${TEST_MODE:-default}"
+if [ "$SAVE_LOG" = true ]; then
+    echo "Logging: Enabled (use --log to save logs)"
+fi
+echo
 
 # Ensure dependencies are installed
 if [ ! -d "node_modules" ]; then
-    log_output "📦 Installing dependencies..."
-    npm ci 2>&1 | tee -a "$LOG_FILE"
-    log_output ""
+    echo "📦 Installing dependencies..."
+    npm ci
+    echo
 fi
 
 # Check if jest is available
 if [ ! -f "node_modules/.bin/jest" ]; then
-    log_output "❌ Jest not found in node_modules/.bin/"
-    log_output "📦 Installing jest locally..."
-    npm install jest@26.6.3 --no-save 2>&1 | tee -a "$LOG_FILE"
-    log_output ""
+    echo "❌ Jest not found in node_modules/.bin/"
+    echo "📦 Installing jest locally..."
+    npm install jest@26.6.3 --no-save
+    echo
 fi
 
 # Run the appropriate test command based on arguments
-if [ $# -eq 0 ]; then
-    log_output "🚀 Running quick tests..."
-    log_output "Executing: npx jest --passWithNoTests --maxWorkers=2 --testTimeout=30000"
+if [ ${#JEST_ARGS[@]} -eq 0 ]; then
+    echo "🚀 Running quick tests..."
     
-    # Run tests and capture output
-    npx jest --passWithNoTests --maxWorkers=2 --testTimeout=30000 2>&1 | tee -a "$LOG_FILE"
-    TEST_EXIT_CODE=${PIPESTATUS[0]}
+    # Run tests (with or without capturing output)
+    if [ "$SAVE_LOG" = true ]; then
+        npx jest --passWithNoTests --maxWorkers=2 --testTimeout=30000 2>&1 | tee "$TEMP_OUTPUT"
+        TEST_EXIT_CODE=${PIPESTATUS[0]}
+    else
+        npx jest --passWithNoTests --maxWorkers=2 --testTimeout=30000
+        TEST_EXIT_CODE=$?
+    fi
 else
-    log_output "🚀 Running custom test command: $@"
-    log_output "Executing: npx jest $@"
+    echo "🚀 Running custom test command: ${JEST_ARGS[@]}"
     
-    # Run tests and capture output
-    npx jest "$@" 2>&1 | tee -a "$LOG_FILE"
-    TEST_EXIT_CODE=${PIPESTATUS[0]}
+    # Run tests (with or without capturing output)
+    if [ "$SAVE_LOG" = true ]; then
+        npx jest "${JEST_ARGS[@]}" 2>&1 | tee "$TEMP_OUTPUT"
+        TEST_EXIT_CODE=${PIPESTATUS[0]}
+    else
+        npx jest "${JEST_ARGS[@]}"
+        TEST_EXIT_CODE=$?
+    fi
 fi
 
-log_output ""
+echo
 
 if [ $TEST_EXIT_CODE -eq 0 ]; then
-    log_output "✅ Test run completed successfully!"
+    echo "✅ Test run completed successfully!"
+    
+    # Save log file if --log option was used and tests passed
+    if [ "$SAVE_LOG" = true ]; then
+        mkdir -p test-results/logs
+        LOG_FILE="test-results/logs/test-success-$(date +%Y%m%d-%H%M%S).log"
+        
+        {
+            echo "🧪 ShogiWebRoom Test Runner - SUCCESS LOG"
+            echo "=========================================="
+            echo "Date: $(date)"
+            echo "Node version: $(node --version)"
+            echo "NPM version: $(npm --version)"
+            echo "Working directory: $(pwd)"
+            echo "Test mode: ${TEST_MODE:-default}"
+            echo
+            echo "Test Output:"
+            echo "============"
+            cat "$TEMP_OUTPUT"
+        } > "$LOG_FILE"
+        
+        echo "📁 Log saved to: $LOG_FILE"
+    fi
 else
-    log_output "❌ Test run failed with exit code: $TEST_EXIT_CODE"
-    log_output "📝 Full log saved to: $LOG_FILE"
+    echo "❌ Test run failed with exit code: $TEST_EXIT_CODE"
+    
+    # Always save log file on failure (if output was captured)
+    if [ "$SAVE_LOG" = true ]; then
+        mkdir -p test-results/logs
+        LOG_FILE="test-results/logs/test-failure-$(date +%Y%m%d-%H%M%S).log"
+        
+        {
+            echo "🧪 ShogiWebRoom Test Runner - FAILURE LOG"
+            echo "=========================================="
+            echo "Date: $(date)"
+            echo "Node version: $(node --version)"
+            echo "NPM version: $(npm --version)"
+            echo "Working directory: $(pwd)"
+            echo "Test mode: ${TEST_MODE:-default}"
+            echo "Exit code: $TEST_EXIT_CODE"
+            echo
+            echo "Test Output:"
+            echo "============"
+            cat "$TEMP_OUTPUT"
+        } > "$LOG_FILE"
+        
+        echo "📝 Failure log saved to: $LOG_FILE"
+    else
+        echo "💡 Tip: Use --log option to save test output to a file"
+    fi
 fi
 
-log_output "📁 Log file location: $LOG_FILE"
 exit $TEST_EXIT_CODE
