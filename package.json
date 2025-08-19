@@ -5,7 +5,7 @@
   "author": "Masafumi Yokoyama",
   "private": true,
   "engines": {
-    "node": ">=14.0.0 <24.0.0",
+    "node": ">=18.0.0",
     "npm": ">=6.0.0"
   },
   "scripts": {
@@ -51,13 +51,14 @@
     "clean": "rm -rf .nuxt dist node_modules/.cache"
   },
   "dependencies": {
+    "@nuxt/bridge": "npm:@nuxt/bridge@latest",
     "bootstrap-vue": "^2.13.1",
     "cross-env": "^5.2.0",
     "crypto-random-string": "^3.2.0",
     "express": "^4.16.4",
     "ioredis": "^4.16.3",
     "moment": "^2.25.3",
-    "nuxt": "^2.18.1",
+    "nuxt": "npm:nuxt3@latest",
     "socket.io": "^2.5.1",
     "socket.io-client": "^2.5.0",
     "vue-clipboard2": "^0.3.1"

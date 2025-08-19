@@ -2,7 +2,7 @@
 
 ## 基盤整備
 
-- [ ] 1. Nuxt Bridge環境の構築
+- [x] 1. Nuxt Bridge環境の構築
   - package.jsonでNuxt BridgeとNuxt 3を依存関係に追加
   - Node.js 18以上の環境を設定
   - TypeScript設定ファイル（tsconfig.json）を作成
