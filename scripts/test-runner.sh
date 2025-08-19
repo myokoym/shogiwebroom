@@ -24,12 +24,14 @@ if [ "$SAVE_LOG" = true ]; then
     trap "rm -f $TEMP_OUTPUT" EXIT
 fi
 
-echo "🧪 ShogiWebRoom Test Runner"
-echo "=========================="
+echo ""
+echo "════════════════════════════════════════════════════════════"
+echo "  🧪 ShogiWebRoom Test Suite"
+echo "════════════════════════════════════════════════════════════"
+echo ""
 echo "Node version: $(node --version)"
 echo "NPM version: $(npm --version)"
 echo "Working directory: $(pwd)"
-echo "Test mode: ${TEST_MODE:-default}"
 if [ "$SAVE_LOG" = true ]; then
     echo "Logging: Enabled (use --log to save logs)"
 fi
@@ -50,20 +52,27 @@ if [ ! -f "node_modules/.bin/jest" ]; then
     echo
 fi
 
+# Default test arguments for better output
+DEFAULT_ARGS="--verbose --coverage --passWithNoTests --maxWorkers=2 --testTimeout=30000"
+
 # Run the appropriate test command based on arguments
 if [ -z "$JEST_ARGS" ]; then
-    echo "🚀 Running quick tests..."
+    echo "Running all tests with coverage..."
+    echo "────────────────────────────────────────────────────────────"
+    echo ""
     
     # Run tests (with or without capturing output)
     if [ "$SAVE_LOG" = true ]; then
-        npx jest --passWithNoTests --maxWorkers=2 --testTimeout=30000 2>&1 | tee "$TEMP_OUTPUT"
+        npx jest $DEFAULT_ARGS 2>&1 | tee "$TEMP_OUTPUT"
         TEST_EXIT_CODE=$?
     else
-        npx jest --passWithNoTests --maxWorkers=2 --testTimeout=30000
+        npx jest $DEFAULT_ARGS
         TEST_EXIT_CODE=$?
     fi
 else
-    echo "🚀 Running custom test command: $JEST_ARGS"
+    echo "Running tests: $JEST_ARGS"
+    echo "────────────────────────────────────────────────────────────"
+    echo ""
     
     # Run tests (with or without capturing output)
     if [ "$SAVE_LOG" = true ]; then

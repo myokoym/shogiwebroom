@@ -55,8 +55,8 @@ services:
     networks:
       - test-network
     working_dir: /app
-    # Build and run tests
-    command: ["sh", "-c", "npm run build && npm run test:quick"]
+    # Build and run tests with detailed output and coverage
+    command: ["sh", "-c", "npm run build && npm run test:local"]
 
 # =================================
 # Test Network Configuration
