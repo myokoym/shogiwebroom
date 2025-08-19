@@ -110,7 +110,7 @@
 
 ## UIライブラリの移行
 
-- [ ] 15. Bootstrap Vue Nextへの移行準備
+- [x] 15. Bootstrap Vue Nextへの移行準備
   - @bootstrap-vue-next/nuxtモジュールのインストール
   - Bootstrap 5のCSS設定
   - コンポーネント互換性マッピングの作成
