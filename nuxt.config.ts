@@ -3,42 +3,42 @@ import { defineNuxtConfig } from '@nuxt/bridge'
 export default defineNuxtConfig({
   // Nuxt Bridge設定
   bridge: {
-    vite: true, // Viteを有効化
-    nitro: true,
+    vite: false, // Viteを無効化（crypto.hash問題回避）
+    nitro: false, // Nitroも一時的に無効化
     typescript: true,
     composition: true,
     meta: true // useMetaサポート
   },
   
-  // Vite設定
-  vite: {
-    optimizeDeps: {
-      include: [
-        'socket.io-client',
-        'bootstrap-vue',
-        'moment',
-        'crypto-random-string'
-      ]
-    },
-    build: {
-      rollupOptions: {
-        output: {
-          manualChunks: {
-            'vendor': ['vue', 'vuex', 'pinia'],
-            'socket': ['socket.io-client', 'engine.io-client'],
-            'ui': ['bootstrap-vue']
-          }
-        }
-      }
-    }
-  },
+  // Vite設定（bridge.vite: falseのため現在無効）
+  // vite: {
+  //   optimizeDeps: {
+  //     include: [
+  //       'socket.io-client',
+  //       'bootstrap-vue',
+  //       'moment',
+  //       'crypto-random-string'
+  //     ]
+  //   },
+  //   build: {
+  //     rollupOptions: {
+  //       output: {
+  //         manualChunks: {
+  //           'vendor': ['vue', 'vuex', 'pinia'],
+  //           'socket': ['socket.io-client', 'engine.io-client'],
+  //           'ui': ['bootstrap-vue']
+  //         }
+  //       }
+  //     }
+  //   }
+  // },
 
-  // Nitro設定（実験的WebSocketは使用しない）
-  nitro: {
-    experimental: {
-      websocket: false
-    }
-  },
+  // Nitro設定（bridge.nitro: falseのため現在無効）
+  // nitro: {
+  //   experimental: {
+  //     websocket: false
+  //   }
+  // },
 
   // SSRモード（universalは廃止予定）
   ssr: true,
@@ -96,6 +96,13 @@ export default defineNuxtConfig({
     // Socket.IOクライアントをベンダーバンドルに含める
     vendor: [
       'socket.io-client'
+    ],
+    
+    // トランスパイル設定（ES2020構文をサポート）
+    transpile: [
+      'pinia',
+      '@vue/devtools-api',
+      '@vue/devtools-kit'
     ],
     
     // Webpack設定の拡張
