@@ -39,7 +39,7 @@
       <button
         type="button"
         class="btn btn-sm"
-        v-on:click="$store.commit('kif/togglePause')"
+        v-on:click="kifStore.togglePause()"
         v-bind:class="{
           'btn-dark': pause,
           'btn-light': !pause,
@@ -58,24 +58,24 @@
 </template>
 <script>
 import Vue from "vue"
-import { mapState } from "vuex"
+import { useKifStore } from '~/stores/kif'
 import VueClipboard from "vue-clipboard2"
 Vue.use(VueClipboard)
 
 export default Vue.extend({
-  computed: {
-    ...mapState("kif", {
-      kifs: "kifs",
-      ki2s: "ki2s",
-      pause: "pause",
-    })
-  },
-  mounted() {
-  },
   data() {
     return {
+      kifStore: null,
       tab: "ki2",
     }
+  },
+  computed: {
+    kifs() { return this.kifStore?.kifs || [] },
+    ki2s() { return this.kifStore?.ki2s || [] },
+    pause() { return this.kifStore?.pause || false },
+  },
+  mounted() {
+    this.kifStore = useKifStore()
   },
   watch: {
     "ki2s": function() {
