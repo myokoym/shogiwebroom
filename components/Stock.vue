@@ -24,7 +24,7 @@
 </template>
 <script>
 import Vue from "vue"
-import { useSfenStore } from '~/stores/sfen'
+import { useSfenStore } from '~/stores'
 import Piece from '~/components/Piece.vue'
 
 export default Vue.extend({

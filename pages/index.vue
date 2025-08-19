@@ -70,7 +70,7 @@
 
 <script>
 import Vue from "vue"
-import { useOptionStore } from '~/stores/option'
+import { useOptionStore } from '~/stores'
 import cryptoRandomString from "crypto-random-string"
 import VueClipboard from "vue-clipboard2"
 Vue.use(VueClipboard)

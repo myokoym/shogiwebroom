@@ -58,7 +58,7 @@
 </template>
 <script>
 import Vue from "vue"
-import { useKifStore } from '~/stores/kif'
+import { useKifStore } from '~/stores'
 import VueClipboard from "vue-clipboard2"
 Vue.use(VueClipboard)
 

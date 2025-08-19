@@ -34,7 +34,7 @@
 </template>
 <script>
 import Vue from "vue"
-import { useChatStore } from '~/stores/chat'
+import { useChatStore } from '~/stores'
 
 export default Vue.extend({
   data() {

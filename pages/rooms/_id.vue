@@ -18,8 +18,8 @@
 <script>
 import io from "socket.io-client"
 import Vue from "vue"
-import { useSfenStore } from '~/stores/sfen'
-import { useOptionStore } from '~/stores/option'
+import { useSfenStore } from '~/stores'
+import { useOptionStore } from '~/stores'
 import Shogiboard from '~/components/Shogiboard.vue'
 import Chat from '~/components/Chat.vue'
 import Kif from '~/components/Kif.vue'

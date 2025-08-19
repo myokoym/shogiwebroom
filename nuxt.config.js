@@ -73,11 +73,25 @@ module.exports = {
     transpile: [
       'pinia',
       '@vue/devtools-api',
-      '@vue/devtools-kit'
+      '@vue/devtools-kit',
+      'birpc'
     ],
     
     // Webpack設定の拡張
     extend(config, ctx) {
+      // babel-loaderにオプショナルチェーン構文のサポートを追加
+      config.module.rules.forEach(rule => {
+        if (rule.test && rule.test.toString().includes('m?js')) {
+          if (rule.exclude) {
+            rule.exclude = /node_modules\/(?!(pinia|@vue\/devtools-api|@vue\/devtools-kit|birpc))/
+          }
+        }
+      })
+      
+      // Webpack aliasを設定してdevtoolsを無効化
+      config.resolve.alias = config.resolve.alias || {}
+      config.resolve.alias['@vue/devtools-api'] = require.resolve('./stubs/devtools-stub.js')
+      
       // オーディオファイルのローダー設定
       config.module.rules.push({
         test: /\.(ogg|mp3|wav|mpe?g)$/i,

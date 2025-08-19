@@ -70,7 +70,7 @@
 </template>
 <script>
 import Vue from "vue"
-import { useOptionStore } from '~/stores/option'
+import { useOptionStore } from '~/stores'
 
 export default Vue.extend({
   props: {

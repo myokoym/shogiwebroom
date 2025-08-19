@@ -125,9 +125,9 @@
 </template>
 <script>
 import Vue from "vue"
-import { useSfenStore } from '~/stores/sfen'
-import { useKifStore } from '~/stores/kif'
-import { useOptionStore } from '~/stores/option'
+import { useSfenStore } from '~/stores'
+import { useKifStore } from '~/stores'
+import { useOptionStore } from '~/stores'
 import Piece from '~/components/Piece.vue'
 import Hand from '~/components/Hand.vue'
 import Stock from '~/components/Stock.vue'
