@@ -77,7 +77,9 @@ export default defineNuxtConfig({
   css: [],
 
   // プラグイン
-  plugins: [],
+  plugins: [
+    { src: '~/plugins/socket.client.js', mode: 'client' }
+  ],
 
   // ビルドモジュール（開発時のみ）
   buildModules: [],
@@ -85,6 +87,7 @@ export default defineNuxtConfig({
   // Nuxtモジュール
   modules: [
     'bootstrap-vue/nuxt',
+    '@pinia/nuxt',
   ],
 
   // ビルド設定
