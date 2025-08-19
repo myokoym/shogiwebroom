@@ -3,11 +3,34 @@ import { defineNuxtConfig } from '@nuxt/bridge'
 export default defineNuxtConfig({
   // Nuxt Bridge設定
   bridge: {
-    vite: false, // 初期は無効化（後で有効化）
+    vite: true, // Viteを有効化
     nitro: true,
     typescript: true,
     composition: true,
     meta: true // useMetaサポート
+  },
+  
+  // Vite設定
+  vite: {
+    optimizeDeps: {
+      include: [
+        'socket.io-client',
+        'bootstrap-vue',
+        'moment',
+        'crypto-random-string'
+      ]
+    },
+    build: {
+      rollupOptions: {
+        output: {
+          manualChunks: {
+            'vendor': ['vue', 'vuex', 'pinia'],
+            'socket': ['socket.io-client', 'engine.io-client'],
+            'ui': ['bootstrap-vue']
+          }
+        }
+      }
+    }
   },
 
   // Nitro設定（実験的WebSocketは使用しない）
