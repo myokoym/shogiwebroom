@@ -91,13 +91,13 @@
           <button
             type="button"
             class="btn btn-light btn-sm"
-            v-on:click="$store.commit('sfen/prevHistory')"
+            v-on:click="sfenStore.prevHistory()"
             v-bind:disabled="historyCursor >= history.length - 1"
           >一手戻る</button>
           <button
             type="button"
             class="btn btn-light btn-sm"
-            v-on:click="$store.commit('sfen/nextHistory')"
+            v-on:click="sfenStore.nextHistory()"
             v-bind:disabled="historyCursor <= 0"
           >一手進む</button>
         </div>
@@ -113,7 +113,7 @@
         class="form-control"
         aria-describedby="sfen-label"
         v-bind:value="text"
-        v-on:input="$store.commit('sfen/setText', {text: $event.target.value})"
+        v-on:input="sfenStore.setText({text: $event.target.value})"
       >
       <button
         type="button"
@@ -125,7 +125,9 @@
 </template>
 <script>
 import Vue from "vue"
-import { mapState } from "vuex"
+import { useSfenStore } from '~/stores/sfen'
+import { useKifStore } from '~/stores/kif'
+import { useOptionStore } from '~/stores/option'
 import Piece from '~/components/Piece.vue'
 import Hand from '~/components/Hand.vue'
 import Stock from '~/components/Stock.vue'
@@ -140,46 +142,11 @@ export default Vue.extend({
     Stock,
     Option,
   },
-  computed: {
-    reversedSfen: function() {
-      return this.$store.getters["sfen/reversedSfen"]
-    },
-    ...mapState("sfen", {
-      roomId: "roomId",
-      text: "text",
-      reversed: "reversed",
-      rows: "rows",
-      hands: "hands",
-      latestCellX: "latestCellX",
-      latestCellY: "latestCellY",
-      history: "history",
-      historyCursor: "historyCursor",
-    }),
-    ...mapState("kif", {
-      moves: "moves",
-      kifs: "kifs",
-      ki2s: "ki2s",
-      xChars: "xChars",
-      yChars: "yChars",
-    }),
-    ...mapState("option", {
-      enabledGameMode: "enabledGameMode",
-      enabledAudio: "enabledAudio",
-      enabledLatestMark: "enabledLatestMark",
-      enabledBoardGuide: "enabledBoardGuide",
-      showStock: "showStock",
-      showClock: "showClock",
-      font: "font",
-    }),
-  },
-  mounted() {
-    this.$store.commit("sfen/init")
-    this.komaotoObj = new Audio(this.komaotoPath())
-    // debug: console.log("this.text: " + this.text)
-    // debug: console.log("this.text: " + this.$store.state.sfen.text)
-  },
   data() {
     return {
+      sfenStore: null,
+      kifStore: null,
+      optionStore: null,
       filledBHands: [],
       filledWHands: [],
       beforeX: undefined,
@@ -189,6 +156,46 @@ export default Vue.extend({
       komaotoName: "komaoto1",
       komaotoObj: undefined,
     }
+  },
+  computed: {
+    reversedSfen: function() {
+      return this.sfenStore?.reversedSfen || ''
+    },
+    // SFEN store computed properties
+    roomId() { return this.sfenStore?.roomId || '' },
+    text() { return this.sfenStore?.text || '' },
+    reversed() { return this.sfenStore?.reversed || false },
+    rows() { return this.sfenStore?.rows || [] },
+    hands() { return this.sfenStore?.hands || {} },
+    latestCellX() { return this.sfenStore?.latestX || -1 },
+    latestCellY() { return this.sfenStore?.latestY || -1 },
+    history() { return this.sfenStore?.history || [] },
+    historyCursor() { return this.sfenStore?.historyIndex || -1 },
+    // KIF store computed properties
+    moves() { return this.kifStore?.moves || [] },
+    kifs() { return this.kifStore?.kifs || [] },
+    ki2s() { return this.kifStore?.ki2s || [] },
+    xChars() { return this.kifStore?.xChars || [] },
+    yChars() { return this.kifStore?.yChars || [] },
+    // Option store computed properties
+    enabledGameMode() { return this.optionStore?.enabledGameMode || false },
+    enabledAudio() { return this.optionStore?.enabledAudio || false },
+    enabledLatestMark() { return this.optionStore?.enabledLatestMark || false },
+    enabledBoardGuide() { return this.optionStore?.enabledBoardGuide || false },
+    showStock() { return this.optionStore?.showStock || false },
+    showClock() { return this.optionStore?.showClock || false },
+    font() { return this.optionStore?.font || 'kirieji' },
+  },
+  mounted() {
+    // Initialize Pinia stores
+    this.sfenStore = useSfenStore()
+    this.kifStore = useKifStore()
+    this.optionStore = useOptionStore()
+    
+    this.sfenStore.init()
+    this.komaotoObj = new Audio(this.komaotoPath())
+    // debug: console.log("this.text: " + this.text)
+    // debug: console.log("this.text: " + this.sfenStore.text)
   },
   watch: {
     "value": function() {
@@ -251,7 +258,7 @@ export default Vue.extend({
              this.beforeStock !== undefined
     },
     reverseBoard() {
-      this.$store.commit("sfen/reverse")
+      this.sfenStore.reverse()
     },
     moveFromHand(piece) {
       // debug: console.log("moveFromHand: " + piece)
@@ -286,7 +293,7 @@ export default Vue.extend({
         return
       }
       if (this.beforeX !== undefined) {
-        this.$store.commit("sfen/moveBoardToHand", {
+        this.sfenStore.moveBoardToHand({
           beforeX: this.beforeX,
           beforeY: this.beforeY,
           turn: turn,
@@ -299,7 +306,7 @@ export default Vue.extend({
           this.beforeHand = undefined
           return
         }
-        this.$store.commit("sfen/moveHandToHand", {
+        this.sfenStore.moveHandToHand({
           beforeHand: this.beforeHand,
           turn: turn,
         })
@@ -313,7 +320,7 @@ export default Vue.extend({
         return
       }
       if (this.beforeX !== undefined) {
-        this.$store.commit("sfen/moveBoardToStock", {
+        this.sfenStore.moveBoardToStock({
           beforeX: this.beforeX,
           beforeY: this.beforeY,
         })
@@ -324,7 +331,7 @@ export default Vue.extend({
       }
     },
     togglePromotedAndTurn(x, y) {
-      this.$store.commit("sfen/togglePromotedAndTurn", {
+      this.sfenStore.togglePromotedAndTurn({
         x: x,
         y: y,
       })
@@ -333,7 +340,7 @@ export default Vue.extend({
       if (this.beforeX === undefined) {
         return
       }
-      this.$store.commit("sfen/togglePromotedAndTurn", {
+      this.sfenStore.togglePromotedAndTurn({
         x: this.beforeX,
         y: this.beforeY,
       })
@@ -387,12 +394,12 @@ export default Vue.extend({
           if (afterCell !== ".") {
             return
           } else {
-            this.$store.commit("sfen/moveHandToBoard", {
+            this.sfenStore.moveHandToBoard({
               beforeHand: this.beforeHand,
               afterX: x,
               afterY: y,
             })
-            this.$store.commit("kif/sendMove", {
+            this.kifStore.sendMove({
               afterX: x,
               afterY: y,
               piece: this.beforeHand,
@@ -404,7 +411,7 @@ export default Vue.extend({
           if (afterCell !== ".") {
             return
           } else {
-            this.$store.commit("sfen/moveStockToBoard", {
+            this.sfenStore.moveStockToBoard({
               beforeStock: this.beforeStock,
               afterX: x,
               afterY: y,
@@ -415,14 +422,14 @@ export default Vue.extend({
       }
     },
     moveCellFromBoard(x, y, piece) {
-      this.$store.commit("sfen/moveBoardToBoard", {
+      this.sfenStore.moveBoardToBoard({
         beforeX: this.beforeX,
         beforeY: this.beforeY,
         afterX: x,
         afterY: y,
         piece: piece,
       })
-      this.$store.commit("kif/sendMove", {
+      this.kifStore.sendMove({
         beforeX: this.beforeX,
         beforeY: this.beforeY,
         afterX: x,
