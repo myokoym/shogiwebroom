@@ -1,9 +1,11 @@
 // Shogiboard用のComposable（Composition API）
 import { computed, ref, onMounted, onBeforeUnmount } from '@nuxt/bridge/dist/runtime'
-import { useStore } from 'vuex'
+import { useSfenStore } from '~/stores/sfen'
+import { useOptionStore } from '~/stores/option'
 
 export const useShogiboard = () => {
-  const store = useStore()
+  const sfenStore = useSfenStore()
+  const optionStore = useOptionStore()
   
   // State
   const komaotoObj = ref(null)
@@ -13,14 +15,14 @@ export const useShogiboard = () => {
   const dragFromStock = ref(false)
   
   // Computed
-  const rows = computed(() => store.state.sfen.rows)
-  const font = computed(() => store.state.option.font)
-  const latestX = computed(() => store.state.sfen.latestX)
-  const latestY = computed(() => store.state.sfen.latestY)
-  const isLatestMark = computed(() => store.state.option.isLatestMark)
-  const isBoardGuide = computed(() => store.state.option.isBoardGuide)
-  const isAudio = computed(() => store.state.option.isAudio)
-  const roomId = computed(() => store.state.sfen.roomId)
+  const rows = computed(() => sfenStore.rows)
+  const font = computed(() => optionStore.font)
+  const latestX = computed(() => sfenStore.latestX)
+  const latestY = computed(() => sfenStore.latestY)
+  const isLatestMark = computed(() => optionStore.enabledLatestMark)
+  const isBoardGuide = computed(() => optionStore.enabledBoardGuide)
+  const isAudio = computed(() => optionStore.enabledAudio)
+  const roomId = computed(() => sfenStore.roomId)
   
   // Methods
   const boardGuideTop = (n, length) => {

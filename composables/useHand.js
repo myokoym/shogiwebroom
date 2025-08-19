@@ -1,20 +1,22 @@
 // Hand用のComposable（Composition API）
 import { computed } from '@nuxt/bridge/dist/runtime'
-import { useStore } from 'vuex'
+import { useSfenStore } from '~/stores/sfen'
+import { useOptionStore } from '~/stores/option'
 
 export const useHand = (props) => {
-  const store = useStore()
+  const sfenStore = useSfenStore()
+  const optionStore = useOptionStore()
   
   // Computed
   const hands = computed(() => {
     if (props.turn === 'b') {
-      return store.state.sfen.blackHands
+      return sfenStore.blackHands
     } else {
-      return store.state.sfen.whiteHands
+      return sfenStore.whiteHands
     }
   })
   
-  const font = computed(() => store.state.option.font)
+  const font = computed(() => optionStore.font)
   
   // クラス名
   const klass = computed(() => {

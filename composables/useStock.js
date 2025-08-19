@@ -1,13 +1,15 @@
 // Stock用のComposable（Composition API）
 import { computed } from '@nuxt/bridge/dist/runtime'
-import { useStore } from 'vuex'
+import { useSfenStore } from '~/stores/sfen'
+import { useOptionStore } from '~/stores/option'
 
 export const useStock = () => {
-  const store = useStore()
+  const sfenStore = useSfenStore()
+  const optionStore = useOptionStore()
   
   // Computed
-  const stock = computed(() => store.state.sfen.stock)
-  const font = computed(() => store.state.option.font)
+  const stock = computed(() => sfenStore.stock)
+  const font = computed(() => optionStore.font)
   
   // Methods
   const moveToStock = () => {

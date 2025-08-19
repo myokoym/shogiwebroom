@@ -1,16 +1,16 @@
 // Chat用のComposable（Composition API）
 import { computed, ref } from '@nuxt/bridge/dist/runtime'
-import { useStore } from 'vuex'
+import { useChatStore } from '~/stores/chat'
 
 export const useChat = () => {
-  const store = useStore()
+  const chatStore = useChatStore()
   
   // State
   const name = ref('')
   const comment = ref('')
   
   // Computed
-  const comments = computed(() => store.state.chat.comments)
+  const comments = computed(() => chatStore.comments)
   
   // Methods
   const sendComment = () => {
@@ -18,7 +18,7 @@ export const useChat = () => {
       return
     }
     
-    store.commit('chat/sendComment', {
+    chatStore.sendComment({
       name: name.value,
       comment: comment.value
     })

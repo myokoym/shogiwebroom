@@ -1,12 +1,14 @@
 // Room page用のComposable（Composition API）
 import { onMounted, computed } from '@nuxt/bridge/dist/runtime'
 import { useRoute, useRouter } from '@nuxtjs/composition-api'
-import { useStore } from 'vuex'
+import { useSfenStore } from '~/stores/sfen'
+import { useOptionStore } from '~/stores/option'
 
 export const useRoom = () => {
   const route = useRoute()
   const router = useRouter()
-  const store = useStore()
+  const sfenStore = useSfenStore()
+  const optionStore = useOptionStore()
   
   // Computed
   const roomId = computed(() => route.params.id)
@@ -19,20 +21,20 @@ export const useRoom = () => {
     }
     
     // 部屋IDを設定
-    store.commit('sfen/setRoomId', { roomId: roomId.value })
+    sfenStore.setRoomId({ roomId: roomId.value })
     
     // URLクエリパラメータから設定を読み込み
     if (route.query.audio === '1') {
-      store.commit('option/setAudio', true)
+      optionStore.setAudio(true)
     }
     if (route.query.latestMark === '1') {
-      store.commit('option/setLatestMark', true)
+      optionStore.setLatestMark(true)
     }
     if (route.query.boardGuide === '1') {
-      store.commit('option/setBoardGuide', true)
+      optionStore.setBoardGuide(true)
     }
     if (route.query.font) {
-      store.commit('option/setFont', route.query.font)
+      optionStore.setFont(route.query.font)
     }
   }
   

@@ -1,12 +1,12 @@
 // Kif用のComposable（Composition API）
 import { computed } from '@nuxt/bridge/dist/runtime'
-import { useStore } from 'vuex'
+import { useKifStore } from '~/stores/kif'
 
 export const useKif = () => {
-  const store = useStore()
+  const kifStore = useKifStore()
   
   // Computed
-  const moves = computed(() => store.state.kif.moves)
+  const moves = computed(() => kifStore.moves)
   
   // Methods
   const piece2String = (piece) => {

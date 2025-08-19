@@ -1,54 +1,56 @@
 // Option用のComposable（Composition API）
 import { computed, watch } from '@nuxt/bridge/dist/runtime'
-import { useStore } from 'vuex'
+import { useOptionStore } from '~/stores/option'
+import { useSfenStore } from '~/stores/sfen'
 
 export const useOption = () => {
-  const store = useStore()
+  const optionStore = useOptionStore()
+  const sfenStore = useSfenStore()
   
   // Computed with setter
   const audio = computed({
-    get: () => store.state.option.isAudio,
-    set: (value) => store.commit('option/setAudio', value)
+    get: () => optionStore.enabledAudio,
+    set: (value) => optionStore.setAudio(value)
   })
   
   const latestMark = computed({
-    get: () => store.state.option.isLatestMark,
-    set: (value) => store.commit('option/setLatestMark', value)
+    get: () => optionStore.enabledLatestMark,
+    set: (value) => optionStore.setLatestMark(value)
   })
   
   const boardGuide = computed({
-    get: () => store.state.option.isBoardGuide,
-    set: (value) => store.commit('option/setBoardGuide', value)
+    get: () => optionStore.enabledBoardGuide,
+    set: (value) => optionStore.setBoardGuide(value)
   })
   
   const font = computed({
-    get: () => store.state.option.font,
-    set: (value) => store.commit('option/setFont', value)
+    get: () => optionStore.font,
+    set: (value) => optionStore.setFont(value)
   })
   
   // Methods
   const reverse = () => {
-    store.commit('sfen/reverse')
+    sfenStore.reverse()
   }
   
   const init = () => {
-    store.commit('sfen/init')
+    sfenStore.init()
   }
   
   const prevHistory = () => {
-    store.commit('sfen/prevHistory')
+    sfenStore.prevHistory()
   }
   
   const nextHistory = () => {
-    store.commit('sfen/nextHistory')
+    sfenStore.nextHistory()
   }
   
   const getText = () => {
-    return store.state.sfen.text
+    return sfenStore.text
   }
   
   const setText = (text) => {
-    store.commit('sfen/setText', { text })
+    sfenStore.setText({ text })
   }
   
   return {
