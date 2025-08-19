@@ -6,7 +6,8 @@ export default defineNuxtConfig({
     vite: false, // 初期は無効化（後で有効化）
     nitro: true,
     typescript: true,
-    composition: true
+    composition: true,
+    meta: true // useMetaサポート
   },
 
   // Nitro設定（実験的WebSocketは使用しない）

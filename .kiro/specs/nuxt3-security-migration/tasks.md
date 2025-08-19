@@ -64,7 +64,7 @@
 
 ## Vue 3コンポーネント移行
 
-- [ ] 9. コアコンポーネントのComposition API化
+- [x] 9. コアコンポーネントのComposition API化
   - components/Shogiboard.vueをComposition APIに変換
   - Piece.vueコンポーネントの移行
   - Stock.vueとHand.vueの移行
