@@ -8,12 +8,13 @@ describe('Nuxt Bridge Environment', () => {
     const configPath = path.join(__dirname, '../../nuxt.config.ts')
     const fs = require('fs')
     
-    // 現時点では.jsファイルのコピーなので、存在確認のみ
+    // TypeScriptファイルの存在確認
     expect(fs.existsSync(configPath)).toBe(true)
     
-    // ファイルの中身が読み込める
+    // TypeScript設定ファイルの内容確認
     const configContent = fs.readFileSync(configPath, 'utf8')
-    expect(configContent).toContain('module.exports')
+    expect(configContent).toContain('defineNuxtConfig')
+    expect(configContent).toContain('export default')
     
     done()
   })
