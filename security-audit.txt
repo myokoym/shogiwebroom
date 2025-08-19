@@ -1,0 +1,276 @@
+# npm audit report
+
+bootstrap  4.0.0 - 4.6.2
+Severity: moderate
+Bootstrap Cross-Site Scripting (XSS) vulnerability - https://github.com/advisories/GHSA-vc8w-jr9v-vj7f
+fix available via `npm audit fix --force`
+Will install bootstrap-vue@1.5.1, which is a breaking change
+node_modules/bootstrap
+  bootstrap-vue  0.5.1 - 0.10.1 || >=2.0.0-rc.0
+  Depends on vulnerable versions of bootstrap
+  Depends on vulnerable versions of portal-vue
+  node_modules/bootstrap-vue
+
+braces  <3.0.3
+Severity: high
+Uncontrolled resource consumption in braces - https://github.com/advisories/GHSA-grv7-fg5c-xmjg
+fix available via `npm audit fix --force`
+Will install jest@30.0.5, which is a breaking change
+node_modules/braces
+  chokidar  1.3.0 - 2.1.8
+  Depends on vulnerable versions of anymatch
+  Depends on vulnerable versions of braces
+  Depends on vulnerable versions of readdirp
+  node_modules/chokidar
+    watchpack-chokidar2  *
+    Depends on vulnerable versions of chokidar
+    node_modules/watchpack-chokidar2
+      watchpack  1.7.2 - 1.7.5
+      Depends on vulnerable versions of watchpack-chokidar2
+      node_modules/webpack/node_modules/watchpack
+        webpack  4.0.0-alpha.0 - 5.0.0-rc.6
+        Depends on vulnerable versions of micromatch
+        Depends on vulnerable versions of terser-webpack-plugin
+        Depends on vulnerable versions of watchpack
+        node_modules/webpack
+          @nuxt/webpack  *
+          Depends on vulnerable versions of cache-loader
+          Depends on vulnerable versions of optimize-css-assets-webpack-plugin
+          Depends on vulnerable versions of vue-template-compiler
+          Depends on vulnerable versions of webpack
+          node_modules/@nuxt/webpack
+            @nuxt/builder  >=2.4.0
+            Depends on vulnerable versions of @nuxt/vue-app
+            Depends on vulnerable versions of @nuxt/webpack
+            node_modules/@nuxt/builder
+              nuxt  <=3.12.3
+              Depends on vulnerable versions of @nuxt/builder
+              Depends on vulnerable versions of @nuxt/components
+              Depends on vulnerable versions of @nuxt/core
+              Depends on vulnerable versions of @nuxt/server
+              Depends on vulnerable versions of @nuxt/telemetry
+              Depends on vulnerable versions of @nuxt/vue-app
+              Depends on vulnerable versions of @nuxt/vue-renderer
+              Depends on vulnerable versions of @nuxt/webpack
+              node_modules/nuxt
+          cache-loader  >=2.0.0
+          Depends on vulnerable versions of webpack
+          node_modules/cache-loader
+          optimize-css-assets-webpack-plugin  >=4.0.1
+          Depends on vulnerable versions of webpack
+          node_modules/optimize-css-assets-webpack-plugin
+          terser-webpack-plugin  <=2.2.1
+          Depends on vulnerable versions of webpack
+          node_modules/webpack/node_modules/terser-webpack-plugin
+  micromatch  <=4.0.7
+  Depends on vulnerable versions of braces
+  node_modules/micromatch
+    anymatch  1.2.0 - 2.0.0
+    Depends on vulnerable versions of micromatch
+    node_modules/anymatch
+      sane  1.5.0 - 4.1.0
+      Depends on vulnerable versions of anymatch
+      Depends on vulnerable versions of micromatch
+      node_modules/sane
+        jest-haste-map  24.0.0-alpha.0 - 26.6.2
+        Depends on vulnerable versions of sane
+        node_modules/jest-haste-map
+          @jest/core  <=26.6.3
+          Depends on vulnerable versions of @jest/reporters
+          Depends on vulnerable versions of @jest/transform
+          Depends on vulnerable versions of jest-config
+          Depends on vulnerable versions of jest-haste-map
+          Depends on vulnerable versions of jest-resolve-dependencies
+          Depends on vulnerable versions of jest-runner
+          Depends on vulnerable versions of jest-runtime
+          Depends on vulnerable versions of jest-snapshot
+          node_modules/@jest/core
+            jest  24.2.0-alpha.0 - 26.6.3
+            Depends on vulnerable versions of @jest/core
+            Depends on vulnerable versions of jest-cli
+            node_modules/jest
+            jest-cli  24.2.0-alpha.0 - 26.6.3
+            Depends on vulnerable versions of @jest/core
+            Depends on vulnerable versions of jest-config
+            node_modules/jest-cli
+          @jest/reporters  <=26.6.2
+          Depends on vulnerable versions of @jest/transform
+          Depends on vulnerable versions of jest-haste-map
+          node_modules/@jest/reporters
+          @jest/test-sequencer  <=26.6.3
+          Depends on vulnerable versions of jest-haste-map
+          Depends on vulnerable versions of jest-runner
+          Depends on vulnerable versions of jest-runtime
+          node_modules/@jest/test-sequencer
+            jest-config  24.2.0-alpha.0 - 26.6.3
+            Depends on vulnerable versions of @jest/test-sequencer
+            Depends on vulnerable versions of babel-jest
+            Depends on vulnerable versions of jest-jasmine2
+            node_modules/jest-config
+              jest-runner  24.0.0-alpha.0 - 26.6.3
+              Depends on vulnerable versions of jest-config
+              Depends on vulnerable versions of jest-haste-map
+              Depends on vulnerable versions of jest-runtime
+              node_modules/jest-runner
+              jest-runtime  24.0.0-alpha.0 - 26.6.3
+              Depends on vulnerable versions of @jest/transform
+              Depends on vulnerable versions of jest-config
+              Depends on vulnerable versions of jest-haste-map
+              Depends on vulnerable versions of jest-snapshot
+              node_modules/jest-runtime
+                jest-jasmine2  24.2.0-alpha.0 - 26.6.3
+                Depends on vulnerable versions of jest-runtime
+                Depends on vulnerable versions of jest-snapshot
+                node_modules/jest-jasmine2
+          @jest/transform  <=26.6.2
+          Depends on vulnerable versions of jest-haste-map
+          node_modules/@jest/transform
+            babel-jest  24.2.0-alpha.0 - 26.6.3
+            Depends on vulnerable versions of @jest/transform
+            node_modules/babel-jest
+          jest-snapshot  24.2.0-alpha.0 - 24.5.0 || 26.1.0 - 26.6.2
+          Depends on vulnerable versions of jest-haste-map
+          node_modules/jest-snapshot
+            jest-resolve-dependencies  26.1.0 - 26.6.3
+            Depends on vulnerable versions of jest-snapshot
+            node_modules/jest-resolve-dependencies
+    readdirp  2.2.0 - 2.2.1
+    Depends on vulnerable versions of micromatch
+    node_modules/readdirp
+
+cookie  <0.7.0
+cookie accepts cookie name, path, and domain with out of bounds characters - https://github.com/advisories/GHSA-pxg6-pf52-xh8x
+fix available via `npm audit fix --force`
+Will install socket.io@4.8.1, which is a breaking change
+node_modules/@nuxtjs/youch/node_modules/cookie
+node_modules/engine.io/node_modules/cookie
+  @nuxtjs/youch  *
+  Depends on vulnerable versions of cookie
+  node_modules/@nuxtjs/youch
+  engine.io  1.8.0 - 6.6.1
+  Depends on vulnerable versions of cookie
+  Depends on vulnerable versions of debug
+  node_modules/engine.io
+    socket.io  1.0.0-pre - 3.0.4
+    Depends on vulnerable versions of debug
+    Depends on vulnerable versions of engine.io
+    Depends on vulnerable versions of socket.io-client
+    Depends on vulnerable versions of socket.io-parser
+    node_modules/socket.io
+
+debug  4.0.0 - 4.3.0
+Regular Expression Denial of Service in debug - https://github.com/advisories/GHSA-gxpj-cx7g-858c
+fix available via `npm audit fix --force`
+Will install socket.io@4.8.1, which is a breaking change
+node_modules/engine.io/node_modules/debug
+node_modules/socket.io-parser/node_modules/debug
+node_modules/socket.io/node_modules/debug
+  socket.io-parser  3.4.0 - 4.0.2
+  Depends on vulnerable versions of debug
+  node_modules/socket.io-parser
+
+ip  *
+Severity: high
+ip SSRF improper categorization in isPublic - https://github.com/advisories/GHSA-2p57-rm9w-gvfp
+fix available via `npm audit fix --force`
+Will install nuxt@4.0.3, which is outside the stated dependency range
+node_modules/ip
+  @nuxt/server  *
+  Depends on vulnerable versions of @nuxt/vue-renderer
+  Depends on vulnerable versions of @nuxtjs/youch
+  Depends on vulnerable versions of ip
+  node_modules/@nuxt/server
+    @nuxt/core  *
+    Depends on vulnerable versions of @nuxt/server
+    node_modules/@nuxt/core
+
+lodash.template  *
+Severity: high
+Command Injection in lodash - https://github.com/advisories/GHSA-35jh-r3h4-6jhm
+fix available via `npm audit fix`
+node_modules/lodash.template
+  vue-server-renderer  >=2.3.0-beta.1
+  Depends on vulnerable versions of lodash.template
+  node_modules/vue-server-renderer
+
+
+
+parse-git-config  *
+Severity: high
+Prototype Pollution Vulnerability in parse-git-config - https://github.com/advisories/GHSA-8g77-54rh-46hx
+fix available via `npm audit fix --force`
+Will install nuxt@4.0.3, which is outside the stated dependency range
+node_modules/parse-git-config
+  @nuxt/telemetry  <=2.6.5
+  Depends on vulnerable versions of inquirer
+  Depends on vulnerable versions of parse-git-config
+  node_modules/@nuxt/telemetry
+
+parseuri  <2.0.0
+Severity: moderate
+parse-uri Regular expression Denial of Service (ReDoS) - https://github.com/advisories/GHSA-6fx8-h7jm-663j
+fix available via `npm audit fix --force`
+Will install socket.io-client@4.8.1, which is a breaking change
+node_modules/parseuri
+  engine.io-client  1.0.2 - 6.1.1
+  Depends on vulnerable versions of parseuri
+  node_modules/engine.io-client
+  socket.io-client  1.0.0-pre - 4.4.1
+  Depends on vulnerable versions of engine.io-client
+  Depends on vulnerable versions of parseuri
+  node_modules/socket.io-client
+
+tmp  <=0.2.3
+tmp allows arbitrary temporary file / directory write via symbolic link `dir` parameter - https://github.com/advisories/GHSA-52f5-9888-hmc6
+fix available via `npm audit fix --force`
+Will install nuxt@4.0.3, which is outside the stated dependency range
+node_modules/tmp
+  external-editor  >=1.1.1
+  Depends on vulnerable versions of tmp
+  node_modules/external-editor
+    inquirer  3.0.0 - 8.2.6 || 9.0.0 - 9.3.7
+    Depends on vulnerable versions of external-editor
+    node_modules/inquirer
+
+vue  2.0.0-alpha.1 - 2.7.16
+ReDoS vulnerability in vue package that is exploitable through inefficient regex evaluation in the parseHTML function - https://github.com/advisories/GHSA-5j4c-8p2g-v4jx
+fix available via `npm audit fix --force`
+Will install @vue/test-utils@2.4.6, which is a breaking change
+node_modules/vue
+  @nuxt/vue-app  >=2.4.0
+  Depends on vulnerable versions of vue
+  Depends on vulnerable versions of vue-template-compiler
+  Depends on vulnerable versions of vuex
+  node_modules/@nuxt/vue-app
+  @nuxt/vue-renderer  *
+  Depends on vulnerable versions of vue
+  Depends on vulnerable versions of vue-server-renderer
+  node_modules/@nuxt/vue-renderer
+  @vue/test-utils  <=1.3.6
+  Depends on vulnerable versions of vue
+  Depends on vulnerable versions of vue-template-compiler
+  node_modules/@vue/test-utils
+  portal-vue  2.0.0-beta.0 - 2.1.7
+  Depends on vulnerable versions of vue
+  node_modules/portal-vue
+  vuex  3.1.3 - 3.6.2
+  Depends on vulnerable versions of vue
+  node_modules/vuex
+
+vue-template-compiler  >=2.0.0
+Severity: moderate
+vue-template-compiler vulnerable to client-side Cross-Site Scripting (XSS) - https://github.com/advisories/GHSA-g3ch-rx76-35fx
+fix available via `npm audit fix --force`
+Will install nuxt@4.0.3, which is outside the stated dependency range
+node_modules/vue-template-compiler
+  @nuxt/components  >=1.2.1
+  Depends on vulnerable versions of vue-template-compiler
+  node_modules/@nuxt/components
+
+58 vulnerabilities (11 low, 32 moderate, 15 high)
+
+To address issues that do not require attention, run:
+  npm audit fix
+
+To address all issues (including breaking changes), run:
+  npm audit fix --force
