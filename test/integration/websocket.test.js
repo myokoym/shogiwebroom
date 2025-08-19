@@ -30,7 +30,7 @@ describe('WebSocket Integration Tests', () => {
 
     // Handle server connections
     io.on('connection', (socket) => {
-      console.log('Test server: Client connected');
+      // Suppress verbose logging: console.log('Test server: Client connected');
       serverSocket = socket;
       
       // Echo back any message for testing

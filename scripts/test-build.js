@@ -19,8 +19,10 @@ class BuildTester {
   }
 
   log(message) {
-    const timestamp = new Date().toISOString();
-    console.log(`[${timestamp}] ${message}`);
+    if (process.env.VERBOSE_TEST_LOG) {
+      const timestamp = new Date().toISOString();
+      console.log(`[${timestamp}] ${message}`);
+    }
   }
 
   error(message, error = null) {
