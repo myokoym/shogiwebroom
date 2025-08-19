@@ -48,7 +48,7 @@
   - sendイベントとその他の既存イベントの移植
   - _要件: 3_
 
-- [ ] 7. Socket.IOクライアントの更新
+- [x] 7. Socket.IOクライアントの更新
   - plugins/socket.client.tsを作成
   - Socket.IO Client v4への接続設定
   - 再接続ロジックとエラーハンドリング
