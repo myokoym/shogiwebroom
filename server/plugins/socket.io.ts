@@ -1,7 +1,7 @@
 import type { NitroApp } from 'nitropack'
 import { Server } from 'socket.io'
 import { Engine } from 'engine.io'
-import type { Socket } from 'socket.io'
+import { setupSocketEvents } from './socket-events'
 
 // Socket.IO v4をNitroプラグインとして実装
 export default defineNitroPlugin((nitroApp: NitroApp) => {
@@ -35,22 +35,10 @@ export default defineNitroPlugin((nitroApp: NitroApp) => {
     // Nitroアプリにアタッチ
     nitroApp.io = io
     
-    // 接続イベントハンドラー（基本構造のみ）
-    io.on('connection', (socket: Socket) => {
-      console.log('Socket.IO v4: New client connected', socket.id)
-      
-      // 切断イベント
-      socket.on('disconnect', (reason) => {
-        console.log('Socket.IO v4: Client disconnected', socket.id, reason)
-      })
-      
-      // エラーハンドリング
-      socket.on('error', (error) => {
-        console.error('Socket.IO v4: Socket error', socket.id, error)
-      })
-    })
+    // イベントハンドラーの設定
+    setupSocketEvents(io)
     
-    console.log('Socket.IO v4 server initialized')
+    console.log('Socket.IO v4 server initialized with event handlers')
   })
 })
 

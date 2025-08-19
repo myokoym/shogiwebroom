@@ -1,4 +1,5 @@
 const { Server } = require('socket.io')
+const { setupSocketEvents } = require('./socket-events')
 
 // Socket.IO v4をNitroプラグインとして実装（JavaScript版）
 module.exports = function socketIOPlugin(nitroApp) {
@@ -32,21 +33,9 @@ module.exports = function socketIOPlugin(nitroApp) {
     // Nitroアプリにアタッチ
     nitroApp.io = io
     
-    // 接続イベントハンドラー（基本構造のみ）
-    io.on('connection', (socket) => {
-      console.log('Socket.IO v4: New client connected', socket.id)
-      
-      // 切断イベント
-      socket.on('disconnect', (reason) => {
-        console.log('Socket.IO v4: Client disconnected', socket.id, reason)
-      })
-      
-      // エラーハンドリング
-      socket.on('error', (error) => {
-        console.error('Socket.IO v4: Socket error', socket.id, error)
-      })
-    })
+    // イベントハンドラーの設定
+    setupSocketEvents(io)
     
-    console.log('Socket.IO v4 server initialized')
+    console.log('Socket.IO v4 server initialized with event handlers')
   })
 }
