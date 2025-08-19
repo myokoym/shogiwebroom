@@ -70,7 +70,7 @@
 
 <script>
 import Vue from "vue"
-import { mapState } from "vuex"
+import { useOptionStore } from '~/stores/option'
 import cryptoRandomString from "crypto-random-string"
 import VueClipboard from "vue-clipboard2"
 Vue.use(VueClipboard)
@@ -84,24 +84,24 @@ export default Vue.extend({
   },
   data() {
     return {
+      optionStore: null,
       origin: "",
       roomId: "",
     }
   },
   mounted() {
+    this.optionStore = useOptionStore()
     this.origin = location.origin
   },
   computed: {
     roomPath: function() {
       return "/rooms/" + this.roomId
     },
-    ...mapState("option", {
-      enabledGameMode: "enabledGameMode",
-      enabledAudio: "enabledAudio",
-      enabledLatestMark: "enabledLatestMark",
-      enabledBoardGuide: "enabledBoardGuide",
-      font: "font",
-    }),
+    enabledGameMode() { return this.optionStore?.enabledGameMode || false },
+    enabledAudio() { return this.optionStore?.enabledAudio || false },
+    enabledLatestMark() { return this.optionStore?.enabledLatestMark || false },
+    enabledBoardGuide() { return this.optionStore?.enabledBoardGuide || false },
+    font() { return this.optionStore?.font || 'kirieji' },
     roomOptions: function() {
       let params = []
       if (this.enabledGameMode) {

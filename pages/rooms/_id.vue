@@ -18,6 +18,8 @@
 <script>
 import io from "socket.io-client"
 import Vue from "vue"
+import { useSfenStore } from '~/stores/sfen'
+import { useOptionStore } from '~/stores/option'
 import Shogiboard from '~/components/Shogiboard.vue'
 import Chat from '~/components/Chat.vue'
 import Kif from '~/components/Kif.vue'
@@ -30,26 +32,32 @@ export default Vue.extend({
   },
   data() {
     return {
+      sfenStore: null,
+      optionStore: null,
     }
   },
   created() {
+    // Initialize stores
+    this.sfenStore = useSfenStore()
+    this.optionStore = useOptionStore()
+    
     // debug: console.log(this.$route.params.id)
     if (!this.$route.params.id) {
       this.$router.replace("/")
       return
     }
-    this.$store.commit("sfen/setRoomId", {roomId: this.$route.params.id})
+    this.sfenStore.setRoomId({roomId: this.$route.params.id})
     if (this.$route.query.audio == "1") {
-      this.$store.commit("option/setAudio", true)
+      this.optionStore.setAudio(true)
     }
     if (this.$route.query.latestMark == "1") {
-      this.$store.commit("option/setLatestMark", true)
+      this.optionStore.setLatestMark(true)
     }
     if (this.$route.query.boardGuide == "1") {
-      this.$store.commit("option/setBoardGuide", true)
+      this.optionStore.setBoardGuide(true)
     }
     if (this.$route.query.font) {
-      this.$store.commit("option/setFont", this.$route.query.font)
+      this.optionStore.setFont(this.$route.query.font)
     }
   },
 })
