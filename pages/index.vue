@@ -68,83 +68,81 @@
   </div>
 </template>
 
-<script>
-import Vue from "vue"
+<script setup>
+import { ref, computed, onMounted } from 'vue'
 import { useOptionStore } from '~/stores'
 import cryptoRandomString from "crypto-random-string"
 import VueClipboard from "vue-clipboard2"
-Vue.use(VueClipboard)
 import Option from '~/components/Option.vue'
 import Usage from '~/components/Usage.vue'
 
-export default Vue.extend({
-  components: {
-    Option,
-    Usage,
-  },
-  data() {
-    return {
-      optionStore: null,
-      origin: "",
-      roomId: "",
-    }
-  },
-  mounted() {
-    this.optionStore = useOptionStore()
-    this.origin = location.origin
-  },
-  computed: {
-    roomPath: function() {
-      return "/rooms/" + this.roomId
-    },
-    enabledGameMode() { return this.optionStore?.enabledGameMode || false },
-    enabledAudio() { return this.optionStore?.enabledAudio || false },
-    enabledLatestMark() { return this.optionStore?.enabledLatestMark || false },
-    enabledBoardGuide() { return this.optionStore?.enabledBoardGuide || false },
-    font() { return this.optionStore?.font || 'kirieji' },
-    roomOptions: function() {
-      let params = []
-      if (this.enabledGameMode) {
-        params.push("gameMode=1")
-      }
-      if (this.enabledLatestMark) {
-        params.push("latestMark=1")
-      }
-      if (this.enabledBoardGuide) {
-        params.push("boardGuide=1")
-      }
-      if (this.enabledAudio) {
-        params.push("audio=1")
-      }
-      if (this.font !== "kirieji") {
-        params.push("font=" + this.font)
-      }
-      let paramText = ""
-      if (params.length) {
-        paramText += "?"
-        paramText += params.join("&")
-      }
-      return paramText
-    },
-    roomUrl: function() {
-      if (!this.roomId) {
-        return
-      }
-      return this.origin + this.roomPath + this.roomOptions
-    },
-  },
-  methods: {
-    generateId() {
-      this.roomId = cryptoRandomString({length: 16})
-    },
-    enterRoom() {
-      if (!this.roomId) {
-        return
-      }
-      this.$router.push(this.roomPath)
-    },
-  }
+// Get router
+const router = useRouter()
+
+// Data
+const optionStore = useOptionStore()
+const origin = ref("")
+const roomId = ref("")
+
+// Computed
+const roomPath = computed(() => {
+  return "/rooms/" + roomId.value
 })
+
+const enabledGameMode = computed(() => optionStore.enabledGameMode || false)
+const enabledAudio = computed(() => optionStore.enabledAudio || false)
+const enabledLatestMark = computed(() => optionStore.enabledLatestMark || false)
+const enabledBoardGuide = computed(() => optionStore.enabledBoardGuide || false)
+const font = computed(() => optionStore.font || 'kirieji')
+
+const roomOptions = computed(() => {
+  let params = []
+  if (enabledGameMode.value) {
+    params.push("gameMode=1")
+  }
+  if (enabledLatestMark.value) {
+    params.push("latestMark=1")
+  }
+  if (enabledBoardGuide.value) {
+    params.push("boardGuide=1")
+  }
+  if (enabledAudio.value) {
+    params.push("audio=1")
+  }
+  if (font.value !== "kirieji") {
+    params.push("font=" + font.value)
+  }
+  let paramText = ""
+  if (params.length) {
+    paramText += "?"
+    paramText += params.join("&")
+  }
+  return paramText
+})
+
+const roomUrl = computed(() => {
+  if (!roomId.value) {
+    return
+  }
+  return origin.value + roomPath.value + roomOptions.value
+})
+
+// Mounted
+onMounted(() => {
+  origin.value = location.origin
+})
+
+// Methods
+const generateId = () => {
+  roomId.value = cryptoRandomString({length: 16})
+}
+
+const enterRoom = () => {
+  if (!roomId.value) {
+    return
+  }
+  router.push(roomPath.value)
+}
 </script>
 <style>
 body {

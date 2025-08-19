@@ -1,7 +1,7 @@
 import io from 'socket.io-client'
 
-export default ({ store }, inject) => {
-  // Socket.IO v2クライアントの接続（後方互換性のため）
+export default defineNuxtPlugin((nuxtApp) => {
+  // Socket.IO v4クライアントの接続
   const socket = io({
     // 手動接続制御
     autoConnect: false,
@@ -18,12 +18,6 @@ export default ({ store }, inject) => {
     path: '/socket.io/'
   })
 
-  // Nuxtアプリにインジェクト
-  inject('socket', socket)
-  
-  // ストアにも追加
-  store.$socket = socket
-
   // 基本的なエラーハンドリング
   socket.on('connect_error', (error) => {
     console.error('Socket.IO connection error:', error.type)
@@ -36,11 +30,7 @@ export default ({ store }, inject) => {
   // 自動再接続のイベント
   socket.on('reconnect', (attemptNumber) => {
     console.log('Socket.IO reconnected after', attemptNumber, 'attempts')
-    // 再接続時に部屋に再参加
-    const roomId = store.state.roomId
-    if (roomId) {
-      socket.emit('enterRoom', roomId)
-    }
+    // TODO: 再接続時の部屋への再参加はコンポーネント側で処理
   })
   
   socket.on('reconnect_attempt', (attemptNumber) => {
@@ -54,4 +44,11 @@ export default ({ store }, inject) => {
   socket.on('reconnect_failed', () => {
     console.error('Socket.IO reconnection failed after all attempts')
   })
-}
+
+  // Nuxt 3のプラグインインジェクション
+  return {
+    provide: {
+      socket
+    }
+  }
+})

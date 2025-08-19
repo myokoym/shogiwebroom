@@ -68,39 +68,28 @@
     </div>
   </div>
 </template>
-<script>
-import Vue from "vue"
+<script setup>
 import { useOptionStore } from '~/stores'
 
-export default Vue.extend({
-  props: {
-    hideClock: Boolean,
-    hideStock: Boolean,
-  },
-  data() {
-    return {
-      optionStore: null,
-    }
-  },
-  computed: {
-    enabledGameMode() { return this.optionStore?.enabledGameMode || false },
-    enabledAudio() { return this.optionStore?.enabledAudio || false },
-    enabledLatestMark() { return this.optionStore?.enabledLatestMark || false },
-    enabledBoardGuide() { return this.optionStore?.enabledBoardGuide || false },
-    showStock() { return this.optionStore?.showStock || false },
-    showClock() { return this.optionStore?.showClock || false },
-    font() { return this.optionStore?.font || 'kirieji' },
-    fontOptions() { return this.optionStore?.fontOptions || [] },
-  },
-  mounted() {
-    this.optionStore = useOptionStore()
-  },
-  methods: {
-    setFont(value) {
-      this.optionStore.setFont(value)
-    },
-  }
+const props = defineProps({
+  hideClock: Boolean,
+  hideStock: Boolean,
 })
+
+const optionStore = useOptionStore()
+
+const enabledGameMode = computed(() => optionStore.enabledGameMode || false)
+const enabledAudio = computed(() => optionStore.enabledAudio || false)
+const enabledLatestMark = computed(() => optionStore.enabledLatestMark || false)
+const enabledBoardGuide = computed(() => optionStore.enabledBoardGuide || false)
+const showStock = computed(() => optionStore.showStock || false)
+const showClock = computed(() => optionStore.showClock || false)
+const font = computed(() => optionStore.font || 'kirieji')
+const fontOptions = computed(() => optionStore.fontOptions || [])
+
+function setFont(value) {
+  optionStore.setFont(value)
+}
 </script>
 <style>
 .latestCell {

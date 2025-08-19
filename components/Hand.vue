@@ -25,52 +25,42 @@
     </div>
   </div>
 </template>
-<script>
-import Vue from "vue"
+<script setup>
+import { computed } from 'vue'
 import { useSfenStore } from '~/stores'
 import Piece from '~/components/Piece.vue'
 
-export default Vue.extend({
-  components: {
-    Piece,
-  },
-  props: {
-    turn: String,
-    font: String,
-    moveFromHand: Function,
-    moveToHand: Function,
-    isBeforeHand: Function,
-    isSelectedPiece: Function,
-  },
-  data() {
-    return {
-      sfenStore: null,
-    }
-  },
-  computed: {
-    filledHands() {
-      return this.sfenStore?.filledHands?.[this.turn] || []
-    },
-    hands() {
-      return this.sfenStore?.hands || {}
-    },
-  },
-  mounted() {
-    this.sfenStore = useSfenStore()
-  },
-  watch: {
-  },
-  methods: {
-    moveHand(piece) {
-      // debug: console.log("moveHand: " + piece)
-      if (this.isSelectedPiece()) {
-        this.moveToHand(this.turn)
-      } else if (piece) {
-        this.moveFromHand(piece)
-      }
-    },
-  }
+// Define props
+const props = defineProps({
+  turn: String,
+  font: String,
+  moveFromHand: Function,
+  moveToHand: Function,
+  isBeforeHand: Function,
+  isSelectedPiece: Function,
 })
+
+// Data
+const sfenStore = useSfenStore()
+
+// Computed
+const filledHands = computed(() => {
+  return sfenStore.filledHands?.[props.turn] || []
+})
+
+const hands = computed(() => {
+  return sfenStore.hands || {}
+})
+
+// Methods
+const moveHand = (piece) => {
+  // debug: console.log("moveHand: " + piece)
+  if (props.isSelectedPiece()) {
+    props.moveToHand(props.turn)
+  } else if (piece) {
+    props.moveFromHand(piece)
+  }
+}
 </script>
 <style>
 .beforeCell {
