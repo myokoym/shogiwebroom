@@ -41,9 +41,10 @@ module.exports = {
   
   // Coverage settings - removed duplicate, see bottom of file
   collectCoverageFrom: [
-    '<rootDir>/components/**/*.vue',
-    '<rootDir>/pages/**/*.vue',
-    '<rootDir>/layouts/**/*.vue',
+    // Vue files excluded until vue-jest is properly configured
+    // '<rootDir>/components/**/*.vue',
+    // '<rootDir>/pages/**/*.vue',
+    // '<rootDir>/layouts/**/*.vue',
     '<rootDir>/store/**/*.js',
     '<rootDir>/server/**/*.js',
     '!<rootDir>/server/index.js', // Exclude main server file
