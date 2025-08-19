@@ -1,0 +1,59 @@
+# Nuxt 3 / Bridge対応 Dockerfile
+# マルチステージビルドを使用して最適化
+
+# Stage 1: Dependencies
+FROM node:20-alpine AS deps
+WORKDIR /app
+
+# パッケージファイルをコピー
+COPY package*.json ./
+
+# 依存関係をインストール
+RUN npm ci --only=production
+
+# Stage 2: Build
+FROM node:20-alpine AS builder
+WORKDIR /app
+
+# パッケージファイルと依存関係をコピー
+COPY package*.json ./
+RUN npm ci
+
+# ソースコードをコピー
+COPY . .
+
+# Nuxt 3/Bridgeでビルド
+ENV NODE_ENV=production
+RUN npm run build
+
+# Stage 3: Production
+FROM node:20-alpine AS runner
+WORKDIR /app
+
+# 実行に必要な環境変数
+ENV NODE_ENV=production
+ENV HOST=0.0.0.0
+ENV PORT=3000
+
+# 非rootユーザーを作成
+RUN addgroup -g 1001 -S nodejs && \
+    adduser -S nuxtjs -u 1001
+
+# 必要なファイルをコピー
+COPY --from=deps --chown=nuxtjs:nodejs /app/node_modules ./node_modules
+COPY --from=builder --chown=nuxtjs:nodejs /app/.output ./.output
+COPY --from=builder --chown=nuxtjs:nodejs /app/package*.json ./
+
+# .outputディレクトリ構造に対応
+COPY --from=builder --chown=nuxtjs:nodejs /app/.nuxt ./.nuxt
+COPY --from=builder --chown=nuxtjs:nodejs /app/static ./static
+COPY --from=builder --chown=nuxtjs:nodejs /app/server ./server
+
+# ユーザーを切り替え
+USER nuxtjs
+
+# ポートを公開
+EXPOSE 3000
+
+# Nuxt 3/Bridgeの起動コマンド
+CMD ["npm", "start"]
