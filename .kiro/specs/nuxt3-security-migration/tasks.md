@@ -101,7 +101,7 @@
   - 盤面同期テストの実装
   - _要件: 4_
 
-- [ ] 14. チャット・オプション状態の移行
+- [x] 14. チャット・オプション状態の移行
   - store/chat.jsをstores/chat.tsに移行
   - store/option.jsをstores/option.tsに移行
   - store/kif.jsをstores/kif.tsに移行
