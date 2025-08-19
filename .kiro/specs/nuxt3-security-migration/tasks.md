@@ -78,7 +78,7 @@
   - Usage.vue使い方説明の移行
   - _要件: 4_
 
-- [ ] 11. ページコンポーネントの移行
+- [x] 11. ページコンポーネントの移行
   - pages/index.vueをComposition APIに変換
   - pages/rooms/_id.vueを動的ルートに対応
   - レイアウトコンポーネントの移行
