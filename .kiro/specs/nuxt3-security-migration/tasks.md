@@ -9,7 +9,7 @@
   - 開発環境での起動確認テストを実装
   - _要件: 1_
 
-- [ ] 2. Nuxt設定ファイルのTypeScript化
+- [x] 2. Nuxt設定ファイルのTypeScript化
   - nuxt.config.jsをnuxt.config.tsに変換
   - Bridge設定オプションを追加（nitro有効、vite無効）
   - 実験的WebSocketを明示的に無効化
