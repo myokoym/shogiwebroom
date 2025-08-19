@@ -34,7 +34,7 @@
 
 ## Socket.IO移行
 
-- [ ] 5. Socket.IOサーバーv4への移行準備
+- [x] 5. Socket.IOサーバーv4への移行準備
   - Socket.IO v4とengine.ioをインストール
   - server/plugins/socket.io.tsを作成
   - Nitroプラグインとして基本構造を実装
