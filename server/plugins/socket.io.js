@@ -1,5 +1,6 @@
 const { Server } = require('socket.io')
 const { setupSocketEvents } = require('./socket-events')
+const { setupFallbackHandlers, setupProductionSimulation } = require('./socket-fallback')
 
 // Socket.IO v4をNitroプラグインとして実装（JavaScript版）
 module.exports = function socketIOPlugin(nitroApp) {
@@ -36,6 +37,12 @@ module.exports = function socketIOPlugin(nitroApp) {
     // イベントハンドラーの設定
     setupSocketEvents(io)
     
-    console.log('Socket.IO v4 server initialized with event handlers')
+    // v2クライアント用フォールバック処理
+    setupFallbackHandlers(io)
+    
+    // 本番環境シミュレーション（必要に応じて）
+    setupProductionSimulation(io)
+    
+    console.log('Socket.IO v4 server initialized with event handlers and v2 compatibility')
   })
 }
