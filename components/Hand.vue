@@ -10,7 +10,7 @@
     }">
     <div
       class="hand-piece"
-      v-for="piece in $store.state.sfen.filledHands[turn]"
+      v-for="piece in filledHands"
       v-bind:class="{beforeCell: isBeforeHand(piece)}"
       v-on:click.stop="moveHand(piece)"
       draggable
@@ -21,13 +21,13 @@
         v-bind:piece="piece"
         v-bind:font="font"
       ></Piece>
-      <span class="hand-n-pieces">{{$store.state.sfen.hands[piece] || "　"}}</span>
+      <span class="hand-n-pieces">{{hands[piece] || "　"}}</span>
     </div>
   </div>
 </template>
 <script>
 import Vue from "vue"
-import { mapState } from "vuex"
+import { useSfenStore } from '~/stores/sfen'
 import Piece from '~/components/Piece.vue'
 
 export default Vue.extend({
@@ -42,13 +42,21 @@ export default Vue.extend({
     isBeforeHand: Function,
     isSelectedPiece: Function,
   },
-  computed: {
-  },
-  mounted() {
-  },
   data() {
     return {
+      sfenStore: null,
     }
+  },
+  computed: {
+    filledHands() {
+      return this.sfenStore?.filledHands?.[this.turn] || []
+    },
+    hands() {
+      return this.sfenStore?.hands || {}
+    },
+  },
+  mounted() {
+    this.sfenStore = useSfenStore()
   },
   watch: {
   },

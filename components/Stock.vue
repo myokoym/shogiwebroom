@@ -7,7 +7,7 @@
   >
     <div
       class="stock-piece"
-      v-for="piece in $store.state.sfen.filledStock"
+      v-for="piece in filledStock"
       v-bind:class="{beforeCell: isBeforeHand(piece)}"
       v-on:click.stop="moveHand(piece)"
       draggable
@@ -18,13 +18,13 @@
         v-bind:piece="piece"
         v-bind:font="font"
       ></Piece>
-      <span>{{$store.state.sfen.stock[piece] || "　"}}</span>
+      <span>{{stock[piece] || "　"}}</span>
     </div>
   </div>
 </template>
 <script>
 import Vue from "vue"
-import { mapState } from "vuex"
+import { useSfenStore } from '~/stores/sfen'
 import Piece from '~/components/Piece.vue'
 
 export default Vue.extend({
@@ -39,13 +39,21 @@ export default Vue.extend({
     isBeforeHand: Function,
     isSelectedPiece: Function,
   },
-  computed: {
-  },
-  mounted() {
-  },
   data() {
     return {
+      sfenStore: null,
     }
+  },
+  computed: {
+    filledStock() {
+      return this.sfenStore?.filledStock || []
+    },
+    stock() {
+      return this.sfenStore?.stock || {}
+    },
+  },
+  mounted() {
+    this.sfenStore = useSfenStore()
   },
   watch: {
   },
