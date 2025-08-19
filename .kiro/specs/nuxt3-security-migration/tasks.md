@@ -25,7 +25,7 @@
   - セキュリティテストを追加
   - _要件: 2_
 
-- [ ] 4. セキュリティミドルウェアの実装
+- [x] 4. セキュリティミドルウェアの実装
   - server/middleware/security.tsを作成
   - CSPヘッダーの設定を実装
   - X-Frame-OptionsとX-Content-Type-Optionsを設定
