@@ -77,6 +77,12 @@ export default defineNuxtConfig({
     typescript: true,
     composition: true
   },
+  // Nitro実験的WebSocketは使用しない
+  nitro: {
+    experimental: {
+      websocket: false // 明示的に無効化
+    }
+  },
   // 既存の設定を段階的に移行
 })
 ```
@@ -121,45 +127,134 @@ export default defineEventHandler((event) => {
 
 ### フェーズ3: Socket.IO v4移行（要件3対応）
 
-#### 3.1 後方互換性の確保
-```typescript
-// server/socket/compatibility.ts
-import { Server as SocketIOServer } from 'socket.io'
+#### ⚠️ 重要: Nitro実験的WebSocketの回避
+Nitroの実験的WebSocket機能は本番環境で重大な問題があるため、**使用しません**。
+- 開発環境では動作するが、本番ビルドで404エラーが発生
+- `listen`フックが本番モードで実行されない
+- プラットフォームサポートが不完全
 
-export function createSocketServer(nuxtApp: any) {
-  const io = new SocketIOServer(nuxtApp.server, {
-    // v2クライアントとの互換性
-    allowEIO3: true,
-    cors: {
-      origin: true,
-      credentials: true
+#### 3.1 推奨実装: Nitroプラグインによる Socket.IO統合
+```typescript
+// server/plugins/socket.io.ts
+import type { NitroApp } from "nitropack"
+import { Server as Engine } from "engine.io"
+import { Server } from "socket.io"
+import { defineEventHandler } from "h3"
+
+export default defineNitroPlugin((nitroApp: NitroApp) => {
+  const engine = new Engine()
+  const io = new Server()
+  
+  // Socket.IOをengine.ioにバインド
+  io.bind(engine)
+  
+  // 既存のSocket.IOイベントハンドラーを移植
+  io.on("connection", (socket) => {
+    // 部屋への入室
+    socket.on('enterRoom', (data) => {
+      socket.join(data.roomId)
+      socket.to(data.roomId).emit('userJoined', data)
+    })
+    
+    // 駒の移動
+    socket.on('sendMove', (data) => {
+      socket.to(data.roomId).emit('move', data)
+    })
+    
+    // チャットメッセージ
+    socket.on('sendComment', (data) => {
+      socket.to(data.roomId).emit('comment', data)
+    })
+    
+    // その他の既存イベント
+    socket.on('send', (data) => {
+      socket.to(data.roomId).emit('receive', data)
+    })
+  })
+
+  // Nitroルーターに統合（実験的WebSocketは使わない）
+  nitroApp.router.use("/socket.io/", defineEventHandler({
+    handler(event) {
+      engine.handleRequest(event.node.req, event.node.res)
+      event._handled = true
     }
-  })
-  
-  // 既存のイベントハンドラー維持
-  io.on('connection', (socket) => {
-    // 既存のロジックを維持
-    socket.on('enterRoom', handleEnterRoom)
-    socket.on('send', handleSend)
-    socket.on('sendComment', handleSendComment)
-    socket.on('sendMove', handleSendMove)
-  })
-  
-  return io
-}
+  }))
+})
 ```
 
-#### 3.2 クライアント側の段階的更新
+#### 3.2 代替案: 別ポート構成（フォールバック）
+本番環境で問題が発生した場合の確実な代替案：
+
+```typescript
+// server/socket-server.ts - 独立したSocket.IOサーバー
+import { createServer } from 'http'
+import { Server } from 'socket.io'
+import Redis from 'ioredis'
+
+const httpServer = createServer()
+const io = new Server(httpServer, {
+  cors: {
+    origin: process.env.FRONTEND_URL || 'http://localhost:3000',
+    credentials: true
+  },
+  // v2クライアントとの互換性
+  allowEIO3: true
+})
+
+const redis = new Redis(process.env.REDIS_URL)
+
+// Socket.IOロジック
+io.on('connection', (socket) => {
+  // 既存の全イベントハンドラー
+})
+
+httpServer.listen(3001)
+```
+
+```typescript
+// nuxt.config.ts - プロキシ設定
+export default defineNuxtConfig({
+  nitro: {
+    devProxy: {
+      '/socket.io': {
+        target: 'http://localhost:3001',
+        ws: true,
+        changeOrigin: true
+      }
+    },
+    // 実験的WebSocketは明示的に無効化
+    experimental: {
+      websocket: false
+    }
+  }
+})
+```
+
+#### 3.3 クライアント側の実装
 ```typescript
 // plugins/socket.client.ts
 import { io } from 'socket.io-client'
 
 export default defineNuxtPlugin(() => {
+  // クライアント側でのみ実行
+  if (process.server) return
+  
   const socket = io({
     // 自動再接続戦略
     reconnection: true,
     reconnectionAttempts: 5,
-    reconnectionDelay: 1000
+    reconnectionDelay: 1000,
+    // トランスポートの優先順位設定
+    transports: ['websocket', 'polling']
+  })
+  
+  // 接続状態の監視
+  socket.on('connect', () => {
+    console.log('Socket.IO connected')
+  })
+  
+  socket.on('disconnect', (reason) => {
+    console.warn('Socket.IO disconnected:', reason)
   })
   
   return {
@@ -169,6 +264,12 @@ export default defineNuxtPlugin(() => {
   }
 })
 ```
+
+#### 3.4 本番環境での動作保証
+- 開発環境と本番環境で一貫した動作
+- プラットフォーム非依存の実装
+- Socket.IO v4の全機能を利用可能
+- 既存のSocket.IO v2クライアントとの後方互換性
 
 ### フェーズ4: Vue 3移行（要件4対応）
 
@@ -464,16 +565,29 @@ gantt
 ## リスク管理
 
 ### 技術的リスク
-1. **Bootstrap Vue互換性**
+1. **Nitro実験的WebSocket（高リスク）**
+   - リスク: 本番環境での404エラー、プラットフォーム非互換
+   - 影響度: 🔴 致命的 - アプリケーションの中核機能が動作しない
+   - 対策: **使用を完全に回避**し、Nitroプラグイン方式を採用
+
+2. **Bootstrap Vue互換性**
    - リスク: Bootstrap Vue Nextは完全な互換性を提供しない
+   - 影響度: 🟡 中程度 - UI要素の再実装が必要
    - 対策: 段階的移行とカスタムコンポーネント作成
 
-2. **Socket.IO後方互換性**
+3. **Socket.IO本番環境動作**
+   - リスク: 開発と本番の環境差による接続失敗
+   - 影響度: 🔴 高 - リアルタイム同期が機能しない
+   - 対策: Nitroプラグイン実装と別ポート構成のフォールバック準備
+
+4. **Socket.IO後方互換性**
    - リスク: v2クライアントとの接続問題
+   - 影響度: 🟡 中程度 - 一時的な接続エラー
    - 対策: allowEIO3オプションとフォールバック実装
 
-3. **Vuexストア移行**
+5. **Vuexストア移行**
    - リスク: 複雑な状態管理ロジックの破損
+   - 影響度: 🟡 中程度 - 機能の一時的な不具合
    - 対策: 段階的なPinia移行と並行運用期間
 
 ### 運用リスク
@@ -510,8 +624,25 @@ gantt
 - Redis接続プロトコルの変更不可
 - 既存ユーザーデータの完全保持
 
+## 実装上の重要な注意事項
+
+### Socket.IO実装の安定性確保
+1. **Nitro実験的WebSocketを使用しない**
+   - 本番環境での404エラーを回避
+   - プラットフォーム互換性の問題を防止
+
+2. **推奨実装順序**
+   - 第1選択: Nitroプラグイン方式（server/plugins/socket.io.ts）
+   - 第2選択: 別ポート構成（確実なフォールバック）
+
+3. **本番環境テスト必須項目**
+   - Socket.IO接続の確立確認
+   - リアルタイム同期の動作検証
+   - 再接続処理の確認
+
 ## 次のステップ
 1. 要件と設計のレビュー・承認
 2. 開発環境でのNuxt Bridge導入検証
-3. 実装タスクの詳細化と優先順位付け
-4. 移行開始とフェーズ1の実装
+3. **Socket.IO実装の本番環境シミュレーション**
+4. 実装タスクの詳細化と優先順位付け
+5. 移行開始とフェーズ1の実装
