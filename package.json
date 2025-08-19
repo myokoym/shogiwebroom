@@ -52,16 +52,18 @@
   },
   "dependencies": {
     "@nuxt/bridge": "npm:@nuxt/bridge@latest",
+    "@pinia/nuxt": "^0.11.2",
     "bootstrap-vue": "^2.13.1",
     "cross-env": "^5.2.0",
     "crypto-random-string": "^3.2.0",
+    "engine.io": "^6.6.2",
     "express": "^4.16.4",
     "ioredis": "^4.16.3",
     "moment": "^2.25.3",
     "nuxt": "npm:nuxt3@latest",
+    "pinia": "^3.0.3",
     "socket.io": "^4.8.1",
     "socket.io-client": "^4.8.1",
-    "engine.io": "^6.6.2",
     "vue-clipboard2": "^0.3.1"
   },
   "devDependencies": {
