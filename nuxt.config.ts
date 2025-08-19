@@ -78,6 +78,7 @@ export default defineNuxtConfig({
 
   // プラグイン
   plugins: [
+    { src: '~/plugins/pinia.js' },
     { src: '~/plugins/socket.client.js', mode: 'client' }
   ],
 
@@ -87,7 +88,7 @@ export default defineNuxtConfig({
   // Nuxtモジュール
   modules: [
     'bootstrap-vue/nuxt',
-    '@pinia/nuxt',
+    // '@pinia/nuxt', // Nuxt 2では直接インポートが必要
   ],
 
   // ビルド設定
