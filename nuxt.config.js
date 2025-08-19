@@ -35,6 +35,7 @@ module.exports = {
   ** Plugins to load before mounting the App
   */
   plugins: [
+    { src: '~/plugins/socket.client.js', mode: 'client' }
   ],
   /*
   ** Nuxt.js dev-modules

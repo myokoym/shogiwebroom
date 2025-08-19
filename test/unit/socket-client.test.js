@@ -12,17 +12,17 @@ describe('Socket.IO Client v4', () => {
       expect(fs.existsSync(tsPath)).toBe(true)
     })
     
-    it('should export SocketClient class', () => {
+    it('should export Nuxt plugin', () => {
       const fs = require('fs')
       const path = require('path')
       
       const jsPath = path.join(__dirname, '../../plugins/socket.client.js')
       const content = fs.readFileSync(jsPath, 'utf-8')
       
-      expect(content).toContain('class SocketClient')
-      expect(content).toContain('connect(store)')
-      expect(content).toContain('setupErrorHandlers()')
-      expect(content).toContain('setupReconnectionHandlers()')
+      expect(content).toContain('export default')
+      expect(content).toContain('inject')
+      expect(content).toContain('socket.io-client')
+      expect(content).toContain('connect_error')
     })
     
     it('should have v4 connection configuration', () => {

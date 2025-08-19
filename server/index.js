@@ -74,7 +74,15 @@ function getRoomKey(roomId) {
 }
 
 function socketStart(server) {
-  const io = require("socket.io").listen(server)
+  const { Server } = require("socket.io")
+  const io = new Server(server, {
+    cors: {
+      origin: true,
+      credentials: true
+    },
+    allowEIO3: true, // Allow Engine.IO v3 clients (backward compatibility)
+    transports: ['polling', 'websocket']
+  })
   io.on("connection", (socket) => {
     let roomId = ""
     socket.on("enterRoom", (id) => {
