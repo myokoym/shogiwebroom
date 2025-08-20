@@ -1,17 +1,17 @@
 # Development Dockerfile for ShogiWebRoom
 # Optimized for hot reload and fast development cycles
 
-FROM node:18-alpine
+FROM node:18-bullseye-slim
 
 # Install system dependencies
-RUN apk add --no-cache \
-    libc6-compat \
+RUN apt-get update && apt-get install -y \
     python3 \
     make \
     g++ \
     git \
     curl \
-    wget
+    wget \
+    && rm -rf /var/lib/apt/lists/*
 
 # Create app directory
 WORKDIR /app
@@ -21,8 +21,8 @@ RUN addgroup --system --gid 1001 nodejs && \
     adduser --system --uid 1001 --shell /bin/sh nuxtjs
 
 # Install dependencies as root
-COPY package*.json ./
-RUN npm ci && npm cache clean --force
+COPY package.json ./
+RUN npm install && npm cache clean --force
 
 # Copy source code
 COPY . .

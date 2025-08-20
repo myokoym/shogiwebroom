@@ -10,7 +10,7 @@ describe('store/sfen', () => {
 
   beforeAll(() => {
     // Dynamically require the module
-    const sfenStore = require('../../../store/sfen');
+    const sfenStore = require('../../../stores/sfen');
     stateFactory = sfenStore.state;
     mutations = sfenStore.mutations;
   });

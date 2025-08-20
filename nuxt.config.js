@@ -1,10 +1,6 @@
 // Nuxt 3 configuration
 // https://nuxt.com/docs/api/configuration/nuxt-config
-
-// For compatibility with build environments
-const { defineNuxtConfig } = require('nuxt/config') || (() => ({ defineNuxtConfig: (config) => config }))()
-
-module.exports = defineNuxtConfig({
+export default defineNuxtConfig({
   // 開発ツール
   devtools: { enabled: true },
   
@@ -53,7 +49,8 @@ module.exports = defineNuxtConfig({
 
   // プラグイン
   plugins: [
-    { src: '~/plugins/socket.client.js', mode: 'client' }
+    { src: '~/plugins/socket.client.js', mode: 'client' },
+    { src: '~/plugins/bootstrap-vue.client.js', mode: 'client' }
   ],
 
   // モジュール
@@ -92,6 +89,3 @@ module.exports = defineNuxtConfig({
   // 互換性設定
   compatibilityDate: '2025-01-01'
 })
-
-// ESM export for Nuxt 3
-export default module.exports

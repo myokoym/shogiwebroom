@@ -9,8 +9,8 @@ describe('store/kif', () => {
   let state;
 
   beforeAll(() => {
-    // Dynamically require the module
-    const kifStore = require('../../../store/kif');
+    // Dynamically require the module - Note: Using stores/ directory for Nuxt 3
+    const kifStore = require('../../../stores/kif');
     stateFactory = kifStore.state;
     mutations = kifStore.mutations;
   });

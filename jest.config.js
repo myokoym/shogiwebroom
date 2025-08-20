@@ -2,8 +2,8 @@ module.exports = {
   // Nuxt.js 2.x configuration
   moduleNameMapper: {
     '^@/(.*)$': '<rootDir>/$1',
-    '^~/(.*)$': '<rootDir>/$1',
-    '^vue$': 'vue/dist/vue.common.js'
+    '^~/(.*)$': '<rootDir>/$1'
+    // Vue 3 doesn't need the vue$ mapping
   },
   
   // Module directories
