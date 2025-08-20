@@ -1,6 +1,4 @@
 // Layout用のComposable（Composition API）
-import { computed } from '@nuxt/bridge/dist/runtime'
-import { useRoute } from '@nuxtjs/composition-api'
 
 export const useLayout = () => {
   const route = useRoute()

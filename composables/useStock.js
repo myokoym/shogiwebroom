@@ -1,5 +1,4 @@
 // Stock用のComposable（Composition API）
-import { computed } from '@nuxt/bridge/dist/runtime'
 import { useSfenStore } from '~/stores/sfen'
 import { useOptionStore } from '~/stores/option'
 

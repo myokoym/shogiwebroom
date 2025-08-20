@@ -1,5 +1,4 @@
 // Chat用のComposable（Composition API）
-import { computed, ref } from '@nuxt/bridge/dist/runtime'
 import { useChatStore } from '~/stores/chat'
 
 export const useChat = () => {

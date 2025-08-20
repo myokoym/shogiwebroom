@@ -37,7 +37,6 @@ services:
     environment:
       - NODE_ENV=test
       - REDIS_URL=redis://redis:6379
-      - NODE_OPTIONS=--openssl-legacy-provider
       - TEST_MODE=minimal
       - CI=true
       - JEST_WORKERS=1  # Minimize resource usage
@@ -47,8 +46,9 @@ services:
       - .:/app:cached
       # Exclude node_modules from being overwritten
       - /app/node_modules
-      # Exclude .nuxt directory
+      # Exclude build directories
       - /app/.nuxt
+      - /app/.output
     depends_on:
       redis:
         condition: service_healthy

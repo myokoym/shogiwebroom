@@ -1,5 +1,4 @@
 // Usage用のComposable（Composition API）
-import { ref } from '@nuxt/bridge/dist/runtime'
 
 export const useUsage = () => {
   // State

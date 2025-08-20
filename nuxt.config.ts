@@ -1,6 +1,10 @@
 // Nuxt 3 configuration
 // https://nuxt.com/docs/api/configuration/nuxt-config
-export default defineNuxtConfig({
+
+// For compatibility with build environments
+const { defineNuxtConfig } = require('nuxt/config') || (() => ({ defineNuxtConfig: (config) => config }))()
+
+module.exports = defineNuxtConfig({
   // 開発ツール
   devtools: { enabled: true },
   
@@ -88,3 +92,6 @@ export default defineNuxtConfig({
   // 互換性設定
   compatibilityDate: '2025-01-01'
 })
+
+// ESM export for Nuxt 3
+export default module.exports

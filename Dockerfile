@@ -9,8 +9,6 @@
 FROM node:18-alpine3.18 AS builder
 
 # ビルド時に必要な環境変数を設定
-# OpenSSL legacy providerを有効にしてNode.js 18での互換性問題を解決
-ENV NODE_OPTIONS="--openssl-legacy-provider"
 
 # 作業ディレクトリを設定
 WORKDIR /app
@@ -43,7 +41,6 @@ FROM node:18-alpine3.18 AS production
 ENV NODE_ENV=production
 ENV NUXT_HOST=0.0.0.0
 ENV NUXT_PORT=3000
-ENV NODE_OPTIONS="--openssl-legacy-provider"
 
 # Install dumb-init for proper signal handling
 RUN apk add --no-cache dumb-init

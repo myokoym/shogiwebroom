@@ -1,6 +1,4 @@
 // Index page用のComposable（Composition API）
-import { ref, onMounted } from '@nuxt/bridge/dist/runtime'
-import { useRouter } from '@nuxtjs/composition-api'
 import cryptoRandomString from 'crypto-random-string'
 
 export const useIndex = () => {

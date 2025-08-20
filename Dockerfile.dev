@@ -30,8 +30,8 @@ COPY . .
 # Make scripts executable
 RUN chmod +x scripts/*.sh scripts/*.js 2>/dev/null || true
 
-# Create .nuxt directory with correct permissions
-RUN mkdir -p /app/.nuxt && \
+# Create build directories with correct permissions
+RUN mkdir -p /app/.nuxt /app/.output && \
     chown -R nuxtjs:nodejs /app
 
 # Switch to non-root user
@@ -44,7 +44,6 @@ EXPOSE 3000
 ENV NODE_ENV=development
 ENV HOST=0.0.0.0
 ENV PORT=3000
-ENV NODE_OPTIONS="--openssl-legacy-provider"
 
 # Health check
 HEALTHCHECK --interval=30s --timeout=10s --start-period=30s --retries=3 \

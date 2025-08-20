@@ -1,6 +1,4 @@
 // Room page用のComposable（Composition API）
-import { onMounted, computed } from '@nuxt/bridge/dist/runtime'
-import { useRoute, useRouter } from '@nuxtjs/composition-api'
 import { useSfenStore } from '~/stores/sfen'
 import { useOptionStore } from '~/stores/option'
 

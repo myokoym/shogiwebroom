@@ -1,5 +1,4 @@
 // Kif用のComposable（Composition API）
-import { computed } from '@nuxt/bridge/dist/runtime'
 import { useKifStore } from '~/stores/kif'
 
 export const useKif = () => {

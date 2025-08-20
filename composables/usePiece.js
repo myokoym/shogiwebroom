@@ -1,5 +1,4 @@
 // Piece用のComposable（Composition API）
-import { computed } from '@nuxt/bridge/dist/runtime'
 
 export const usePiece = (props) => {
   // 駒の文字を取得

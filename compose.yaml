@@ -19,7 +19,6 @@ services:
       - HOST=0.0.0.0
       - PORT=3000
       - REDIS_URL=redis://redis:6379  # Connect to Redis service
-      - NODE_OPTIONS=--openssl-legacy-provider
     env_file:
       - .env  # Load additional environment variables from .env file
     volumes:
@@ -27,8 +26,9 @@ services:
       - .:/app:cached
       # Exclude node_modules from being overwritten by host volume
       - /app/node_modules
-      # Exclude .nuxt directory from host mount to avoid permission issues
+      # Exclude build directories from host mount to avoid permission issues
       - /app/.nuxt
+      - /app/.output
     depends_on:
       redis:
         condition: service_healthy

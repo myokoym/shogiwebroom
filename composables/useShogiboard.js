@@ -1,11 +1,12 @@
 // Shogiboard用のComposable（Composition API）
-import { computed, ref, onMounted, onBeforeUnmount } from '@nuxt/bridge/dist/runtime'
 import { useSfenStore } from '~/stores/sfen'
 import { useOptionStore } from '~/stores/option'
+import { useKifStore } from '~/stores/kif'
 
 export const useShogiboard = () => {
   const sfenStore = useSfenStore()
   const optionStore = useOptionStore()
+  const kifStore = useKifStore()
   
   // State
   const komaotoObj = ref(null)
@@ -70,7 +71,7 @@ export const useShogiboard = () => {
     // 移動処理
     if (beforeX.value >= 0 && beforeY.value >= 0) {
       // 盤面から盤面
-      store.commit("sfen/moveBoardToBoard", {
+      sfenStore.moveBoardToBoard({
         beforeX: beforeX.value,
         beforeY: beforeY.value,
         afterX: x,
@@ -78,7 +79,7 @@ export const useShogiboard = () => {
       })
       // 移動情報を送信
       const piece = rows.value[beforeY.value][beforeX.value]
-      store.commit("kif/sendMove", {
+      kifStore.sendMove({
         beforeX: beforeX.value,
         beforeY: beforeY.value,
         afterX: x,
@@ -91,13 +92,13 @@ export const useShogiboard = () => {
       // 手駒から盤面
       const turn = beforeX.value
       const piece = beforeY.value
-      store.commit("sfen/moveHandToBoard", {
+      sfenStore.moveHandToBoard({
         beforeX: turn,
         beforeY: piece,
         afterX: x,
         afterY: y,
       })
-      store.commit("kif/sendMove", {
+      kifStore.sendMove({
         beforeX: turn,
         beforeY: piece,
         afterX: x,
@@ -110,7 +111,7 @@ export const useShogiboard = () => {
     } else if (dragFromStock.value) {
       // 駒台から盤面
       const piece = beforeY.value
-      store.commit("sfen/moveStockToBoard", {
+      sfenStore.moveStockToBoard({
         piece: piece,
         afterX: x,
         afterY: y,
@@ -130,7 +131,7 @@ export const useShogiboard = () => {
     
     if (beforeX.value >= 0 && beforeY.value >= 0) {
       // 盤面から手駒
-      store.commit("sfen/moveBoardToHand", {
+      sfenStore.moveBoardToHand({
         beforeX: beforeX.value,
         beforeY: beforeY.value,
         afterX: turn,
@@ -142,7 +143,7 @@ export const useShogiboard = () => {
       // 手駒から手駒
       const beforeTurn = beforeX.value
       const beforePiece = beforeY.value
-      store.commit("sfen/moveHandToHand", {
+      sfenStore.moveHandToHand({
         beforeX: beforeTurn,
         beforeY: beforePiece,
         afterX: turn,
@@ -166,7 +167,7 @@ export const useShogiboard = () => {
     
     if (beforeX.value >= 0 && beforeY.value >= 0) {
       // 盤面から駒台
-      store.commit("sfen/moveBoardToStock", {
+      sfenStore.moveBoardToStock({
         beforeX: beforeX.value,
         beforeY: beforeY.value,
       })
@@ -183,7 +184,7 @@ export const useShogiboard = () => {
   }
   
   const togglePromotedAndTurn = (x, y) => {
-    store.commit("sfen/togglePromotedAndTurn", { x: x, y: y })
+    sfenStore.togglePromotedAndTurn({ x: x, y: y })
   }
   
   const dragCellStart = (x, y) => {
