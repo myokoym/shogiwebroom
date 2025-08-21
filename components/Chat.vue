@@ -32,34 +32,28 @@
     </div>
   </div>
 </template>
-<script>
-import Vue from "vue"
-import { mapState } from "vuex"
+<script setup>
+import { ref, computed } from 'vue'
+import { useChatStore } from '~/stores'
 
-export default Vue.extend({
-  computed: {
-    ...mapState("chat", {
-      comments: "comments",
-    })
-  },
-  mounted() {
-  },
-  data() {
-    return {
-      name: "",
-      comment: "",
-    }
-  },
-  methods: {
-    submit() {
-      this.$store.commit("chat/sendComment", {
-        name: this.name,
-        comment: this.comment,
-      })
-      this.comment = ""
-    },
-  }
+// Data
+const chatStore = useChatStore()
+const name = ref("")
+const comment = ref("")
+
+// Computed
+const comments = computed(() => {
+  return chatStore.comments || []
 })
+
+// Methods
+const submit = () => {
+  chatStore.sendComment({
+    name: name.value,
+    comment: comment.value,
+  })
+  comment.value = ""
+}
 </script>
 <style>
 .chat-name {

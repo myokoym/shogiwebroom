@@ -39,7 +39,7 @@
       <button
         type="button"
         class="btn btn-sm"
-        v-on:click="$store.commit('kif/togglePause')"
+        v-on:click="kifStore.togglePause()"
         v-bind:class="{
           'btn-dark': pause,
           'btn-light': !pause,
@@ -56,69 +56,67 @@
     </div>
   </div>
 </template>
-<script>
-import Vue from "vue"
-import { mapState } from "vuex"
+<script setup>
+import { ref, computed, watch, getCurrentInstance } from 'vue'
+import { useKifStore } from '~/stores'
 import VueClipboard from "vue-clipboard2"
-Vue.use(VueClipboard)
 
-export default Vue.extend({
-  computed: {
-    ...mapState("kif", {
-      kifs: "kifs",
-      ki2s: "ki2s",
-      pause: "pause",
-    })
-  },
-  mounted() {
-  },
-  data() {
-    return {
-      tab: "ki2",
+// Get the current instance to access $copyText
+const instance = getCurrentInstance()
+
+// Data
+const kifStore = useKifStore()
+const tab = ref("ki2")
+
+// Computed
+const kifs = computed(() => kifStore.kifs || [])
+const ki2s = computed(() => kifStore.ki2s || [])
+const pause = computed(() => kifStore.pause || false)
+
+// Watch
+watch(ki2s, () => {
+  setTimeout(() => {
+    let obj = document.getElementById("kif-list")
+    if (obj) {
+      obj.scrollTop = obj.scrollHeight
     }
-  },
-  watch: {
-    "ki2s": function() {
-      setTimeout(function() {
-        let obj = document.getElementById("kif-list")
-        obj.scrollTop = obj.scrollHeight
-      })
-    },
-  },
-  methods: {
-    selectKi2() {
-      this.tab = "ki2"
-    },
-    selectKif() {
-      this.tab = "kif"
-    },
-    copy() {
-      let lines = []
-      if (this.tab === "ki2") {
-        let line = ""
-        this.ki2s.forEach(function(k, i) {
-          if ((i + 1) % 2 === 0) {
-            line += "    "
-            line += k
-            lines.push(line)
-            line = ""
-          } else {
-            line += k
-          }
-        })
-      } else {
-        this.kifs.forEach(function(k, i) {
-          let line = ""
-          line += (i + 1)
-          line += " "
-          line += k
-          lines.push(line)
-        })
-      }
-      this.$copyText(lines.join("\n"))
-    },
-  }
+  })
 })
+
+// Methods
+const selectKi2 = () => {
+  tab.value = "ki2"
+}
+
+const selectKif = () => {
+  tab.value = "kif"
+}
+
+const copy = () => {
+  let lines = []
+  if (tab.value === "ki2") {
+    let line = ""
+    ki2s.value.forEach((k, i) => {
+      if ((i + 1) % 2 === 0) {
+        line += "    "
+        line += k
+        lines.push(line)
+        line = ""
+      } else {
+        line += k
+      }
+    })
+  } else {
+    kifs.value.forEach((k, i) => {
+      let line = ""
+      line += (i + 1)
+      line += " "
+      line += k
+      lines.push(line)
+    })
+  }
+  instance.proxy.$copyText(lines.join("\n"))
+}
 </script>
 <style>
 .kif-moves {

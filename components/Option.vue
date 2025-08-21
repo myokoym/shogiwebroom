@@ -4,7 +4,7 @@
       <button
         type="button"
         class="btn btn-sm"
-        v-on:click="$store.commit('option/toggleGameMode')"
+        v-on:click="optionStore.toggleGameMode()"
         v-bind:class="{
           'btn-dark': enabledGameMode,
           'btn-light': !enabledGameMode,
@@ -13,7 +13,7 @@
       <button
         type="button"
         class="btn btn-sm"
-        v-on:click="$store.commit('option/toggleLatestMark')"
+        v-on:click="optionStore.toggleLatestMark()"
         v-bind:class="{
           'btn-dark': enabledLatestMark,
           'btn-light': !enabledLatestMark,
@@ -22,7 +22,7 @@
       <button
         type="button"
         class="btn btn-sm"
-        v-on:click="$store.commit('option/toggleBoardGuide')"
+        v-on:click="optionStore.toggleBoardGuide()"
         v-bind:class="{
           'btn-dark': enabledBoardGuide,
           'btn-light': !enabledBoardGuide,
@@ -31,7 +31,7 @@
       <button
         type="button"
         class="btn btn-sm"
-        v-on:click="$store.commit('option/toggleAudio')"
+        v-on:click="optionStore.toggleAudio()"
         v-bind:class="{
           'btn-dark': enabledAudio,
           'btn-light': !enabledAudio,
@@ -41,7 +41,7 @@
         type="button"
         class="btn btn-sm"
         v-show="!hideClock"
-        v-on:click="$store.commit('option/toggleClock')"
+        v-on:click="optionStore.toggleClock()"
         v-bind:class="{
           'btn-dark': showClock,
           'btn-light': !showClock,
@@ -51,7 +51,7 @@
         type="button"
         class="btn btn-sm"
         v-show="!hideStock"
-        v-on:click="$store.commit('option/toggleStock')"
+        v-on:click="optionStore.toggleStock()"
         v-bind:class="{
           'btn-dark': showStock,
           'btn-light': !showStock,
@@ -68,37 +68,28 @@
     </div>
   </div>
 </template>
-<script>
-import Vue from "vue"
-import { mapState } from "vuex"
+<script setup>
+import { useOptionStore } from '~/stores'
 
-export default Vue.extend({
-  props: {
-    hideClock: Boolean,
-    hideStock: Boolean,
-  },
-  computed: {
-    ...mapState("option", {
-      enabledGameMode: "enabledGameMode",
-      enabledAudio: "enabledAudio",
-      enabledLatestMark: "enabledLatestMark",
-      enabledBoardGuide: "enabledBoardGuide",
-      showStock: "showStock",
-      showClock: "showClock",
-      font: "font",
-      fontOptions: "fontOptions",
-    }),
-  },
-  data() {
-    return {
-    }
-  },
-  methods: {
-    setFont(value) {
-      this.$store.commit("option/setFont", value)
-    },
-  }
+const props = defineProps({
+  hideClock: Boolean,
+  hideStock: Boolean,
 })
+
+const optionStore = useOptionStore()
+
+const enabledGameMode = computed(() => optionStore.enabledGameMode || false)
+const enabledAudio = computed(() => optionStore.enabledAudio || false)
+const enabledLatestMark = computed(() => optionStore.enabledLatestMark || false)
+const enabledBoardGuide = computed(() => optionStore.enabledBoardGuide || false)
+const showStock = computed(() => optionStore.showStock || false)
+const showClock = computed(() => optionStore.showClock || false)
+const font = computed(() => optionStore.font || 'kirieji')
+const fontOptions = computed(() => optionStore.fontOptions || [])
+
+function setFont(value) {
+  optionStore.setFont(value)
+}
 </script>
 <style>
 .latestCell {

@@ -10,7 +10,7 @@
     }">
     <div
       class="hand-piece"
-      v-for="piece in $store.state.sfen.filledHands[turn]"
+      v-for="piece in filledHands"
       v-bind:class="{beforeCell: isBeforeHand(piece)}"
       v-on:click.stop="moveHand(piece)"
       draggable
@@ -21,48 +21,46 @@
         v-bind:piece="piece"
         v-bind:font="font"
       ></Piece>
-      <span class="hand-n-pieces">{{$store.state.sfen.hands[piece] || "　"}}</span>
+      <span class="hand-n-pieces">{{hands[piece] || "　"}}</span>
     </div>
   </div>
 </template>
-<script>
-import Vue from "vue"
-import { mapState } from "vuex"
+<script setup>
+import { computed } from 'vue'
+import { useSfenStore } from '~/stores'
 import Piece from '~/components/Piece.vue'
 
-export default Vue.extend({
-  components: {
-    Piece,
-  },
-  props: {
-    turn: String,
-    font: String,
-    moveFromHand: Function,
-    moveToHand: Function,
-    isBeforeHand: Function,
-    isSelectedPiece: Function,
-  },
-  computed: {
-  },
-  mounted() {
-  },
-  data() {
-    return {
-    }
-  },
-  watch: {
-  },
-  methods: {
-    moveHand(piece) {
-      // debug: console.log("moveHand: " + piece)
-      if (this.isSelectedPiece()) {
-        this.moveToHand(this.turn)
-      } else if (piece) {
-        this.moveFromHand(piece)
-      }
-    },
-  }
+// Define props
+const props = defineProps({
+  turn: String,
+  font: String,
+  moveFromHand: Function,
+  moveToHand: Function,
+  isBeforeHand: Function,
+  isSelectedPiece: Function,
 })
+
+// Data
+const sfenStore = useSfenStore()
+
+// Computed
+const filledHands = computed(() => {
+  return sfenStore.filledHands?.[props.turn] || []
+})
+
+const hands = computed(() => {
+  return sfenStore.hands || {}
+})
+
+// Methods
+const moveHand = (piece) => {
+  // debug: console.log("moveHand: " + piece)
+  if (props.isSelectedPiece()) {
+    props.moveToHand(props.turn)
+  } else if (piece) {
+    props.moveFromHand(piece)
+  }
+}
 </script>
 <style>
 .beforeCell {

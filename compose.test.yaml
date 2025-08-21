@@ -50,15 +50,15 @@ services:
       - HOST=0.0.0.0
       - PORT=3000
       - REDIS_URL=redis://redis:6379
-      - NODE_OPTIONS=--openssl-legacy-provider
       - TEST_MODE=integration
     volumes:
       # Mount source code for real-time test updates
       - .:/app:cached
       # Exclude node_modules from being overwritten
       - /app/node_modules
-      # Exclude .nuxt directory
+      # Exclude build directories
       - /app/.nuxt
+      - /app/.output
     depends_on:
       redis:
         condition: service_healthy
@@ -95,8 +95,9 @@ services:
       - .:/app:cached
       # Exclude node_modules from being overwritten
       - /app/node_modules
-      # Exclude .nuxt directory
+      # Exclude build directories
       - /app/.nuxt
+      - /app/.output
       # Mount test results directory
       - ./test-results:/app/test-results
       # Mount coverage directory

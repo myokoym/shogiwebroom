@@ -1,8 +1,8 @@
 {
   "compilerOptions": {
-    "target": "es2018",
-    "module": "esnext",
-    "moduleResolution": "node",
+    "target": "ES2018",
+    "module": "ESNext",
+    "moduleResolution": "Node",
     "lib": [
       "esnext",
       "esnext.asynciterable",
@@ -22,6 +22,9 @@
       ],
       "@/*": [
         "./*"
+      ],
+      "~/stores/*": [
+        "./stores/*"
       ]
     },
     "types": [

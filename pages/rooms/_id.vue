@@ -15,43 +15,43 @@
   </div>
 </template>
 
-<script>
+<script setup>
+import { onMounted } from 'vue'
 import io from "socket.io-client"
-import Vue from "vue"
+import { useSfenStore } from '~/stores'
+import { useOptionStore } from '~/stores'
 import Shogiboard from '~/components/Shogiboard.vue'
 import Chat from '~/components/Chat.vue'
 import Kif from '~/components/Kif.vue'
 
-export default Vue.extend({
-  components: {
-    Shogiboard,
-    Chat,
-    Kif,
-  },
-  data() {
-    return {
-    }
-  },
-  created() {
-    // debug: console.log(this.$route.params.id)
-    if (!this.$route.params.id) {
-      this.$router.replace("/")
-      return
-    }
-    this.$store.commit("sfen/setRoomId", {roomId: this.$route.params.id})
-    if (this.$route.query.audio == "1") {
-      this.$store.commit("option/setAudio", true)
-    }
-    if (this.$route.query.latestMark == "1") {
-      this.$store.commit("option/setLatestMark", true)
-    }
-    if (this.$route.query.boardGuide == "1") {
-      this.$store.commit("option/setBoardGuide", true)
-    }
-    if (this.$route.query.font) {
-      this.$store.commit("option/setFont", this.$route.query.font)
-    }
-  },
+// Get route and router (Nuxt provides these directly)
+const route = useRoute()
+const router = useRouter()
+
+// Data
+const sfenStore = useSfenStore()
+const optionStore = useOptionStore()
+
+// Created lifecycle (using onMounted as closest equivalent)
+onMounted(() => {
+  // debug: console.log(route.params.id)
+  if (!route.params.id) {
+    router.replace("/")
+    return
+  }
+  sfenStore.setRoomId({roomId: route.params.id})
+  if (route.query.audio == "1") {
+    optionStore.setAudio(true)
+  }
+  if (route.query.latestMark == "1") {
+    optionStore.setLatestMark(true)
+  }
+  if (route.query.boardGuide == "1") {
+    optionStore.setBoardGuide(true)
+  }
+  if (route.query.font) {
+    optionStore.setFont(route.query.font)
+  }
 })
 </script>
 <style>

@@ -91,13 +91,13 @@
           <button
             type="button"
             class="btn btn-light btn-sm"
-            v-on:click="$store.commit('sfen/prevHistory')"
+            v-on:click="sfenStore.prevHistory()"
             v-bind:disabled="historyCursor >= history.length - 1"
           >一手戻る</button>
           <button
             type="button"
             class="btn btn-light btn-sm"
-            v-on:click="$store.commit('sfen/nextHistory')"
+            v-on:click="sfenStore.nextHistory()"
             v-bind:disabled="historyCursor <= 0"
           >一手進む</button>
         </div>
@@ -113,7 +113,7 @@
         class="form-control"
         aria-describedby="sfen-label"
         v-bind:value="text"
-        v-on:input="$store.commit('sfen/setText', {text: $event.target.value})"
+        v-on:input="sfenStore.setText({text: $event.target.value})"
       >
       <button
         type="button"
@@ -123,323 +123,336 @@
     </div>
   </div>
 </template>
-<script>
-import Vue from "vue"
-import { mapState } from "vuex"
+<script setup>
+import { ref, computed, onMounted, watch, getCurrentInstance } from 'vue'
+import { useSfenStore } from '~/stores'
+import { useKifStore } from '~/stores'
+import { useOptionStore } from '~/stores'
 import Piece from '~/components/Piece.vue'
 import Hand from '~/components/Hand.vue'
 import Stock from '~/components/Stock.vue'
 import Option from '~/components/Option.vue'
 import VueClipboard from "vue-clipboard2"
-Vue.use(VueClipboard)
 
-export default Vue.extend({
-  components: {
-    Piece,
-    Hand,
-    Stock,
-    Option,
-  },
-  computed: {
-    reversedSfen: function() {
-      return this.$store.getters["sfen/reversedSfen"]
-    },
-    ...mapState("sfen", {
-      roomId: "roomId",
-      text: "text",
-      reversed: "reversed",
-      rows: "rows",
-      hands: "hands",
-      latestCellX: "latestCellX",
-      latestCellY: "latestCellY",
-      history: "history",
-      historyCursor: "historyCursor",
-    }),
-    ...mapState("kif", {
-      moves: "moves",
-      kifs: "kifs",
-      ki2s: "ki2s",
-      xChars: "xChars",
-      yChars: "yChars",
-    }),
-    ...mapState("option", {
-      enabledGameMode: "enabledGameMode",
-      enabledAudio: "enabledAudio",
-      enabledLatestMark: "enabledLatestMark",
-      enabledBoardGuide: "enabledBoardGuide",
-      showStock: "showStock",
-      showClock: "showClock",
-      font: "font",
-    }),
-  },
-  mounted() {
-    this.$store.commit("sfen/init")
-    this.komaotoObj = new Audio(this.komaotoPath())
-    // debug: console.log("this.text: " + this.text)
-    // debug: console.log("this.text: " + this.$store.state.sfen.text)
-  },
-  data() {
-    return {
-      filledBHands: [],
-      filledWHands: [],
-      beforeX: undefined,
-      beforeY: undefined,
-      beforeHand: undefined,
-      beforeStock: undefined,
-      komaotoName: "komaoto1",
-      komaotoObj: undefined,
-    }
-  },
-  watch: {
-    "value": function() {
-      this.update()
-    },
-    "text": function() {
-      if (this.enabledAudio) {
-        this.komaotoObj.play();
-      }
-    },
-  },
-  methods: {
-    komaotoPath() {
-      return require("@/assets/audio/" + this.komaotoName + ".mp3")
-    },
-    boardGuideTop(x, max) {
-      if (!this.enabledBoardGuide) {
-        return "　"
-      }
-      if (!max) {
-        max = 10
-      }
-      if (!this.reversed) {
-        x = max - x
-      }
-      return this.xChars[x]
-    },
-    boardGuideRight(y, max) {
-      if (!this.enabledBoardGuide) {
-        return "　"
-      }
-      if (!max) {
-        max = 10
-      }
-      if (this.reversed) {
-        y = max - y
-      }
-      return this.yChars[y]
-    },
-    isLatestCell(x, y) {
-      if (!this.enabledLatestMark) {
-        return false
-      }
-      return this.latestCellX == x && this.latestCellY == y
-    },
-    isBeforeCell(x, y) {
-      return this.beforeX === x && this.beforeY === y
-    },
-    isBeforeHand(piece) {
-      return this.beforeHand === piece
-    },
-    isBeforeStock(piece) {
-      // debug: console.log(this.beforeStock)
-      // debug: console.log(piece)
-      return this.beforeStock === piece
-    },
-    isSelectedPiece() {
-      return this.beforeX !== undefined ||
-             this.beforeHand !== undefined ||
-             this.beforeStock !== undefined
-    },
-    reverseBoard() {
-      this.$store.commit("sfen/reverse")
-    },
-    moveFromHand(piece) {
-      // debug: console.log("moveFromHand: " + piece)
-      if (piece === ".") {
-        return
-      }
-      this.beforeX = undefined
-      this.beforeY = undefined
-      if (this.beforeHand === piece) {
-        this.beforeHand = undefined
-      } else {
-        this.beforeHand = piece
-      }
-    },
-    moveFromStock(piece) {
-      // debug: console.log("moveFromStock: " + piece)
-      if (piece === ".") {
-        return
-      }
-      this.beforeX = undefined
-      this.beforeY = undefined
-      if (this.beforeStock === piece) {
-        this.beforeStock = undefined
-      } else {
-        this.beforeStock = piece
-      }
-    },
-    moveToHand(turn) {
-      // debug: console.log("moveToHand: " + turn)
-      if (this.beforeX === undefined &&
-          this.beforeHand === undefined) {
-        return
-      }
-      if (this.beforeX !== undefined) {
-        this.$store.commit("sfen/moveBoardToHand", {
-          beforeX: this.beforeX,
-          beforeY: this.beforeY,
-          turn: turn,
-        })
-        this.beforeX = undefined
-        this.beforeY = undefined
-      } else if (this.beforeHand) {
-        if ((this.beforeHand.match(/[A-Z]/) && turn === "b") ||
-            (this.beforeHand.match(/[a-z]/) && turn === "w")) {
-          this.beforeHand = undefined
-          return
-        }
-        this.$store.commit("sfen/moveHandToHand", {
-          beforeHand: this.beforeHand,
-          turn: turn,
-        })
-        this.beforeHand = undefined
-      }
-    },
-    moveToStock(turn) {
-      // debug: console.log("moveToHand: " + turn)
-      if (this.beforeX === undefined &&
-          this.beforeStock === undefined) {
-        return
-      }
-      if (this.beforeX !== undefined) {
-        this.$store.commit("sfen/moveBoardToStock", {
-          beforeX: this.beforeX,
-          beforeY: this.beforeY,
-        })
-        this.beforeX = undefined
-        this.beforeY = undefined
-      } else if (this.beforeStock) {
-        this.beforeStock = undefined
-      }
-    },
-    togglePromotedAndTurn(x, y) {
-      this.$store.commit("sfen/togglePromotedAndTurn", {
-        x: x,
-        y: y,
-      })
-    },
-    togglePromotedAndTurnOnButton() {
-      if (this.beforeX === undefined) {
-        return
-      }
-      this.$store.commit("sfen/togglePromotedAndTurn", {
-        x: this.beforeX,
-        y: this.beforeY,
-      })
-    },
-    dragCellStart(x, y) {
-      this.beforeX = undefined
-      this.beforeY = undefined
-      this.beforeHand = undefined
-      this.moveCell(x, y)
-    },
-    moveCell(x, y) {
-      if (this.beforeX === undefined && this.rows[y][x] !== ".") {
-        this.beforeX = x
-        this.beforeY = y
-        this.beforeHand = undefined
-        this.beforeStock = undefined
-      } else if (this.beforeX === x && this.beforeY === y) {
-        this.beforeX = undefined
-        this.beforeY = undefined
-      } else {
-        const afterCell = this.rows[y][x]
-        if (this.beforeX !== undefined) {
-          const beforeCell = this.rows[this.beforeY][this.beforeX]
-          if (beforeCell.match(/[A-Z]/) && afterCell.match(/[A-Z]/) ||
-              beforeCell.match(/[a-z]/) && afterCell.match(/[a-z]/)) {
-            this.beforeX = x
-            this.beforeY = y
-            return
-          }
-          if (this.enabledGameMode &&
-              ((beforeCell.match(/^[PLNSBR]$/) && (y <= 2 || this.beforeY <= 2)) ||
-               (beforeCell.match(/^[plnsbr]$/) && (y >= 6 || this.beforeY >= 6)))) {
-            this.$bvModal.msgBoxConfirm("成りますか？", {
-              size: "sm",
-              okTitle: "成る",
-              cancelTitle: "不成",
-              noCloseOnBackdrop: true,
-            }).then(promote => {
-              let afterPiece = beforeCell
-              if (promote) {
-                afterPiece = "+" + afterPiece
-              }
-              this.moveCellFromBoard(x, y, afterPiece)
-              this.moveCellFinally()
-            })
-          } else {
-            this.moveCellFromBoard(x, y, beforeCell)
-            this.moveCellFinally()
-          }
-        } else if (this.beforeHand) {
-          if (afterCell !== ".") {
-            return
-          } else {
-            this.$store.commit("sfen/moveHandToBoard", {
-              beforeHand: this.beforeHand,
-              afterX: x,
-              afterY: y,
-            })
-            this.$store.commit("kif/sendMove", {
-              afterX: x,
-              afterY: y,
-              piece: this.beforeHand,
-              reversed: this.reversed,
-            })
-          }
-          this.moveCellFinally()
-        } else if (this.beforeStock) {
-          if (afterCell !== ".") {
-            return
-          } else {
-            this.$store.commit("sfen/moveStockToBoard", {
-              beforeStock: this.beforeStock,
-              afterX: x,
-              afterY: y,
-            })
-          }
-          this.moveCellFinally()
-        }
-      }
-    },
-    moveCellFromBoard(x, y, piece) {
-      this.$store.commit("sfen/moveBoardToBoard", {
-        beforeX: this.beforeX,
-        beforeY: this.beforeY,
-        afterX: x,
-        afterY: y,
-        piece: piece,
-      })
-      this.$store.commit("kif/sendMove", {
-        beforeX: this.beforeX,
-        beforeY: this.beforeY,
-        afterX: x,
-        afterY: y,
-        piece: piece, // TODO: add promote option
-        reversed: this.reversed,
-      })
-      this.moveCellFinally()
-    },
-    moveCellFinally() {
-      this.beforeX = undefined
-      this.beforeY = undefined
-      this.beforeHand = undefined
-      this.beforeStock = undefined
-    },
+// Get the current instance to access $bvModal
+const instance = getCurrentInstance()
+
+// Data
+const sfenStore = useSfenStore()
+const kifStore = useKifStore()
+const optionStore = useOptionStore()
+const filledBHands = ref([])
+const filledWHands = ref([])
+const beforeX = ref(undefined)
+const beforeY = ref(undefined)
+const beforeHand = ref(undefined)
+const beforeStock = ref(undefined)
+const komaotoName = ref("komaoto1")
+const komaotoObj = ref(undefined)
+
+// Computed
+const reversedSfen = computed(() => {
+  return sfenStore.reversedSfen || ''
+})
+
+// SFEN store computed properties
+const roomId = computed(() => sfenStore.roomId || '')
+const text = computed(() => sfenStore.text || '')
+const reversed = computed(() => sfenStore.reversed || false)
+const rows = computed(() => sfenStore.rows || [])
+const hands = computed(() => sfenStore.hands || {})
+const latestCellX = computed(() => sfenStore.latestX || -1)
+const latestCellY = computed(() => sfenStore.latestY || -1)
+const history = computed(() => sfenStore.history || [])
+const historyCursor = computed(() => sfenStore.historyIndex || -1)
+
+// KIF store computed properties
+const moves = computed(() => kifStore.moves || [])
+const kifs = computed(() => kifStore.kifs || [])
+const ki2s = computed(() => kifStore.ki2s || [])
+const xChars = computed(() => kifStore.xChars || [])
+const yChars = computed(() => kifStore.yChars || [])
+
+// Option store computed properties
+const enabledGameMode = computed(() => optionStore.enabledGameMode || false)
+const enabledAudio = computed(() => optionStore.enabledAudio || false)
+const enabledLatestMark = computed(() => optionStore.enabledLatestMark || false)
+const enabledBoardGuide = computed(() => optionStore.enabledBoardGuide || false)
+const showStock = computed(() => optionStore.showStock || false)
+const showClock = computed(() => optionStore.showClock || false)
+const font = computed(() => optionStore.font || 'kirieji')
+
+// Mounted
+onMounted(() => {
+  sfenStore.init()
+  komaotoObj.value = new Audio(komaotoPath())
+  // debug: console.log("this.text: " + text.value)
+  // debug: console.log("this.text: " + sfenStore.text)
+})
+
+// Watch
+watch(text, () => {
+  if (enabledAudio.value) {
+    komaotoObj.value.play();
   }
 })
+
+// Methods
+const komaotoPath = () => {
+  return require("@/assets/audio/" + komaotoName.value + ".mp3")
+}
+
+const boardGuideTop = (x, max) => {
+  if (!enabledBoardGuide.value) {
+    return "　"
+  }
+  if (!max) {
+    max = 10
+  }
+  if (!reversed.value) {
+    x = max - x
+  }
+  return xChars.value[x]
+}
+
+const boardGuideRight = (y, max) => {
+  if (!enabledBoardGuide.value) {
+    return "　"
+  }
+  if (!max) {
+    max = 10
+  }
+  if (reversed.value) {
+    y = max - y
+  }
+  return yChars.value[y]
+}
+
+const isLatestCell = (x, y) => {
+  if (!enabledLatestMark.value) {
+    return false
+  }
+  return latestCellX.value == x && latestCellY.value == y
+}
+
+const isBeforeCell = (x, y) => {
+  return beforeX.value === x && beforeY.value === y
+}
+
+const isBeforeHand = (piece) => {
+  return beforeHand.value === piece
+}
+
+const isBeforeStock = (piece) => {
+  // debug: console.log(beforeStock.value)
+  // debug: console.log(piece)
+  return beforeStock.value === piece
+}
+
+const isSelectedPiece = () => {
+  return beforeX.value !== undefined ||
+         beforeHand.value !== undefined ||
+         beforeStock.value !== undefined
+}
+
+const reverseBoard = () => {
+  sfenStore.reverse()
+}
+
+const moveFromHand = (piece) => {
+  // debug: console.log("moveFromHand: " + piece)
+  if (piece === ".") {
+    return
+  }
+  beforeX.value = undefined
+  beforeY.value = undefined
+  if (beforeHand.value === piece) {
+    beforeHand.value = undefined
+  } else {
+    beforeHand.value = piece
+  }
+}
+
+const moveFromStock = (piece) => {
+  // debug: console.log("moveFromStock: " + piece)
+  if (piece === ".") {
+    return
+  }
+  beforeX.value = undefined
+  beforeY.value = undefined
+  if (beforeStock.value === piece) {
+    beforeStock.value = undefined
+  } else {
+    beforeStock.value = piece
+  }
+}
+
+const moveToHand = (turn) => {
+  // debug: console.log("moveToHand: " + turn)
+  if (beforeX.value === undefined &&
+      beforeHand.value === undefined) {
+    return
+  }
+  if (beforeX.value !== undefined) {
+    sfenStore.moveBoardToHand({
+      beforeX: beforeX.value,
+      beforeY: beforeY.value,
+      turn: turn,
+    })
+    beforeX.value = undefined
+    beforeY.value = undefined
+  } else if (beforeHand.value) {
+    if ((beforeHand.value.match(/[A-Z]/) && turn === "b") ||
+        (beforeHand.value.match(/[a-z]/) && turn === "w")) {
+      beforeHand.value = undefined
+      return
+    }
+    sfenStore.moveHandToHand({
+      beforeHand: beforeHand.value,
+      turn: turn,
+    })
+    beforeHand.value = undefined
+  }
+}
+
+const moveToStock = (turn) => {
+  // debug: console.log("moveToHand: " + turn)
+  if (beforeX.value === undefined &&
+      beforeStock.value === undefined) {
+    return
+  }
+  if (beforeX.value !== undefined) {
+    sfenStore.moveBoardToStock({
+      beforeX: beforeX.value,
+      beforeY: beforeY.value,
+    })
+    beforeX.value = undefined
+    beforeY.value = undefined
+  } else if (beforeStock.value) {
+    beforeStock.value = undefined
+  }
+}
+
+const togglePromotedAndTurn = (x, y) => {
+  sfenStore.togglePromotedAndTurn({
+    x: x,
+    y: y,
+  })
+}
+
+const togglePromotedAndTurnOnButton = () => {
+  if (beforeX.value === undefined) {
+    return
+  }
+  sfenStore.togglePromotedAndTurn({
+    x: beforeX.value,
+    y: beforeY.value,
+  })
+}
+
+const dragCellStart = (x, y) => {
+  beforeX.value = undefined
+  beforeY.value = undefined
+  beforeHand.value = undefined
+  moveCell(x, y)
+}
+
+const moveCell = (x, y) => {
+  if (beforeX.value === undefined && rows.value[y][x] !== ".") {
+    beforeX.value = x
+    beforeY.value = y
+    beforeHand.value = undefined
+    beforeStock.value = undefined
+  } else if (beforeX.value === x && beforeY.value === y) {
+    beforeX.value = undefined
+    beforeY.value = undefined
+  } else {
+    const afterCell = rows.value[y][x]
+    if (beforeX.value !== undefined) {
+      const beforeCell = rows.value[beforeY.value][beforeX.value]
+      if (beforeCell.match(/[A-Z]/) && afterCell.match(/[A-Z]/) ||
+          beforeCell.match(/[a-z]/) && afterCell.match(/[a-z]/)) {
+        beforeX.value = x
+        beforeY.value = y
+        return
+      }
+      if (enabledGameMode.value &&
+          ((beforeCell.match(/^[PLNSBR]$/) && (y <= 2 || beforeY.value <= 2)) ||
+           (beforeCell.match(/^[plnsbr]$/) && (y >= 6 || beforeY.value >= 6)))) {
+        instance.proxy.$bvModal.msgBoxConfirm("成りますか？", {
+          size: "sm",
+          okTitle: "成る",
+          cancelTitle: "不成",
+          noCloseOnBackdrop: true,
+        }).then(promote => {
+          let afterPiece = beforeCell
+          if (promote) {
+            afterPiece = "+" + afterPiece
+          }
+          moveCellFromBoard(x, y, afterPiece)
+          moveCellFinally()
+        })
+      } else {
+        moveCellFromBoard(x, y, beforeCell)
+        moveCellFinally()
+      }
+    } else if (beforeHand.value) {
+      if (afterCell !== ".") {
+        return
+      } else {
+        sfenStore.moveHandToBoard({
+          beforeHand: beforeHand.value,
+          afterX: x,
+          afterY: y,
+        })
+        kifStore.sendMove({
+          afterX: x,
+          afterY: y,
+          piece: beforeHand.value,
+          reversed: reversed.value,
+        })
+      }
+      moveCellFinally()
+    } else if (beforeStock.value) {
+      if (afterCell !== ".") {
+        return
+      } else {
+        sfenStore.moveStockToBoard({
+          beforeStock: beforeStock.value,
+          afterX: x,
+          afterY: y,
+        })
+      }
+      moveCellFinally()
+    }
+  }
+}
+
+const moveCellFromBoard = (x, y, piece) => {
+  sfenStore.moveBoardToBoard({
+    beforeX: beforeX.value,
+    beforeY: beforeY.value,
+    afterX: x,
+    afterY: y,
+    piece: piece,
+  })
+  kifStore.sendMove({
+    beforeX: beforeX.value,
+    beforeY: beforeY.value,
+    afterX: x,
+    afterY: y,
+    piece: piece, // TODO: add promote option
+    reversed: reversed.value,
+  })
+  moveCellFinally()
+}
+
+const moveCellFinally = () => {
+  beforeX.value = undefined
+  beforeY.value = undefined
+  beforeHand.value = undefined
+  beforeStock.value = undefined
+}
 </script>
 <style>
 .latestCell {
