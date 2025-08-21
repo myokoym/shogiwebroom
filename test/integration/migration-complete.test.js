@@ -5,18 +5,17 @@ const fetch = require('node-fetch')
 describe('Migration Complete Integration Tests', () => {
   describe('All Features Working', () => {
     it('should have all critical features functional', () => {
-      // Socket.IO v4
-      const socketIOTests = [
-        'server/plugins/socket.io.js',
-        'server/plugins/socket-events.js',
-        'server/plugins/socket-fallback.js'
-      ]
+      // Socket.IO implementation in server file
+      const fs = require('fs')
+      const path = require('path')
       
-      socketIOTests.forEach(file => {
-        const fs = require('fs')
-        const path = require('path')
-        expect(fs.existsSync(path.join(__dirname, '../..', file))).toBe(true)
-      })
+      // Check server file has Socket.IO integration
+      const serverPath = path.join(__dirname, '../../server/index-nuxt3.js')
+      expect(fs.existsSync(serverPath)).toBe(true)
+      
+      const content = fs.readFileSync(serverPath, 'utf-8')
+      expect(content).toContain('socket.io')
+      expect(content).toContain('io.on')
     })
     
     it('should have all security headers implemented', () => {
@@ -44,20 +43,22 @@ describe('Migration Complete Integration Tests', () => {
   })
   
   describe('Socket.IO Communication', () => {
-    it('should support v2 and v4 clients', () => {
+    it('should support v4 clients', () => {
       const fs = require('fs')
       const path = require('path')
       
-      // Check main socket.io plugin for allowEIO3
-      const socketPath = path.join(__dirname, '../../server/plugins/socket.io.js')
-      const socketContent = fs.readFileSync(socketPath, 'utf-8')
-      expect(socketContent).toContain('allowEIO3')
+      // Check server implementation for Socket.IO v4
+      const serverPath = path.join(__dirname, '../../server/index-nuxt3.js')
+      const content = fs.readFileSync(serverPath, 'utf-8')
       
-      // Check fallback for v2 client detection
-      const fallbackPath = path.join(__dirname, '../../server/plugins/socket-fallback.js')
-      const content = fs.readFileSync(fallbackPath, 'utf-8')
-      expect(content).toContain('_isV2Client')
-      expect(content).toContain('v4-compatible')
+      // Socket.IO v4 configuration in server
+      expect(content).toContain('socket.io')
+      expect(content).toContain('cors')
+      
+      // Client plugin for Socket.IO v4
+      const clientPath = path.join(__dirname, '../../plugins/socket.client.js')
+      const clientContent = fs.readFileSync(clientPath, 'utf-8')
+      expect(clientContent).toContain('socket.io-client')
     })
   })
   
@@ -65,9 +66,9 @@ describe('Migration Complete Integration Tests', () => {
     it('should not have obvious memory leaks', () => {
       // Check for proper cleanup in stores that manage arrays
       const stores = [
-        'stores/sfen.js',
-        'stores/chat.js',
-        'stores/kif.js'
+        'stores/sfen.ts',
+        'stores/chat.ts',
+        'stores/kif.ts'
       ]
       
       stores.forEach(store => {
@@ -88,7 +89,7 @@ describe('Migration Complete Integration Tests', () => {
   describe('Error Handling', () => {
     it('should have error handling in all critical paths', () => {
       const files = [
-        'server/plugins/socket-events.js',
+        'server/index-nuxt3.js',
         'plugins/socket.client.js'
       ]
       

@@ -368,8 +368,12 @@ export const mutations = {
   },
   
   moveBoardToBoard(state: SfenState, payload: any) {
-    const piece = state.rows[payload.beforeY][payload.beforeX]
-    const capturedPiece = state.rows[payload.afterY][payload.afterX]
+    if (!payload) return // No payload provided
+    
+    const piece = state.rows[payload.beforeY]?.[payload.beforeX]
+    if (!piece) return // No piece to move
+    
+    const capturedPiece = state.rows[payload.afterY]?.[payload.afterX]
     
     // Capture piece if it exists and is opponent's
     if (capturedPiece && capturedPiece !== null) {
@@ -409,8 +413,10 @@ export const mutations = {
     }
     
     // Store latest cell position for compatibility
-    (state as any).latestCellX = payload.afterX
-    (state as any).latestCellY = payload.afterY
+    if (payload && 'afterX' in payload && 'afterY' in payload) {
+      (state as any).latestCellX = payload['afterX']
+      (state as any).latestCellY = payload['afterY']
+    }
   },
   
   moveBoardToHand(state: SfenState, payload: any) {
@@ -455,8 +461,10 @@ export const mutations = {
     }
     
     // Store latest cell position
-    (state as any).latestCellX = payload.afterX
-    (state as any).latestCellY = payload.afterY
+    if (payload && 'afterX' in payload && 'afterY' in payload) {
+      (state as any).latestCellX = payload['afterX']
+      (state as any).latestCellY = payload['afterY']
+    }
   },
   
   togglePromotedAndTurn(state: SfenState, payload: any) {

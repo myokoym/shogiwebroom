@@ -62,7 +62,8 @@ describe('Pinia Store Setup', () => {
       
       const piniaStore = migrateVuexModule(vuexModule)
       
-      expect(piniaStore.state).toEqual({ count: 0 })
+      expect(typeof piniaStore.state).toBe('function')
+      expect(piniaStore.state()).toEqual({ count: 0 })
       expect(typeof piniaStore.getters.doubleCount).toBe('function')
       expect(typeof piniaStore.actions.increment).toBe('function')
       expect(typeof piniaStore.actions.asyncIncrement).toBe('function')
