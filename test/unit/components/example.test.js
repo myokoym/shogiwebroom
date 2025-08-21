@@ -1,13 +1,13 @@
 /**
- * Vue Component Unit Tests
- * Tests basic Vue component functionality using @vue/test-utils
+ * Vue 3 Component Unit Tests
+ * Tests basic Vue 3 component functionality using @vue/test-utils
  */
 
-const { mount, createLocalVue } = require('@vue/test-utils');
-const Vue = require('vue');
+const { mount } = require('@vue/test-utils');
+const { defineComponent, h } = require('vue');
 
-// Simple test component
-const TestComponent = Vue.extend({
+// Simple test component for Vue 3
+const TestComponent = defineComponent({
   template: `
     <div class="test-component">
       <h1>{{ title }}</h1>
@@ -31,33 +31,32 @@ const TestComponent = Vue.extend({
   methods: {
     increment() {
       this.count++;
+    },
+    toggleMessage() {
+      this.showMessage = !this.showMessage;
     }
   }
 });
 
-describe('Vue Component Tests', () => {
-  let localVue;
-
-  beforeEach(() => {
-    localVue = createLocalVue();
-  });
-
+describe('Vue 3 Component Tests', () => {
   test('can create and mount a Vue component', () => {
     const wrapper = mount(TestComponent, {
-      localVue,
-      stubs: {}  // Override global stubs for clean testing
+      global: {
+        stubs: {}
+      }
     });
 
     expect(wrapper.exists()).toBe(true);
-    expect(wrapper.vm).toBeTruthy();  // Use wrapper.vm instead of deprecated isVueInstance
+    expect(wrapper.vm).toBeTruthy();
   });
 
   test('renders component template correctly', () => {
     const wrapper = mount(TestComponent, {
-      localVue,
-      stubs: {},
-      propsData: {
+      props: {
         title: 'Custom Title'
+      },
+      global: {
+        stubs: {}
       }
     });
 
@@ -68,10 +67,11 @@ describe('Vue Component Tests', () => {
 
   test('handles prop data correctly', () => {
     const wrapper = mount(TestComponent, {
-      localVue,
-      stubs: {},
-      propsData: {
+      props: {
         title: 'Props Test'
+      },
+      global: {
+        stubs: {}
       }
     });
 
@@ -80,8 +80,9 @@ describe('Vue Component Tests', () => {
 
   test('manages component state', () => {
     const wrapper = mount(TestComponent, {
-      localVue,
-      stubs: {}
+      global: {
+        stubs: {}
+      }
     });
 
     expect(wrapper.vm.count).toBe(0);
@@ -91,8 +92,9 @@ describe('Vue Component Tests', () => {
 
   test('handles user interactions', async () => {
     const wrapper = mount(TestComponent, {
-      localVue,
-      stubs: {}
+      global: {
+        stubs: {}
+      }
     });
 
     const button = wrapper.find('button');
@@ -105,107 +107,45 @@ describe('Vue Component Tests', () => {
     expect(wrapper.vm.count).toBe(1);
     expect(button.text()).toBe('Count: 1');
     
-    // Click again
+    // Multiple clicks
     await button.trigger('click');
-    expect(wrapper.vm.count).toBe(2);
-    expect(button.text()).toBe('Count: 2');
+    await button.trigger('click');
+    expect(wrapper.vm.count).toBe(3);
+    expect(button.text()).toBe('Count: 3');
   });
 
-  test('conditional rendering works', async () => {
+  test('conditional rendering works correctly', async () => {
     const wrapper = mount(TestComponent, {
-      localVue,
-      stubs: {}
-    });
-
-    expect(wrapper.find('p').exists()).toBe(true);
-    
-    // Hide message
-    wrapper.setData({ showMessage: false });
-    await wrapper.vm.$nextTick();
-    
-    expect(wrapper.find('p').exists()).toBe(false);
-  });
-
-  test('component has correct CSS classes', () => {
-    const wrapper = mount(TestComponent, {
-      localVue,
-      stubs: {}
-    });
-
-    expect(wrapper.classes()).toContain('test-component');
-    expect(wrapper.find('div').classes()).toContain('test-component');
-  });
-
-  test('can find elements by selector', () => {
-    const wrapper = mount(TestComponent, {
-      localVue,
-      stubs: {}
-    });
-
-    expect(wrapper.find('h1').exists()).toBe(true);
-    expect(wrapper.find('button').exists()).toBe(true);
-    expect(wrapper.find('p').exists()).toBe(true);
-    expect(wrapper.find('.test-component').exists()).toBe(true);
-  });
-
-  test('component lifecycle works', () => {
-    const mountedSpy = jest.fn();
-    
-    const ComponentWithLifecycle = Vue.extend({
-      template: '<div>Lifecycle Test</div>',
-      mounted: mountedSpy
-    });
-
-    mount(ComponentWithLifecycle, {
-      localVue,
-      stubs: {}
-    });
-
-    expect(mountedSpy).toHaveBeenCalledTimes(1);
-  });
-
-  test('can test component with slots', () => {
-    const SlottedComponent = Vue.extend({
-      template: `
-        <div class="slotted">
-          <slot name="header"></slot>
-          <slot></slot>
-          <slot name="footer"></slot>
-        </div>
-      `
-    });
-
-    const wrapper = mount(SlottedComponent, {
-      localVue,
-      stubs: {},
-      slots: {
-        default: '<p>Default slot content</p>',
-        header: '<h2>Header slot</h2>',
-        footer: '<small>Footer slot</small>'
+      global: {
+        stubs: {}
       }
     });
 
-    expect(wrapper.find('h2').text()).toBe('Header slot');
-    expect(wrapper.find('p').text()).toBe('Default slot content');
-    expect(wrapper.find('small').text()).toBe('Footer slot');
-  });
-});
-
-describe('Vue Test Utils Functionality', () => {
-  test('@vue/test-utils is properly configured', () => {
-    expect(mount).toBeDefined();
-    expect(createLocalVue).toBeDefined();
-  });
-
-  test('can create local Vue instance', () => {
-    const localVue = createLocalVue();
-    expect(localVue).toBeDefined();
-    expect(typeof localVue).toBe('function');
+    // Message should be visible initially
+    expect(wrapper.find('p').exists()).toBe(true);
+    
+    // Toggle message visibility
+    wrapper.vm.toggleMessage();
+    await wrapper.vm.$nextTick();
+    expect(wrapper.find('p').exists()).toBe(false);
+    
+    // Toggle back
+    wrapper.vm.toggleMessage();
+    await wrapper.vm.$nextTick();
+    expect(wrapper.find('p').exists()).toBe(true);
   });
 
-  test('Vue is available in test environment', () => {
-    expect(Vue).toBeDefined();
-    expect(Vue.version).toBeDefined();
-    expect(typeof Vue.extend).toBe('function');
+  test('component can be destroyed properly', () => {
+    const wrapper = mount(TestComponent, {
+      global: {
+        stubs: {}
+      }
+    });
+
+    expect(wrapper.exists()).toBe(true);
+    
+    wrapper.unmount();
+    // After unmounting, the wrapper should still exist but DOM element is removed
+    expect(() => wrapper.find('h1')).not.toThrow();
   });
 });

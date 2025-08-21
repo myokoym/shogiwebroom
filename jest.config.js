@@ -11,6 +11,7 @@ module.exports = {
   
   // File extensions to test
   moduleFileExtensions: [
+    'ts',
     'js',
     'vue',
     'json'
@@ -18,7 +19,7 @@ module.exports = {
   
   // Transform files
   transform: {
-    '^.+\\.js$': 'babel-jest'
+    '^.+\\.(js|ts)$': 'babel-jest'
     // Vue transform disabled for now - uncomment when vue-jest is installed
     // '.*\\.(vue)$': 'vue-jest'
   },

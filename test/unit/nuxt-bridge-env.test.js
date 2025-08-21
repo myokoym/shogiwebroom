@@ -1,8 +1,8 @@
-// Nuxt Bridge環境の起動テスト
+// Nuxt 3環境の起動テスト
 const { spawn } = require('child_process')
 const path = require('path')
 
-describe('Nuxt Bridge Environment', () => {
+describe.skip('Nuxt Bridge Environment - SKIPPED: Using direct Nuxt 3 without Bridge', () => {
   it('should validate nuxt.config.ts syntax', (done) => {
     // TypeScript構文チェック
     const configPath = path.join(__dirname, '../../nuxt.config.ts')

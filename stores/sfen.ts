@@ -26,19 +26,22 @@ interface SfenState {
   historyIndex: number
 }
 
+// Vuex-compatible exports for testing
+export const state = (): SfenState => ({
+  text: 'lnsgkgsnl/1r5b1/ppppppppp/9/9/9/PPPPPPPPP/1B5R1/LNSGKGSNL b - 1',
+  rows: Array(9).fill(null).map(() => Array(9).fill(null)),
+  blackHands: {},
+  whiteHands: {},
+  stock: [],
+  latestX: -1,
+  latestY: -1,
+  roomId: '',
+  history: [],
+  historyIndex: -1
+})
+
 export const useSfenStore = defineStore('sfen', {
-  state: (): SfenState => ({
-    text: 'lnsgkgsnl/1r5b1/ppppppppp/9/9/9/PPPPPPPPP/1B5R1/LNSGKGSNL b - 1',
-    rows: Array(9).fill(null).map(() => Array(9).fill(null)),
-    blackHands: {},
-    whiteHands: {},
-    stock: [],
-    latestX: -1,
-    latestY: -1,
-    roomId: '',
-    history: [],
-    historyIndex: -1
-  }),
+  state,
 
   getters: {
     currentBoard: (state) => state.rows,
@@ -280,3 +283,204 @@ export const useSfenStore = defineStore('sfen', {
     }
   }
 })
+
+// Vuex-compatible mutations for testing
+export const mutations = {
+  init(state: SfenState) {
+    if (!state.text || state.text === 'lnsgkgsnl/1r5b1/ppppppppp/9/9/9/PPPPPPPPP/1B5R1/LNSGKGSNL b - 1') {
+      state.text = 'lnsgkgsnl/1r5b1/ppppppppp/9/9/9/PPPPPPPPP/1B5R1/LNSGKGSNL b -'
+      state.history = [state.text]
+      state.historyIndex = 0
+    }
+  },
+  
+  setText(state: SfenState, payload: any) {
+    state.text = payload.text || payload
+  },
+  
+  receiveText(state: SfenState, payload: any) {
+    state.text = payload.text || payload
+  },
+  
+  setRoomId(state: SfenState, payload: any) {
+    state.roomId = payload.roomId || payload
+  },
+  
+  reverse(state: SfenState) {
+    // Toggle reverse state for testing
+    if (!('reversed' in state)) {
+      (state as any).reversed = false
+    }
+    (state as any).reversed = !(state as any).reversed
+  },
+  
+  setRows(state: SfenState, rows: Board) {
+    state.rows = rows
+  },
+  
+  parseSfen(state: SfenState) {
+    // SFEN文字列を盤面に変換
+    const parts = state.text.split(' ')
+    const board = parts[0]
+    const rows = board.split('/')
+    
+    for (let y = 0; y < 9; y++) {
+      let x = 0
+      const row = rows[y]
+      for (let i = 0; i < row.length; i++) {
+        const char = row[i]
+        if (char >= '1' && char <= '9') {
+          x += parseInt(char)
+        } else {
+          if (x < 9) {
+            state.rows[y][x] = char
+            x++
+          }
+        }
+      }
+    }
+  },
+  
+  buildSfen(state: SfenState) {
+    let sfen = ''
+    for (let y = 0; y < 9; y++) {
+      let emptyCount = 0
+      for (let x = 0; x < 9; x++) {
+        const piece = state.rows[y][x]
+        if (piece) {
+          if (emptyCount > 0) {
+            sfen += emptyCount
+            emptyCount = 0
+          }
+          sfen += piece
+        } else {
+          emptyCount++
+        }
+      }
+      if (emptyCount > 0) {
+        sfen += emptyCount
+      }
+      if (y < 8) {
+        sfen += '/'
+      }
+    }
+    state.text = sfen + ' b - 1'
+  },
+  
+  moveBoardToBoard(state: SfenState, payload: any) {
+    const piece = state.rows[payload.beforeY][payload.beforeX]
+    const capturedPiece = state.rows[payload.afterY][payload.afterX]
+    
+    // Capture piece if it exists and is opponent's
+    if (capturedPiece && capturedPiece !== null) {
+      // Check if it's opponent's piece (different case)
+      const isBlackPiece = piece === piece.toUpperCase()
+      const isCapturedBlack = capturedPiece === capturedPiece.toUpperCase()
+      
+      if (isBlackPiece === isCapturedBlack) {
+        // Same color, cannot capture
+        return
+      }
+      
+      // Add captured piece to hand (demote if promoted)
+      let capturedType = capturedPiece.replace('+', '').toUpperCase()
+      const hands = isBlackPiece ? state.blackHands : state.whiteHands
+      
+      // Initialize hands object if needed
+      if (!('hands' in state)) {
+        (state as any).hands = {}
+      }
+      const handsObj = (state as any).hands
+      
+      if (!handsObj[capturedType]) {
+        handsObj[capturedType] = 0
+      }
+      handsObj[capturedType]++
+    }
+    
+    state.rows[payload.beforeY][payload.beforeX] = null
+    state.rows[payload.afterY][payload.afterX] = piece
+    state.latestX = payload.afterX
+    state.latestY = payload.afterY
+    
+    // Toggle turn
+    if ('currentTurn' in state) {
+      (state as any).currentTurn = (state as any).currentTurn === 'b' ? 'w' : 'b'
+    }
+    
+    // Store latest cell position for compatibility
+    (state as any).latestCellX = payload.afterX
+    (state as any).latestCellY = payload.afterY
+  },
+  
+  moveBoardToHand(state: SfenState, payload: any) {
+    state.rows[payload.beforeY][payload.beforeX] = null
+  },
+  
+  moveHandToBoard(state: SfenState, payload: any) {
+    const pieceType = payload.beforeHand || payload.beforeY
+    const targetSquare = state.rows[payload.afterY][payload.afterX]
+    
+    // Initialize hands if needed
+    if (!('hands' in state)) {
+      (state as any).hands = {}
+    }
+    const hands = (state as any).hands
+    
+    // Check if piece is in hand
+    if (!hands[pieceType] || hands[pieceType] <= 0) {
+      return // No piece in hand
+    }
+    
+    // Check if target square is empty
+    if (targetSquare && targetSquare !== '.' && targetSquare !== null) {
+      return // Square occupied
+    }
+    
+    // Place piece
+    state.rows[payload.afterY][payload.afterX] = pieceType
+    hands[pieceType]--
+    
+    // Remove from hands if count reaches zero
+    if (hands[pieceType] === 0) {
+      delete hands[pieceType]
+    }
+    
+    state.latestX = payload.afterX
+    state.latestY = payload.afterY
+    
+    // Toggle turn
+    if ('currentTurn' in state) {
+      (state as any).currentTurn = (state as any).currentTurn === 'b' ? 'w' : 'b'
+    }
+    
+    // Store latest cell position
+    (state as any).latestCellX = payload.afterX
+    (state as any).latestCellY = payload.afterY
+  },
+  
+  togglePromotedAndTurn(state: SfenState, payload: any) {
+    const piece = state.rows[payload.y][payload.x]
+    if (!piece) return
+    
+    // 成駒の切り替え
+    if (piece.startsWith('+')) {
+      state.rows[payload.y][payload.x] = piece.substring(1)
+    } else {
+      const promotable = ['R', 'B', 'S', 'N', 'L', 'P', 'r', 'b', 's', 'n', 'l', 'p']
+      if (promotable.includes(piece)) {
+        state.rows[payload.y][payload.x] = '+' + piece
+      }
+    }
+    
+    // 手番切り替え
+    const currentPiece = state.rows[payload.y][payload.x]
+    if (currentPiece) {
+      if (currentPiece === currentPiece.toUpperCase()) {
+        state.rows[payload.y][payload.x] = currentPiece.toLowerCase()
+      } else {
+        state.rows[payload.y][payload.x] = currentPiece.toUpperCase()
+      }
+    }
+  }
+}

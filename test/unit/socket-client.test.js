@@ -1,15 +1,13 @@
 // Socket.IOクライアントv4のテスト
 describe('Socket.IO Client v4', () => {
   describe('Client Plugin', () => {
-    it('should have socket.client plugin files', () => {
+    it('should have socket.client plugin file', () => {
       const fs = require('fs')
       const path = require('path')
       
       const jsPath = path.join(__dirname, '../../plugins/socket.client.js')
-      const tsPath = path.join(__dirname, '../../plugins/socket.client.ts')
       
       expect(fs.existsSync(jsPath)).toBe(true)
-      expect(fs.existsSync(tsPath)).toBe(true)
     })
     
     it('should export Nuxt plugin', () => {
@@ -20,7 +18,7 @@ describe('Socket.IO Client v4', () => {
       const content = fs.readFileSync(jsPath, 'utf-8')
       
       expect(content).toContain('export default')
-      expect(content).toContain('inject')
+      expect(content).toContain('provide')  // Nuxt 3 uses provide instead of inject
       expect(content).toContain('socket.io-client')
       expect(content).toContain('connect_error')
     })

@@ -22,7 +22,9 @@ RUN addgroup --system --gid 1001 nodejs && \
 
 # Install dependencies as root
 COPY package.json ./
-RUN npm install && npm cache clean --force
+RUN npm install && \
+    npm install @babel/preset-typescript --save-dev && \
+    npm cache clean --force
 
 # Copy source code
 COPY . .

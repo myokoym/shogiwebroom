@@ -74,6 +74,7 @@
     "@babel/plugin-transform-modules-commonjs": "^7.27.1",
     "@babel/plugin-transform-runtime": "^7.28.3",
     "@babel/preset-env": "^7.28.3",
+    "@babel/preset-typescript": "^7.27.1",
     "@playwright/test": "^1.40.0",
     "babel-jest": "26.6.3",
     "crypto-browserify": "^3.12.1",

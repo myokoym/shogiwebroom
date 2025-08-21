@@ -21,11 +21,11 @@ describe('store/kif', () => {
 
   describe('state', () => {
     test('should have initial state', () => {
-      expect(state.beforeX).toBeUndefined();
-      expect(state.beforeY).toBeUndefined();
-      expect(state.afterX).toBeUndefined();
-      expect(state.afterY).toBeUndefined();
-      expect(state.piece).toBeUndefined();
+      expect(state.beforeX).toBe(-1);
+      expect(state.beforeY).toBe(-1);
+      expect(state.afterX).toBe(-1);
+      expect(state.afterY).toBe(-1);
+      expect(state.piece).toBe('');
       expect(state.moves).toEqual([]);
       expect(state.kifs).toEqual([]);
       expect(state.ki2s).toEqual([]);
@@ -239,12 +239,12 @@ describe('store/kif', () => {
 
         mutations.sendMove(state, moveParams);
 
-        // State should remain unchanged
-        expect(state.beforeX).toBeUndefined();
-        expect(state.beforeY).toBeUndefined();
-        expect(state.afterX).toBeUndefined();
-        expect(state.afterY).toBeUndefined();
-        expect(state.piece).toBeUndefined();
+        // State should remain unchanged (initial values)
+        expect(state.beforeX).toBe(-1);
+        expect(state.beforeY).toBe(-1);
+        expect(state.afterX).toBe(-1);
+        expect(state.afterY).toBe(-1);
+        expect(state.piece).toBe('');
       });
     });
 
